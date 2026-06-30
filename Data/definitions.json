@@ -9,7 +9,8 @@
       "DawnCache", "DawnGraphiteCache", "DawnWebGPUCache", "GraphiteDawnCache",
       "component_crx_cache", "extensions_crx_cache", "D3DSCache", "GLCache", "DXCache",
       "NV_Cache", "NVIDIA_Cache", "ComputeCache", "CefCache", "BrowserCache",
-      "webcache", "webcache2", "htmlcache", "ScriptCache", "CachedData", "CachedExtensionVSIXs"
+      "webcache", "webcache2", "htmlcache", "ScriptCache", "CachedData", "CachedExtensionVSIXs",
+      "__pycache__"
     ],
 
     "_comment_cautionNames": "Cache-like names that may hold app data → require opt-in.",
