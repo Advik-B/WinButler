@@ -1,0 +1,107 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:WinButler.ViewModels"
+             xmlns:mft="using:WinButler.Services.Mft"
+             xmlns:controls="using:WinButler.Controls"
+             xmlns:ui="using:FluentAvalonia.UI.Controls"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="620"
+             x:Class="WinButler.Views.DiskScannerPageView"
+             x:DataType="vm:DiskScannerPageViewModel">
+
+    <DockPanel Margin="20">
+
+        <!-- Action bar -->
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="12" Margin="0,0,0,8">
+            <TextBlock Text="Disk Usage" FontSize="24" FontWeight="Bold" VerticalAlignment="Center"/>
+            <ui:FAComboBox ItemsSource="{Binding Drives}" SelectedItem="{Binding SelectedDrive}" MinWidth="300">
+                <ui:FAComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="mft:ScanDrive">
+                        <TextBlock Text="{Binding DisplayName}"/>
+                    </DataTemplate>
+                </ui:FAComboBox.ItemTemplate>
+            </ui:FAComboBox>
+            <Button Content="Scan" Command="{Binding ScanCommand}" Theme="{DynamicResource AccentButtonTheme}" Width="80"/>
+            <Button Content="Choose folder…" Click="OnChooseFolder" Width="125"/>
+            <TextBlock Text="Sort:" VerticalAlignment="Center"/>
+            <ui:FAComboBox ItemsSource="{Binding SortModes}" SelectedItem="{Binding SelectedSort}" MinWidth="110"/>
+            <ProgressBar IsIndeterminate="True" Width="100" VerticalAlignment="Center" IsVisible="{Binding IsBusy}"/>
+        </StackPanel>
+
+        <!-- Summary -->
+        <TextBlock DockPanel.Dock="Top" Text="{Binding SummaryText}" FontWeight="SemiBold" Margin="0,0,0,8"
+                   TextTrimming="CharacterEllipsis"/>
+
+        <!-- Status -->
+        <TextBlock DockPanel.Dock="Bottom" Text="{Binding StatusText}" TextWrapping="Wrap" Margin="0,8,0,0" Opacity="0.8"/>
+
+        <!-- Column header row (widths must match the row template below) -->
+        <Border DockPanel.Dock="Top" BorderBrush="#33808080" BorderThickness="0,0,0,1" Padding="6,4" Background="#11808080">
+            <Grid ColumnDefinitions="*,110,150,110,80,80,150">
+                <TextBlock Grid.Column="0" Text="Name" FontWeight="SemiBold"/>
+                <TextBlock Grid.Column="1" Text="Size" FontWeight="SemiBold" HorizontalAlignment="Right"/>
+                <TextBlock Grid.Column="2" Text="% of parent" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                <TextBlock Grid.Column="3" Text="Allocated" FontWeight="SemiBold" HorizontalAlignment="Right"/>
+                <TextBlock Grid.Column="4" Text="Files" FontWeight="SemiBold" HorizontalAlignment="Right"/>
+                <TextBlock Grid.Column="5" Text="Folders" FontWeight="SemiBold" HorizontalAlignment="Right"/>
+                <TextBlock Grid.Column="6" Text="Modified" FontWeight="SemiBold" Margin="8,0,0,0"/>
+            </Grid>
+        </Border>
+
+        <!-- Tree list on top, treemap below, resizable splitter between -->
+        <Grid RowDefinitions="*,5,260">
+
+        <ListBox Grid.Row="0" ItemsSource="{Binding Rows}" SelectedItem="{Binding SelectedRow}"
+                 ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+            <ListBox.Styles>
+                <Style Selector="ListBoxItem">
+                    <Setter Property="Padding" Value="0"/>
+                    <Setter Property="MinHeight" Value="26"/>
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                </Style>
+            </ListBox.Styles>
+            <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:DiskRowViewModel">
+                    <Grid ColumnDefinitions="*,110,150,110,80,80,150" Height="24">
+                        <!-- Name: indent + disclosure triangle + label -->
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="{Binding Indent}" VerticalAlignment="Center">
+                            <Button Content="{Binding ExpanderGlyph}" Command="{Binding ToggleCommand}"
+                                    IsVisible="{Binding HasChildren}"
+                                    Width="20" Height="20" Padding="0" FontSize="11"
+                                    Background="Transparent" BorderThickness="0"/>
+                            <TextBlock Text="{Binding Name}" VerticalAlignment="Center"
+                                       TextTrimming="CharacterEllipsis"/>
+                        </StackPanel>
+
+                        <TextBlock Grid.Column="1" Text="{Binding SizeText}" HorizontalAlignment="Right"
+                                   VerticalAlignment="Center" Margin="0,0,8,0" FontWeight="SemiBold"/>
+
+                        <Grid Grid.Column="2" VerticalAlignment="Center" Margin="6,0">
+                            <ProgressBar Minimum="0" Maximum="100" Value="{Binding PercentValue}" Height="16"/>
+                            <TextBlock Text="{Binding PercentText}" FontSize="10" HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"/>
+                        </Grid>
+
+                        <TextBlock Grid.Column="3" Text="{Binding AllocText}" HorizontalAlignment="Right"
+                                   VerticalAlignment="Center" Margin="0,0,8,0" Opacity="0.8"/>
+                        <TextBlock Grid.Column="4" Text="{Binding FilesText}" HorizontalAlignment="Right"
+                                   VerticalAlignment="Center" Margin="0,0,8,0" Opacity="0.8"/>
+                        <TextBlock Grid.Column="5" Text="{Binding FoldersText}" HorizontalAlignment="Right"
+                                   VerticalAlignment="Center" Margin="0,0,8,0" Opacity="0.8"/>
+                        <TextBlock Grid.Column="6" Text="{Binding ModifiedText}" VerticalAlignment="Center"
+                                   Margin="8,0,0,0" Opacity="0.8"/>
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
+            <GridSplitter Grid.Row="1" ResizeDirection="Rows" HorizontalAlignment="Stretch"
+                          Background="#22808080"/>
+
+            <controls:TreemapControl Grid.Row="2" x:Name="Treemap"
+                                     Root="{Binding SelectedNode}"/>
+        </Grid>
+
+    </DockPanel>
+</UserControl>

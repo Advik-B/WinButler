@@ -1,0 +1,121 @@
+{
+  "version": 1,
+  "_comment": "WinButler path rules. Edit this file to add caches or redirect targets — no code changes needed. A future remote source (JSON on GitHub) uses this exact shape and merges on top, keyed by targetName for redirects and unioned for cache rule lists.",
+
+  "cache": {
+    "_comment_alwaysSafeNames": "Bare folder names that are ALWAYS safe to delete (unambiguous transient render/compile artifacts).",
+    "alwaysSafeNames": [
+      "Cache_Data", "Code Cache", "CodeCache", "GPUCache", "GrShaderCache", "ShaderCache",
+      "DawnCache", "DawnGraphiteCache", "DawnWebGPUCache", "GraphiteDawnCache",
+      "component_crx_cache", "extensions_crx_cache", "D3DSCache", "GLCache", "DXCache",
+      "NV_Cache", "NVIDIA_Cache", "ComputeCache", "CefCache", "BrowserCache",
+      "webcache", "webcache2", "htmlcache", "ScriptCache", "CachedData", "CachedExtensionVSIXs"
+    ],
+
+    "_comment_cautionNames": "Cache-like names that may hold app data → require opt-in.",
+    "cautionNames": [ "CacheStorage", "blob_storage" ],
+
+    "_comment_cautionPathFragments": "Paths forced to Caution even if named Cache (package stores, etc.).",
+    "cautionPathFragments": [ "\\Pub\\Cache" ],
+
+    "_comment_safeContextFragments": "A generic 'cache' folder is safe only when its path contains one of these known app/tool contexts.",
+    "safeContextFragments": [
+      "\\User Data\\",
+      "\\Profiles\\",
+      "\\Spotify\\", "\\Discord\\", "\\discord\\", "\\Slack\\", "\\slack\\", "\\Microsoft\\Teams\\",
+      "\\Code\\", "\\Code - Insiders\\", "\\VSCodium\\", "\\Postman\\", "\\Figma\\", "\\Notion\\",
+      "\\WhatsApp\\", "\\Signal\\", "\\obsidian\\", "\\Obsidian\\", "\\GitHub Desktop\\",
+      "\\Microsoft\\Olk\\", "\\EBWebView\\", "\\electron\\", "\\io.krunker.desktop\\",
+      "\\Steam\\htmlcache", "\\EpicGamesLauncher\\", "\\Epic Games\\", "\\EOSOverlay\\",
+      "\\lunarclient\\", "\\PrismLauncher\\cache", "\\.minecraft\\", "\\Minecraft Bedrock\\",
+      "\\NVIDIA\\", "\\NVIDIA Corporation\\", "\\AMD\\", "\\Intel\\",
+      "\\NuGet\\v3-cache", "\\NuGet\\plugins-cache", "\\npm-cache", "\\pnpm-cache",
+      "\\pip\\cache", "\\pip\\Cache", "\\go-build", "\\Yarn\\", "\\.gradle\\caches",
+      "\\Caches\\",
+      "\\JetBrains\\", "\\Google\\AndroidStudio", "\\Microsoft\\VisualStudio\\",
+      "\\.vscode\\", "\\ms-playwright\\",
+      "\\Microsoft\\Windows\\INetCache", "\\Microsoft\\Windows\\WebCache",
+      "\\Microsoft\\Windows\\Explorer"
+    ],
+
+    "_comment_denyFragments": "Never touched even if the name contains 'cache' — security stores and profile data that is NOT a cache.",
+    "denyFragments": [
+      "\\.ssh", "\\.gnupg", "credential", "secret", "vault", "keyring",
+      "\\IndexedDB", "\\Local Storage", "\\Login Data", "\\Web Data", "\\Bookmarks"
+    ]
+  },
+
+  "redirect": {
+    "_comment_denyNames": "Folder names never offered for redirection (security stores).",
+    "denyNames": [ ".ssh", ".gnupg" ],
+
+    "_comment_entries": "relativeToProfile is relative to %USERPROFILE% (AppData\\Local = LocalAppData, AppData\\Roaming = Roaming). targetName must be unique.",
+    "entries": [
+      { "relativeToProfile": ".gradle",                   "displayName": "Gradle",              "description": "Gradle caches, wrappers & daemon data",        "targetName": ".gradle",            "category": "Build tools" },
+      { "relativeToProfile": ".nuget",                    "displayName": "NuGet packages",      "description": "NuGet global package store (~/.nuget)",         "targetName": ".nuget",             "category": "Build tools" },
+      { "relativeToProfile": "AppData\\Local\\NuGet",     "displayName": "NuGet http-cache",    "description": "NuGet v3 HTTP cache",                          "targetName": "NuGet-httpcache",    "category": "Build tools" },
+      { "relativeToProfile": ".m2",                       "displayName": "Maven (.m2)",         "description": "Maven local repository",                       "targetName": ".m2",                "category": "Build tools" },
+      { "relativeToProfile": ".ivy2",                     "displayName": "Ivy (.ivy2)",         "description": "Apache Ivy cache (Scala/SBT)",                 "targetName": ".ivy2",              "category": "Build tools" },
+      { "relativeToProfile": ".sbt",                      "displayName": "SBT",                 "description": "Scala SBT boot dirs & caches",                 "targetName": ".sbt",               "category": "Build tools" },
+      { "relativeToProfile": ".coursier",                 "displayName": "Coursier",            "description": "Coursier (Scala/JVM) artifact cache",          "targetName": ".coursier",          "category": "Build tools" },
+      { "relativeToProfile": "AppData\\Local\\Coursier",  "displayName": "Coursier cache",      "description": "Coursier local cache",                         "targetName": "Coursier-Local",     "category": "Build tools" },
+      { "relativeToProfile": "vcpkg",                     "displayName": "vcpkg",               "description": "vcpkg ports, buildtrees & installed packages", "targetName": "vcpkg",              "category": "Build tools" },
+      { "relativeToProfile": "AppData\\Local\\vcpkg",     "displayName": "vcpkg cache",         "description": "vcpkg binary cache & downloads",               "targetName": "vcpkg-Local",        "category": "Build tools" },
+      { "relativeToProfile": ".conan2",                   "displayName": "Conan",               "description": "Conan C/C++ package cache",                    "targetName": ".conan2",            "category": "Build tools" },
+      { "relativeToProfile": "AppData\\Local\\Pub\\Cache","displayName": "Pub (Dart)",          "description": "Dart/Flutter pub package store",               "targetName": "Pub-Cache",          "category": "Build tools" },
+
+      { "relativeToProfile": ".rustup",                   "displayName": "rustup",              "description": "Rust toolchains",                              "targetName": ".rustup",            "category": "Toolchains" },
+      { "relativeToProfile": ".cargo",                    "displayName": "Cargo",               "description": "Cargo registry & build cache",                 "targetName": ".cargo",             "category": "Toolchains" },
+      { "relativeToProfile": "go",                        "displayName": "Go (GOPATH)",         "description": "Go modules & workspace (GOPATH)",              "targetName": "go",                 "category": "Toolchains" },
+      { "relativeToProfile": "AppData\\Local\\go-build",  "displayName": "Go build cache",      "description": "Go compiler build cache",                      "targetName": "go-build",           "category": "Toolchains" },
+      { "relativeToProfile": ".dotnet",                   "displayName": ".NET CLI",            "description": ".NET SDK tools & cache",                       "targetName": ".dotnet",            "category": "Toolchains" },
+      { "relativeToProfile": "AppData\\Local\\Android\\Sdk","displayName": "Android SDK",       "description": "Android SDK platforms & build-tools",          "targetName": "Android-Sdk",        "category": "Toolchains" },
+      { "relativeToProfile": ".android",                  "displayName": ".android",            "description": "Android AVDs & ADB keys",                      "targetName": ".android",           "category": "Toolchains" },
+      { "relativeToProfile": ".platformio",               "displayName": "PlatformIO",          "description": "PlatformIO toolchains & platforms",            "targetName": ".platformio",        "category": "Toolchains" },
+
+      { "relativeToProfile": "AppData\\Local\\pnpm-cache","displayName": "pnpm cache",          "description": "pnpm content-addressable cache",               "targetName": "pnpm-cache",         "category": "Node.js" },
+      { "relativeToProfile": "AppData\\Local\\pnpm",      "displayName": "pnpm store",          "description": "pnpm global store & binaries",                 "targetName": "pnpm-store",         "category": "Node.js" },
+      { "relativeToProfile": "AppData\\Roaming\\pnpm",    "displayName": "pnpm (roaming)",      "description": "pnpm global packages",                         "targetName": "pnpm-roaming",       "category": "Node.js" },
+      { "relativeToProfile": "AppData\\Local\\npm-cache", "displayName": "npm cache",           "description": "npm download cache",                           "targetName": "npm-cache",          "category": "Node.js" },
+      { "relativeToProfile": "AppData\\Roaming\\npm",     "displayName": "npm globals",         "description": "npm global packages",                          "targetName": "npm-roaming",        "category": "Node.js" },
+      { "relativeToProfile": "AppData\\Local\\Yarn",      "displayName": "Yarn cache",          "description": "Yarn package cache",                           "targetName": "Yarn",               "category": "Node.js" },
+      { "relativeToProfile": ".bun",                      "displayName": "Bun",                 "description": "Bun install cache & binaries",                 "targetName": ".bun",               "category": "Node.js" },
+      { "relativeToProfile": ".deno",                     "displayName": "Deno",                "description": "Deno module cache",                            "targetName": ".deno",              "category": "Node.js" },
+      { "relativeToProfile": "AppData\\Local\\node-gyp",  "displayName": "node-gyp",            "description": "node-gyp downloaded headers",                  "targetName": "node-gyp",           "category": "Node.js" },
+
+      { "relativeToProfile": "AppData\\Local\\pip",       "displayName": "pip",                 "description": "pip cache & data",                             "targetName": "pip",                "category": "Python" },
+      { "relativeToProfile": ".conda",                    "displayName": "conda",               "description": "conda package cache & envs",                   "targetName": ".conda",             "category": "Python" },
+      { "relativeToProfile": "miniconda3",                "displayName": "Miniconda",           "description": "Miniconda base & environments",                "targetName": "miniconda3",         "category": "Python" },
+      { "relativeToProfile": "anaconda3",                 "displayName": "Anaconda",            "description": "Anaconda base & environments",                 "targetName": "anaconda3",          "category": "Python" },
+      { "relativeToProfile": "AppData\\Roaming\\uv",      "displayName": "uv",                  "description": "uv Python package cache",                      "targetName": "uv",                 "category": "Python" },
+      { "relativeToProfile": "AppData\\Roaming\\Python",  "displayName": "Python (roaming)",    "description": "Python user site-packages & scripts",          "targetName": "Python-roaming",     "category": "Python" },
+
+      { "relativeToProfile": ".cache",                    "displayName": "~/.cache",            "description": "Shared cache (HuggingFace models, etc.)",      "targetName": "dot-cache",          "category": "ML caches" },
+      { "relativeToProfile": ".ollama",                   "displayName": "Ollama",              "description": "Ollama LLM models",                            "targetName": ".ollama",            "category": "ML caches" },
+      { "relativeToProfile": ".EasyOCR",                  "displayName": "EasyOCR",             "description": "EasyOCR downloaded models",                    "targetName": ".EasyOCR",           "category": "ML caches" },
+      { "relativeToProfile": ".djl.ai",                   "displayName": "DJL",                 "description": "Deep Java Library model cache",                "targetName": ".djl.ai",            "category": "ML caches" },
+      { "relativeToProfile": ".keras",                    "displayName": "Keras",               "description": "Keras datasets & models",                      "targetName": ".keras",             "category": "ML caches" },
+      { "relativeToProfile": ".paddleocr",                "displayName": "PaddleOCR",           "description": "PaddleOCR models",                             "targetName": ".paddleocr",         "category": "ML caches" },
+
+      { "relativeToProfile": "AppData\\Local\\JetBrains", "displayName": "JetBrains (Local)",   "description": "JetBrains IDE caches, indexes & logs",         "targetName": "JetBrains-Local",    "category": "IDEs" },
+      { "relativeToProfile": "AppData\\Roaming\\JetBrains","displayName": "JetBrains (Roaming)", "description": "JetBrains IDE config & plugins",              "targetName": "JetBrains-Roaming",  "category": "IDEs" },
+      { "relativeToProfile": "AppData\\Local\\Google\\AndroidStudio2025.1.4", "displayName": "Android Studio", "description": "Android Studio caches & config", "targetName": "AndroidStudio", "category": "IDEs" },
+      { "relativeToProfile": ".vscode",                   "displayName": "VS Code",             "description": "VS Code extensions",                           "targetName": ".vscode",            "category": "IDEs" },
+      { "relativeToProfile": ".cursor",                   "displayName": "Cursor",              "description": "Cursor editor extensions",                     "targetName": ".cursor",            "category": "IDEs" },
+      { "relativeToProfile": ".antigravity-ide",          "displayName": "Antigravity",         "description": "Antigravity IDE data",                         "targetName": ".antigravity-ide",   "category": "IDEs" },
+      { "relativeToProfile": "AppData\\Local\\Zed",       "displayName": "Zed",                 "description": "Zed editor data & bundled node runtime",       "targetName": "Zed",                "category": "IDEs" },
+
+      { "relativeToProfile": "AppData\\Local\\ms-playwright","displayName": "Playwright",       "description": "Playwright browser binaries",                  "targetName": "ms-playwright",      "category": "Web tooling" },
+      { "relativeToProfile": "AppData\\Local\\Cypress",   "displayName": "Cypress",             "description": "Cypress binary cache",                         "targetName": "Cypress",            "category": "Web tooling" },
+      { "relativeToProfile": "AppData\\Local\\electron",  "displayName": "Electron",            "description": "Electron download cache",                      "targetName": "electron",           "category": "Web tooling" },
+
+      { "relativeToProfile": ".local",                    "displayName": "~/.local",            "description": "XDG local data (pipx, user tools)",            "targetName": ".local",             "category": "Misc dev" },
+      { "relativeToProfile": "scoop",                     "displayName": "Scoop",               "description": "Scoop apps, cache & persisted data",           "targetName": "scoop",              "category": "Apps" },
+      { "relativeToProfile": "AppData\\Local\\Programs",  "displayName": "Per-user apps",       "description": "User-installed apps — redirect with those apps closed", "targetName": "Programs",  "category": "Apps" },
+
+      { "relativeToProfile": "AppData\\Roaming\\.minecraft","displayName": "Minecraft (Java)",  "description": "Minecraft Java versions, assets & mods",       "targetName": "minecraft-java",     "category": "Games" },
+      { "relativeToProfile": "AppData\\Roaming\\.minecraft_bedrock","displayName": "Minecraft Bedrock","description": "Minecraft Bedrock launcher data",      "targetName": "minecraft-bedrock",  "category": "Games" },
+      { "relativeToProfile": "AppData\\Roaming\\PrismLauncher","displayName": "Prism Launcher",  "description": "Prism Launcher instances & libraries",         "targetName": "PrismLauncher",      "category": "Games" }
+    ]
+  }
+}

@@ -1,0 +1,52 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:WinButler.ViewModels"
+        xmlns:ui="using:FluentAvalonia.UI.Controls"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="960" d:DesignHeight="680"
+        x:Class="WinButler.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Icon="/Assets/avalonia-logo.ico"
+        Width="960" Height="680"
+        Title="WinButler — Disk Cleaner">
+
+    <Design.DataContext>
+        <vm:MainWindowViewModel/>
+    </Design.DataContext>
+
+    <ui:FANavigationView x:Name="Nav"
+                         PaneTitle="WinButler"
+                         IsSettingsVisible="False"
+                         PaneDisplayMode="Left"
+                         IsBackButtonVisible="False"
+                         SelectionChanged="OnNavSelectionChanged">
+
+        <ui:FANavigationView.MenuItems>
+            <ui:FANavigationViewItem Content="Clean" Tag="clean"/>
+            <ui:FANavigationViewItem Content="Redirect" Tag="redirect"/>
+            <ui:FANavigationViewItem Content="Disk Usage" Tag="disk"/>
+        </ui:FANavigationView.MenuItems>
+
+        <ui:FANavigationView.PaneFooter>
+            <ToggleSwitch Content="Dry run"
+                          OnContent="Simulating" OffContent="Live"
+                          IsChecked="{Binding Settings.IsDryRun}"
+                          Margin="12,8"/>
+        </ui:FANavigationView.PaneFooter>
+
+        <DockPanel>
+            <ui:FAInfoBar DockPanel.Dock="Top"
+                          IsOpen="{Binding Settings.IsDryRun}"
+                          IsClosable="False"
+                          Severity="Warning"
+                          Title="Dry run is ON"
+                          Message="Actions only simulate and report what would change — nothing is deleted or moved. Switch off Dry run (bottom-left) to act for real."
+                          Margin="12,12,12,0"/>
+
+            <ContentControl Content="{Binding CurrentPage}"/>
+        </DockPanel>
+
+    </ui:FANavigationView>
+
+</Window>
