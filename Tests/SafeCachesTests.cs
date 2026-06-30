@@ -12,6 +12,8 @@ public class SafeCachesTests
     // Unambiguous transient artifacts → Safe wherever they are.
     [InlineData(@"C:\X\User Data\Default\GPUCache", RiskLevel.Safe)]
     [InlineData(@"C:\X\User Data\Default\Code Cache", RiskLevel.Safe)]
+    // Python bytecode cache → Safe wherever it is (regenerated automatically).
+    [InlineData(@"C:\Users\Me\AppData\Local\pipx\venvs\foo\Lib\site-packages\bar\__pycache__", RiskLevel.Safe)]
     // Generic "Cache" is Safe only inside a recognised context.
     [InlineData(@"C:\Users\Me\AppData\Local\Brave\User Data\Default\Cache", RiskLevel.Safe)]
     [InlineData(@"C:\Users\Me\AppData\Local\NuGet\v3-cache", RiskLevel.Safe)]
@@ -40,6 +42,7 @@ public class SafeCachesTests
     [InlineData("Cache", true)]
     [InlineData("GPUCache", true)]
     [InlineData("CacheStorage", true)]
+    [InlineData("__pycache__", true)]
     [InlineData("logs", false)]
     [InlineData("node_modules", false)]
     public void IsCacheName_detects_cache_folders(string name, bool expected)
