@@ -98,7 +98,7 @@ public sealed class MftReaderTests
     /// lower than the walk — by design, and documented on <see cref="MftReader"/>.)
     /// </summary>
     [Fact]
-    public void Mft_subfolder_scan_agrees_with_recursive_walk()
+    public async Task Mft_subfolder_scan_agrees_with_recursive_walk()
     {
         if (!OperatingSystem.IsWindows())
             return;
@@ -109,7 +109,7 @@ public sealed class MftReaderTests
         if (!Directory.Exists(target))
             return;
 
-        var mft = new DiskScanService().ScanAsync(target).GetAwaiter().GetResult();
+        var mft = await new DiskScanService().ScanAsync(target);
         var walk = new RecursiveWalkScanner().Scan(target);
 
         var mftMap = FileSizesByPath(mft);
@@ -124,7 +124,7 @@ public sealed class MftReaderTests
         // Aggregation is exact (no phantom bytes): root total equals the sum of its leaves.
         Assert.Equal(mft.SizeBytes, Flatten(mft).Where(n => !n.IsDirectory).Sum(n => n.SizeBytes));
         // The MFT never reports a path the authoritative walk didn't see.
-        Assert.Empty(mftMap.Keys.Where(k => !walkMap.ContainsKey(k)));
+        Assert.DoesNotContain(mftMap.Keys, k => !walkMap.ContainsKey(k));
         // Every file seen by both is sized identically — the parser's per-file sizes are correct.
         Assert.Equal(0, perPathDisagreements);
         // The whole difference between the engines is hardlinked duplicate names.
