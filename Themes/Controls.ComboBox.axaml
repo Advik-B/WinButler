@@ -1,0 +1,106 @@
+<!-- Duly Doted ComboBox theme: bordered surface-inset field, dark dropdown popup. -->
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <ControlTheme x:Key="{x:Type ComboBoxItem}" TargetType="ComboBoxItem">
+    <Setter Property="Padding" Value="12,7"/>
+    <Setter Property="Foreground" Value="{DynamicResource WbTextSecondaryBrush}"/>
+    <Setter Property="FontFamily" Value="{DynamicResource WbFontUi}"/>
+    <Setter Property="FontSize" Value="{StaticResource WbTextXs}"/>
+    <Setter Property="CornerRadius" Value="{StaticResource WbRadiusXs}"/>
+    <Setter Property="Cursor" Value="Hand"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Name="PART_Border" Background="Transparent" CornerRadius="{TemplateBinding CornerRadius}">
+          <ContentPresenter Content="{TemplateBinding Content}" Padding="{TemplateBinding Padding}"/>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^:pointerover /template/ Border#PART_Border">
+      <Setter Property="Background" Value="{DynamicResource WbAccentTintBrush}"/>
+    </Style>
+    <Style Selector="^:pointerover">
+      <Setter Property="Foreground" Value="{DynamicResource WbTextBrush}"/>
+    </Style>
+    <Style Selector="^:selected /template/ Border#PART_Border">
+      <Setter Property="Background" Value="{DynamicResource WbAccentTintBrush}"/>
+    </Style>
+  </ControlTheme>
+
+  <ControlTheme x:Key="{x:Type ComboBox}" TargetType="ComboBox">
+    <Setter Property="Background" Value="{DynamicResource WbSurfaceInsetBrush}"/>
+    <Setter Property="Foreground" Value="{DynamicResource WbTextBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource WbBorderBrush}"/>
+    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="CornerRadius" Value="{StaticResource WbRadiusPill}"/>
+    <Setter Property="FontFamily" Value="{DynamicResource WbFontUi}"/>
+    <Setter Property="FontSize" Value="{StaticResource WbTextXs}"/>
+    <Setter Property="Padding" Value="14,8"/>
+    <Setter Property="HorizontalContentAlignment" Value="Left"/>
+    <Setter Property="VerticalContentAlignment" Value="Center"/>
+    <Setter Property="ItemsPanel">
+      <ItemsPanelTemplate>
+        <StackPanel/>
+      </ItemsPanelTemplate>
+    </Setter>
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Grid>
+          <Border Name="PART_Border"
+                  Background="{TemplateBinding Background}"
+                  BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{TemplateBinding BorderThickness}"
+                  CornerRadius="{TemplateBinding CornerRadius}">
+            <Border.Transitions>
+              <Transitions>
+                <BrushTransition Property="BorderBrush" Duration="0:0:0.12"/>
+              </Transitions>
+            </Border.Transitions>
+            <Grid ColumnDefinitions="*,Auto" Margin="{TemplateBinding Padding}">
+              <ContentControl Grid.Column="0"
+                               Content="{TemplateBinding SelectionBoxItem}"
+                               ContentTemplate="{TemplateBinding ItemTemplate}"
+                               Foreground="{TemplateBinding Foreground}"
+                               VerticalAlignment="Center"
+                               HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"/>
+              <Path Grid.Column="1" Margin="8,0,0,0" Width="9" Height="9" Stretch="Uniform"
+                    Fill="{DynamicResource WbTextTertiaryBrush}"
+                    Data="M0,0 L4,4 L8,0 Z" VerticalAlignment="Center"/>
+            </Grid>
+          </Border>
+          <Popup Name="PART_Popup"
+                 WindowManagerAddShadowHint="False"
+                 IsLightDismissEnabled="True"
+                 IsOpen="{TemplateBinding IsDropDownOpen, Mode=TwoWay}"
+                 PlacementTarget="{TemplateBinding}"
+                 Placement="BottomEdgeAlignedLeft"
+                 MinWidth="{Binding Bounds.Width, RelativeSource={RelativeSource TemplatedParent}}">
+            <Border Background="{DynamicResource WbSurfaceBrush}"
+                    BorderBrush="{DynamicResource WbBorderStrongBrush}"
+                    BorderThickness="1"
+                    CornerRadius="{StaticResource WbRadiusSm}"
+                    Margin="0,4,0,0"
+                    BoxShadow="{DynamicResource WbShadowMd}"
+                    Padding="4">
+              <ScrollViewer MaxHeight="{TemplateBinding MaxDropDownHeight}">
+                <ItemsPresenter Name="PART_ItemsPresenter"
+                                 ItemsPanel="{TemplateBinding ItemsPanel}"/>
+              </ScrollViewer>
+            </Border>
+          </Popup>
+        </Grid>
+      </ControlTemplate>
+    </Setter>
+
+    <Style Selector="^:pointerover /template/ Border#PART_Border">
+      <Setter Property="BorderBrush" Value="{DynamicResource WbBorderStrongBrush}"/>
+    </Style>
+    <Style Selector="^:focus-within /template/ Border#PART_Border">
+      <Setter Property="BorderBrush" Value="{DynamicResource WbAccentBrush}"/>
+    </Style>
+    <Style Selector="^:disabled">
+      <Setter Property="Opacity" Value="0.4"/>
+    </Style>
+  </ControlTheme>
+
+</ResourceDictionary>

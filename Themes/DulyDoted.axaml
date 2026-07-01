@@ -1,0 +1,31 @@
+<!--
+  Root include for the "Duly Doted" theme. Registered in App.axaml alongside the base
+  FluentTheme (kept for stock-primitive templates — ScrollViewer, focus adorners, etc.).
+  Token dictionaries first, then per-control-class ControlThemes (added incrementally —
+  see the WinButler UI overhaul plan's sequencing section).
+-->
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <StyleInclude Source="avares://WinButler/Themes/Tokens.Colors.axaml"/>
+  <StyleInclude Source="avares://WinButler/Themes/Tokens.Typography.axaml"/>
+  <StyleInclude Source="avares://WinButler/Themes/Tokens.Spacing.axaml"/>
+  <StyleInclude Source="avares://WinButler/Themes/Effects.axaml"/>
+
+  <Styles.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceInclude Source="avares://WinButler/Themes/Controls.Button.axaml"/>
+        <ResourceInclude Source="avares://WinButler/Themes/Controls.CheckBox.axaml"/>
+        <ResourceInclude Source="avares://WinButler/Themes/Controls.ToggleSwitch.axaml"/>
+        <ResourceInclude Source="avares://WinButler/Themes/Controls.ComboBox.axaml"/>
+        <ResourceInclude Source="avares://WinButler/Themes/Controls.ListBoxItem.axaml"/>
+        <ResourceInclude Source="avares://WinButler/Themes/Controls.ProgressBar.axaml"/>
+        <ResourceInclude Source="avares://WinButler/Themes/Controls.Menu.axaml"/>
+        <ResourceInclude Source="avares://WinButler/Themes/Controls.ScrollBar.axaml"/>
+        <ResourceInclude Source="avares://WinButler/Themes/Controls.NavButton.axaml"/>
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </Styles.Resources>
+
+</Styles>

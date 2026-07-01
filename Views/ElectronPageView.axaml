@@ -1,0 +1,114 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:WinButler.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="640"
+             x:Class="WinButler.Views.ElectronPageView"
+             x:DataType="vm:ElectronPageViewModel"
+             Background="{DynamicResource WbBgBrush}">
+
+    <DockPanel Margin="28,24">
+
+        <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="0,0,0,18">
+            <StackPanel Grid.Column="0" MaxWidth="560">
+                <TextBlock Text="CLEANER · ELECTRON" FontFamily="{DynamicResource WbFontUi}"
+                           FontSize="{StaticResource WbText2xs}" LetterSpacing="2"
+                           Foreground="{DynamicResource WbAccentBrush}" Margin="0,0,0,6"/>
+                <TextBlock Text="Electron Leftovers" FontFamily="{DynamicResource WbFontDot}" FontWeight="Bold"
+                           FontSize="{StaticResource WbTextXl}" Foreground="{DynamicResource WbTextBrush}" Margin="0,0,0,6"/>
+                <TextBlock TextWrapping="Wrap" FontFamily="{DynamicResource WbFontUi}" FontSize="{StaticResource WbTextXs}"
+                           Foreground="{DynamicResource WbTextTertiaryBrush}"
+                           Text="Auto-updates leave the previous build in app-x.y.z\ folders. The current version stays; everything older is safe to remove."/>
+            </StackPanel>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Bottom">
+                <TextBlock VerticalAlignment="Center" FontFamily="{DynamicResource WbFontUi}"
+                           FontSize="{StaticResource WbTextXs}" Foreground="{DynamicResource WbTextTertiaryBrush}">
+                    <Run Text="{Binding Clean.ElectronCategory.SelectedCount}"/>
+                    <Run Text="selected ·"/>
+                    <Run Text="{Binding Clean.ElectronCategory.SelectedBytesText}"/>
+                </TextBlock>
+                <Button Content="SELECT ALL" Classes="ghost" Command="{Binding Clean.ElectronCategory.SelectAllCommand}"/>
+                <Button Content="CLEAR" Classes="ghost" Command="{Binding Clean.ElectronCategory.SelectNoneCommand}"/>
+                <Button Content="CLEAN SELECTED" Classes="primary" Command="{Binding Clean.CleanSelectedCommand}"/>
+            </StackPanel>
+        </Grid>
+
+        <TextBlock DockPanel.Dock="Bottom" Text="{Binding Clean.StatusText}" TextWrapping="Wrap" Margin="0,12,0,0"
+                   FontFamily="{DynamicResource WbFontUi}" FontSize="{StaticResource WbTextXs}"
+                   Foreground="{DynamicResource WbTextTertiaryBrush}"/>
+
+        <ScrollViewer>
+            <ItemsControl ItemsSource="{Binding Groups}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:ElectronGroupViewModel">
+                        <Border BorderBrush="{DynamicResource WbBorderBrush}" BorderThickness="1"
+                                CornerRadius="{StaticResource WbRadiusMd}" Background="{DynamicResource WbSurfaceBrush}"
+                                Margin="0,0,0,11" ClipToBounds="True">
+                            <StackPanel>
+                                <Grid ColumnDefinitions="Auto,*,Auto,Auto" Margin="16,13" ColumnSpacing="13">
+                                    <Border Grid.Column="0" Width="34" Height="34" CornerRadius="{StaticResource WbRadiusSm}"
+                                            Background="{DynamicResource WbSurfaceInsetBrush}"
+                                            BorderBrush="{DynamicResource WbBorderBrush}" BorderThickness="1">
+                                        <TextBlock Text="{Binding Mark}" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                   FontFamily="{DynamicResource WbFontDot}" FontWeight="Bold"
+                                                   FontSize="{StaticResource WbTextXs}" Foreground="{DynamicResource WbTextSecondaryBrush}"/>
+                                    </Border>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Name}" FontFamily="{DynamicResource WbFontUi}"
+                                                   FontSize="{StaticResource WbTextSm}" Foreground="{DynamicResource WbTextBrush}"/>
+                                        <TextBlock Text="{Binding Path}" FontFamily="{DynamicResource WbFontReadout}"
+                                                   FontSize="{StaticResource WbText2xs}" Foreground="{DynamicResource WbTextMutedBrush}"
+                                                   TextTrimming="CharacterEllipsis"/>
+                                    </StackPanel>
+                                    <Border Grid.Column="2" VerticalAlignment="Center" Background="{DynamicResource WbSurfaceInsetBrush}"
+                                            CornerRadius="{StaticResource WbRadiusPill}" Padding="9,4">
+                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                            <Ellipse Width="6" Height="6" Fill="{DynamicResource WbSignalOkBrush}"/>
+                                            <TextBlock Text="{Binding CurrentVersionLabel}" FontFamily="{DynamicResource WbFontUi}"
+                                                       FontSize="{StaticResource WbText2xs}" Foreground="{DynamicResource WbTextTertiaryBrush}"/>
+                                        </StackPanel>
+                                    </Border>
+                                    <StackPanel Grid.Column="3" VerticalAlignment="Center" MinWidth="78">
+                                        <TextBlock Text="{Binding OldBytesText}" HorizontalAlignment="Right" FontFamily="{DynamicResource WbFontReadout}"
+                                                   FontWeight="Bold" FontSize="{StaticResource WbTextMd}" Foreground="{DynamicResource WbAccentBrush}"/>
+                                        <TextBlock HorizontalAlignment="Right" FontFamily="{DynamicResource WbFontUi}"
+                                                   FontSize="{StaticResource WbText2xs}" Foreground="{DynamicResource WbTextMutedBrush}">
+                                            <Run Text="{Binding OldCount}"/><Run Text=" OLD"/>
+                                        </TextBlock>
+                                    </StackPanel>
+                                </Grid>
+
+                                <ItemsControl ItemsSource="{Binding OldVersions}"
+                                              Background="{DynamicResource WbBorderFaintBrush}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:CleanupTargetViewModel">
+                                            <Border BorderBrush="{DynamicResource WbBorderFaintBrush}" BorderThickness="0,1,0,0"
+                                                    Background="{DynamicResource WbSurfaceBrush}" Padding="16,9,16,9">
+                                                <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="13">
+                                                    <CheckBox Grid.Column="0" IsChecked="{Binding IsSelected}" VerticalAlignment="Center"/>
+                                                    <TextBlock Grid.Column="1" Text="{Binding DisplayName}" VerticalAlignment="Center"
+                                                               FontFamily="{DynamicResource WbFontReadout}" FontSize="{StaticResource WbTextXs}"
+                                                               Foreground="{DynamicResource WbTextSecondaryBrush}"/>
+                                                    <Border Grid.Column="2" VerticalAlignment="Center" BorderBrush="{DynamicResource WbBorderBrush}"
+                                                            BorderThickness="1" CornerRadius="{StaticResource WbRadiusPill}" Padding="8,2">
+                                                        <TextBlock Text="OLD" FontFamily="{DynamicResource WbFontUi}"
+                                                                   FontSize="{StaticResource WbText2xs}" Foreground="{DynamicResource WbTextMutedBrush}"/>
+                                                    </Border>
+                                                    <TextBlock Grid.Column="3" Text="{Binding SizeText}" FontFamily="{DynamicResource WbFontReadout}"
+                                                               VerticalAlignment="Center" Width="66" TextAlignment="Right"
+                                                               Foreground="{DynamicResource WbTextBrush}"/>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+    </DockPanel>
+</UserControl>

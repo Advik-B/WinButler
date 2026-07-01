@@ -61,6 +61,9 @@ public partial class CategoryViewModel : ViewModelBase
 
     public long TotalBytes => Items.Sum(i => i.SizeBytes);
     public long SelectedBytes => SelectedItems.Sum(i => i.SizeBytes);
+    public int SelectedCount => SelectedItems.Count();
+    public string SelectedBytesText => SizeFormatter.Format(SelectedBytes);
+    public string TotalBytesText => SizeFormatter.Format(TotalBytes);
 
     public string HeaderText =>
         Items.Count == 0
@@ -83,7 +86,10 @@ public partial class CategoryViewModel : ViewModelBase
     private void RaiseTotals()
     {
         OnPropertyChanged(nameof(TotalBytes));
+        OnPropertyChanged(nameof(TotalBytesText));
         OnPropertyChanged(nameof(SelectedBytes));
+        OnPropertyChanged(nameof(SelectedBytesText));
+        OnPropertyChanged(nameof(SelectedCount));
         OnPropertyChanged(nameof(HeaderText));
     }
 }

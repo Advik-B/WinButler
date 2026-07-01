@@ -1,52 +1,107 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:WinButler.ViewModels"
-        xmlns:ui="using:FluentAvalonia.UI.Controls"
+        xmlns:shell="using:WinButler.Views.Shell"
+        xmlns:shared="using:WinButler.Views.Shared"
+        xmlns:conv="using:Avalonia.Data.Converters"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="960" d:DesignHeight="680"
+        mc:Ignorable="d" d:DesignWidth="1180" d:DesignHeight="760"
         x:Class="WinButler.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/avalonia-logo.ico"
-        Width="960" Height="680"
+        Width="1180" Height="760"
+        Background="{DynamicResource WbBgBrush}"
         Title="WinButler — Disk Cleaner">
 
     <Design.DataContext>
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
-    <ui:FANavigationView x:Name="Nav"
-                         PaneTitle="WinButler"
-                         IsSettingsVisible="False"
-                         PaneDisplayMode="Left"
-                         IsBackButtonVisible="False"
-                         SelectionChanged="OnNavSelectionChanged">
-
-        <ui:FANavigationView.MenuItems>
-            <ui:FANavigationViewItem Content="Clean" Tag="clean"/>
-            <ui:FANavigationViewItem Content="Redirect" Tag="redirect"/>
-            <ui:FANavigationViewItem Content="Disk Usage" Tag="disk"/>
-        </ui:FANavigationView.MenuItems>
-
-        <ui:FANavigationView.PaneFooter>
-            <ToggleSwitch Content="Dry run"
-                          OnContent="Simulating" OffContent="Live"
-                          IsChecked="{Binding Settings.IsDryRun}"
-                          Margin="12,8"/>
-        </ui:FANavigationView.PaneFooter>
-
+    <Panel>
         <DockPanel>
-            <ui:FAInfoBar DockPanel.Dock="Top"
-                          IsOpen="{Binding Settings.IsDryRun}"
-                          IsClosable="False"
-                          Severity="Warning"
-                          Title="Dry run is ON"
-                          Message="Actions only simulate and report what would change — nothing is deleted or moved. Switch off Dry run (bottom-left) to act for real."
-                          Margin="12,12,12,0"/>
 
-            <ContentControl Content="{Binding CurrentPage}"/>
+            <!-- MENU STRIP -->
+            <Border DockPanel.Dock="Top" Height="30"
+                    Background="{DynamicResource WbSurface2Brush}"
+                    BorderBrush="{DynamicResource WbBorderFaintBrush}" BorderThickness="0,0,0,1">
+                <DockPanel Margin="4,0">
+                    <TextBlock DockPanel.Dock="Left" Text="WB" VerticalAlignment="Center"
+                               FontFamily="{DynamicResource WbFontDot}" FontWeight="Bold"
+                               FontSize="{StaticResource WbTextSm}" Foreground="{DynamicResource WbAccentBrush}"
+                               Margin="8,0,12,0"/>
+                    <Menu VerticalAlignment="Center">
+                        <MenuItem Header="File">
+                            <MenuItem Header="Re-scan" Command="{Binding RescanAllCommand}"/>
+                            <Separator/>
+                            <MenuItem Header="Exit" Command="{Binding ExitCommand}"/>
+                        </MenuItem>
+                        <MenuItem Header="Scan">
+                            <MenuItem Header="Full scan" Command="{Binding RescanAllCommand}"/>
+                            <MenuItem Header="Electron leftovers" Command="{Binding NavigateCommand}" CommandParameter="electron"/>
+                            <MenuItem Header="Temp files" Command="{Binding NavigateCommand}" CommandParameter="temp"/>
+                            <MenuItem Header="Cache folders" Command="{Binding NavigateCommand}" CommandParameter="cache"/>
+                            <MenuItem Header="Developer junk" Command="{Binding NavigateCommand}" CommandParameter="devjunk"/>
+                        </MenuItem>
+                        <MenuItem Header="Tools">
+                            <MenuItem Header="Redirect to another drive…" Command="{Binding NavigateCommand}" CommandParameter="redirect"/>
+                            <MenuItem Header="Disk explorer (MFT)" Command="{Binding NavigateCommand}" CommandParameter="disk"/>
+                            <Separator/>
+                            <MenuItem Header="Toggle dry-run mode" Command="{Binding ToggleDryRunCommand}"/>
+                        </MenuItem>
+                        <MenuItem Header="View">
+                            <MenuItem Header="LED Red" Command="{Binding SetAccentCommand}" CommandParameter="red"/>
+                            <MenuItem Header="LED Green" Command="{Binding SetAccentCommand}" CommandParameter="green"/>
+                        </MenuItem>
+                        <MenuItem Header="Help">
+                            <MenuItem Header="About WinButler"/>
+                        </MenuItem>
+                    </Menu>
+                </DockPanel>
+            </Border>
+
+            <!-- TOOLBAR -->
+            <Border DockPanel.Dock="Top"
+                    Background="{DynamicResource WbSurfaceBrush}"
+                    BorderBrush="{DynamicResource WbBorderFaintBrush}" BorderThickness="0,0,0,1"
+                    Padding="16,10">
+                <StackPanel Orientation="Horizontal" Spacing="14">
+                    <Button Content="⟳ RE-SCAN" Classes="secondary" Command="{Binding RescanAllCommand}"/>
+                    <shared:DryRunPillView IsDryRun="{Binding Settings.IsDryRun}"/>
+                </StackPanel>
+            </Border>
+
+            <!-- STATUS BAR -->
+            <Border DockPanel.Dock="Bottom" Height="28"
+                    Background="{DynamicResource WbSurface2Brush}"
+                    BorderBrush="{DynamicResource WbBorderFaintBrush}" BorderThickness="0,1,0,0">
+                <StackPanel Orientation="Horizontal" Spacing="16" Margin="14,0" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding Settings.IsDryRun, StringFormat='DRY RUN {0}'}"
+                               FontSize="{StaticResource WbText2xs}" Foreground="{DynamicResource WbTextMutedBrush}"/>
+                    <TextBlock Text="WINBUTLER v0.9" FontSize="{StaticResource WbText2xs}"
+                               Foreground="{DynamicResource WbTextMutedBrush}" HorizontalAlignment="Right"/>
+                </StackPanel>
+            </Border>
+
+            <!-- BODY: sidebar + content -->
+            <Grid ColumnDefinitions="Auto,*">
+                <shell:SidebarView Grid.Column="0"/>
+                <ContentControl Grid.Column="1" Content="{Binding CurrentPage}"
+                                 Background="{DynamicResource WbBgBrush}"/>
+            </Grid>
+
         </DockPanel>
 
-    </ui:FANavigationView>
+        <!-- TOAST OVERLAY -->
+        <Panel IsVisible="{Binding CurrentToast, Converter={x:Static conv:ObjectConverters.IsNotNull}}"
+               HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,46">
+            <shared:ToastView DataContext="{Binding CurrentToast}"/>
+        </Panel>
+
+        <!-- CONFIRM MODAL OVERLAY -->
+        <Panel IsVisible="{Binding PendingConfirm, Converter={x:Static conv:ObjectConverters.IsNotNull}}">
+            <shared:ConfirmDialogView DataContext="{Binding PendingConfirm}"/>
+        </Panel>
+    </Panel>
 
 </Window>

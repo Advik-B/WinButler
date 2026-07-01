@@ -29,4 +29,7 @@ public partial class CleanupTargetViewModel : ViewModelBase
     /// <summary>Where the delete will route — shown so the user knows what's recoverable.</summary>
     public string DeleteModeText =>
         Target.DeleteMode == DeleteMode.RecycleBin ? "→ Recycle Bin" : "→ Permanent";
+
+    public string? GroupKey => Target.GroupKey;
+    public string? CurrentVersionLabel => Target.CurrentVersionLabel;
 }

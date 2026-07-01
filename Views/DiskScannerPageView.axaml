@@ -3,104 +3,130 @@
              xmlns:vm="using:WinButler.ViewModels"
              xmlns:mft="using:WinButler.Services.Mft"
              xmlns:controls="using:WinButler.Controls"
-             xmlns:ui="using:FluentAvalonia.UI.Controls"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="620"
+             mc:Ignorable="d" d:DesignWidth="960" d:DesignHeight="660"
              x:Class="WinButler.Views.DiskScannerPageView"
-             x:DataType="vm:DiskScannerPageViewModel">
+             x:DataType="vm:DiskScannerPageViewModel"
+             Background="{DynamicResource WbBgBrush}">
 
-    <DockPanel Margin="20">
+    <DockPanel Margin="24,20">
 
-        <!-- Action bar -->
-        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="12" Margin="0,0,0,8">
-            <TextBlock Text="Disk Usage" FontSize="24" FontWeight="Bold" VerticalAlignment="Center"/>
-            <ui:FAComboBox ItemsSource="{Binding Drives}" SelectedItem="{Binding SelectedDrive}" MinWidth="300">
-                <ui:FAComboBox.ItemTemplate>
-                    <DataTemplate x:DataType="mft:ScanDrive">
-                        <TextBlock Text="{Binding DisplayName}"/>
-                    </DataTemplate>
-                </ui:FAComboBox.ItemTemplate>
-            </ui:FAComboBox>
-            <Button Content="Scan" Command="{Binding ScanCommand}" Theme="{DynamicResource AccentButtonTheme}" Width="80"/>
-            <Button Content="Choose folder…" Click="OnChooseFolder" Width="125"/>
-            <TextBlock Text="Sort:" VerticalAlignment="Center"/>
-            <ui:FAComboBox ItemsSource="{Binding SortModes}" SelectedItem="{Binding SelectedSort}" MinWidth="110"/>
-            <ProgressBar IsIndeterminate="True" Width="100" VerticalAlignment="Center" IsVisible="{Binding IsBusy}"/>
+        <StackPanel DockPanel.Dock="Top" Margin="0,0,0,14">
+            <TextBlock Text="EXPLORER · MFT SCAN" FontFamily="{DynamicResource WbFontUi}"
+                       FontSize="{StaticResource WbText2xs}" LetterSpacing="2"
+                       Foreground="{DynamicResource WbAccentBrush}" Margin="0,0,0,6"/>
+            <TextBlock Text="Disk Explorer" FontFamily="{DynamicResource WbFontDot}" FontWeight="Bold"
+                       FontSize="{StaticResource WbTextXl}" Foreground="{DynamicResource WbTextBrush}" Margin="0,0,0,12"/>
+
+            <!-- Action bar -->
+            <StackPanel Orientation="Horizontal" Spacing="10">
+                <ComboBox ItemsSource="{Binding Drives}" SelectedItem="{Binding SelectedDrive}" MinWidth="280">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate x:DataType="mft:ScanDrive">
+                            <TextBlock Text="{Binding DisplayName}"/>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+                <Button Content="SCAN" Command="{Binding ScanCommand}" Classes="primary"/>
+                <Button Content="CHOOSE FOLDER…" Click="OnChooseFolder" Classes="secondary"/>
+                <TextBlock Text="Sort:" VerticalAlignment="Center" FontFamily="{DynamicResource WbFontUi}"
+                           FontSize="{StaticResource WbTextXs}" Foreground="{DynamicResource WbTextTertiaryBrush}"/>
+                <ComboBox ItemsSource="{Binding SortModes}" SelectedItem="{Binding SelectedSort}" MinWidth="100"/>
+                <ProgressBar IsIndeterminate="True" Width="90" VerticalAlignment="Center" IsVisible="{Binding IsBusy}"/>
+            </StackPanel>
         </StackPanel>
 
         <!-- Summary -->
-        <TextBlock DockPanel.Dock="Top" Text="{Binding SummaryText}" FontWeight="SemiBold" Margin="0,0,0,8"
-                   TextTrimming="CharacterEllipsis"/>
+        <TextBlock DockPanel.Dock="Top" Text="{Binding SummaryText}" Margin="0,0,0,10"
+                   FontFamily="{DynamicResource WbFontReadout}" FontSize="{StaticResource WbTextXs}"
+                   Foreground="{DynamicResource WbTextSecondaryBrush}" TextTrimming="CharacterEllipsis"/>
 
         <!-- Status -->
-        <TextBlock DockPanel.Dock="Bottom" Text="{Binding StatusText}" TextWrapping="Wrap" Margin="0,8,0,0" Opacity="0.8"/>
+        <TextBlock DockPanel.Dock="Bottom" Text="{Binding StatusText}" TextWrapping="Wrap" Margin="0,10,0,0"
+                   FontFamily="{DynamicResource WbFontUi}" FontSize="{StaticResource WbTextXs}"
+                   Foreground="{DynamicResource WbTextTertiaryBrush}"/>
 
-        <!-- Column header row (widths must match the row template below) -->
-        <Border DockPanel.Dock="Top" BorderBrush="#33808080" BorderThickness="0,0,0,1" Padding="6,4" Background="#11808080">
-            <Grid ColumnDefinitions="*,110,150,110,80,80,150">
-                <TextBlock Grid.Column="0" Text="Name" FontWeight="SemiBold"/>
-                <TextBlock Grid.Column="1" Text="Size" FontWeight="SemiBold" HorizontalAlignment="Right"/>
-                <TextBlock Grid.Column="2" Text="% of parent" FontWeight="SemiBold" HorizontalAlignment="Center"/>
-                <TextBlock Grid.Column="3" Text="Allocated" FontWeight="SemiBold" HorizontalAlignment="Right"/>
-                <TextBlock Grid.Column="4" Text="Files" FontWeight="SemiBold" HorizontalAlignment="Right"/>
-                <TextBlock Grid.Column="5" Text="Folders" FontWeight="SemiBold" HorizontalAlignment="Right"/>
-                <TextBlock Grid.Column="6" Text="Modified" FontWeight="SemiBold" Margin="8,0,0,0"/>
+        <Border DockPanel.Dock="Top" Padding="12,0"
+                Background="{DynamicResource WbSurface2Brush}"
+                BorderBrush="{DynamicResource WbBorderFaintBrush}" BorderThickness="1,1,1,0"
+                CornerRadius="8,8,0,0">
+            <Grid ColumnDefinitions="*,110,150,110,80,80,150" Height="34">
+                <TextBlock Grid.Column="0" Text="NAME" VerticalAlignment="Center" FontFamily="{DynamicResource WbFontUi}" FontSize="{StaticResource WbText2xs}" LetterSpacing="1" Foreground="{DynamicResource WbTextMutedBrush}"/>
+                <TextBlock Grid.Column="1" Text="SIZE" VerticalAlignment="Center" HorizontalAlignment="Right" FontFamily="{DynamicResource WbFontUi}" FontSize="{StaticResource WbText2xs}" LetterSpacing="1" Foreground="{DynamicResource WbTextMutedBrush}"/>
+                <TextBlock Grid.Column="2" Text="% OF PARENT" VerticalAlignment="Center" HorizontalAlignment="Center" FontFamily="{DynamicResource WbFontUi}" FontSize="{StaticResource WbText2xs}" LetterSpacing="1" Foreground="{DynamicResource WbTextMutedBrush}"/>
+                <TextBlock Grid.Column="3" Text="ALLOCATED" VerticalAlignment="Center" HorizontalAlignment="Right" FontFamily="{DynamicResource WbFontUi}" FontSize="{StaticResource WbText2xs}" LetterSpacing="1" Foreground="{DynamicResource WbTextMutedBrush}"/>
+                <TextBlock Grid.Column="4" Text="FILES" VerticalAlignment="Center" HorizontalAlignment="Right" FontFamily="{DynamicResource WbFontUi}" FontSize="{StaticResource WbText2xs}" LetterSpacing="1" Foreground="{DynamicResource WbTextMutedBrush}"/>
+                <TextBlock Grid.Column="5" Text="FOLDERS" VerticalAlignment="Center" HorizontalAlignment="Right" FontFamily="{DynamicResource WbFontUi}" FontSize="{StaticResource WbText2xs}" LetterSpacing="1" Foreground="{DynamicResource WbTextMutedBrush}"/>
+                <TextBlock Grid.Column="6" Text="MODIFIED" VerticalAlignment="Center" Margin="8,0,0,0" FontFamily="{DynamicResource WbFontUi}" FontSize="{StaticResource WbText2xs}" LetterSpacing="1" Foreground="{DynamicResource WbTextMutedBrush}"/>
             </Grid>
         </Border>
 
         <!-- Tree list on top, treemap below, resizable splitter between -->
-        <Grid RowDefinitions="*,5,260">
+        <Grid RowDefinitions="*,6,260">
 
-        <ListBox Grid.Row="0" ItemsSource="{Binding Rows}" SelectedItem="{Binding SelectedRow}"
-                 ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-            <ListBox.Styles>
-                <Style Selector="ListBoxItem">
-                    <Setter Property="Padding" Value="0"/>
-                    <Setter Property="MinHeight" Value="26"/>
-                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                </Style>
-            </ListBox.Styles>
-            <ListBox.ItemTemplate>
-                <DataTemplate x:DataType="vm:DiskRowViewModel">
-                    <Grid ColumnDefinitions="*,110,150,110,80,80,150" Height="24">
-                        <!-- Name: indent + disclosure triangle + label -->
-                        <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="{Binding Indent}" VerticalAlignment="Center">
-                            <Button Content="{Binding ExpanderGlyph}" Command="{Binding ToggleCommand}"
-                                    IsVisible="{Binding HasChildren}"
-                                    Width="20" Height="20" Padding="0" FontSize="11"
-                                    Background="Transparent" BorderThickness="0"/>
-                            <TextBlock Text="{Binding Name}" VerticalAlignment="Center"
-                                       TextTrimming="CharacterEllipsis"/>
-                        </StackPanel>
+            <Border Grid.Row="0" Background="{DynamicResource WbSurfaceBrush}"
+                    BorderBrush="{DynamicResource WbBorderFaintBrush}" BorderThickness="1,0,1,1">
+                <ListBox ItemsSource="{Binding Rows}" SelectedItem="{Binding SelectedRow}"
+                         Background="Transparent"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                    <ListBox.Styles>
+                        <Style Selector="ListBoxItem">
+                            <Setter Property="Padding" Value="8,0"/>
+                            <Setter Property="MinHeight" Value="28"/>
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                        </Style>
+                    </ListBox.Styles>
+                    <ListBox.ItemTemplate>
+                        <DataTemplate x:DataType="vm:DiskRowViewModel">
+                            <Grid ColumnDefinitions="*,110,150,110,80,80,150" Height="26">
+                                <!-- Name: indent + disclosure triangle + label -->
+                                <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="{Binding Indent}" VerticalAlignment="Center">
+                                    <Button Content="{Binding ExpanderGlyph}" Command="{Binding ToggleCommand}"
+                                            IsVisible="{Binding HasChildren}" Classes="ghost"
+                                            Width="20" Height="20" Padding="0" FontSize="11"/>
+                                    <TextBlock Text="{Binding Name}" VerticalAlignment="Center"
+                                               FontFamily="{DynamicResource WbFontUi}" FontSize="{StaticResource WbTextXs}"
+                                               Foreground="{DynamicResource WbTextBrush}" TextTrimming="CharacterEllipsis"/>
+                                </StackPanel>
 
-                        <TextBlock Grid.Column="1" Text="{Binding SizeText}" HorizontalAlignment="Right"
-                                   VerticalAlignment="Center" Margin="0,0,8,0" FontWeight="SemiBold"/>
+                                <TextBlock Grid.Column="1" Text="{Binding SizeText}" HorizontalAlignment="Right"
+                                           VerticalAlignment="Center" Margin="0,0,8,0" FontFamily="{DynamicResource WbFontReadout}"
+                                           FontSize="{StaticResource WbTextXs}" Foreground="{DynamicResource WbTextSecondaryBrush}"/>
 
-                        <Grid Grid.Column="2" VerticalAlignment="Center" Margin="6,0">
-                            <ProgressBar Minimum="0" Maximum="100" Value="{Binding PercentValue}" Height="16"/>
-                            <TextBlock Text="{Binding PercentText}" FontSize="10" HorizontalAlignment="Center"
-                                       VerticalAlignment="Center"/>
-                        </Grid>
+                                <Grid Grid.Column="2" VerticalAlignment="Center" Margin="6,0">
+                                    <ProgressBar Minimum="0" Maximum="100" Value="{Binding PercentValue}" Height="6"/>
+                                    <TextBlock Text="{Binding PercentText}" FontFamily="{DynamicResource WbFontReadout}"
+                                               FontSize="{StaticResource WbText2xs}" HorizontalAlignment="Center"
+                                               Foreground="{DynamicResource WbTextMutedBrush}" Margin="0,-14,0,0"/>
+                                </Grid>
 
-                        <TextBlock Grid.Column="3" Text="{Binding AllocText}" HorizontalAlignment="Right"
-                                   VerticalAlignment="Center" Margin="0,0,8,0" Opacity="0.8"/>
-                        <TextBlock Grid.Column="4" Text="{Binding FilesText}" HorizontalAlignment="Right"
-                                   VerticalAlignment="Center" Margin="0,0,8,0" Opacity="0.8"/>
-                        <TextBlock Grid.Column="5" Text="{Binding FoldersText}" HorizontalAlignment="Right"
-                                   VerticalAlignment="Center" Margin="0,0,8,0" Opacity="0.8"/>
-                        <TextBlock Grid.Column="6" Text="{Binding ModifiedText}" VerticalAlignment="Center"
-                                   Margin="8,0,0,0" Opacity="0.8"/>
-                    </Grid>
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
+                                <TextBlock Grid.Column="3" Text="{Binding AllocText}" HorizontalAlignment="Right"
+                                           VerticalAlignment="Center" Margin="0,0,8,0" FontFamily="{DynamicResource WbFontReadout}"
+                                           FontSize="{StaticResource WbText2xs}" Foreground="{DynamicResource WbTextMutedBrush}"/>
+                                <TextBlock Grid.Column="4" Text="{Binding FilesText}" HorizontalAlignment="Right"
+                                           VerticalAlignment="Center" Margin="0,0,8,0" FontFamily="{DynamicResource WbFontReadout}"
+                                           FontSize="{StaticResource WbText2xs}" Foreground="{DynamicResource WbTextMutedBrush}"/>
+                                <TextBlock Grid.Column="5" Text="{Binding FoldersText}" HorizontalAlignment="Right"
+                                           VerticalAlignment="Center" Margin="0,0,8,0" FontFamily="{DynamicResource WbFontReadout}"
+                                           FontSize="{StaticResource WbText2xs}" Foreground="{DynamicResource WbTextMutedBrush}"/>
+                                <TextBlock Grid.Column="6" Text="{Binding ModifiedText}" VerticalAlignment="Center"
+                                           Margin="8,0,0,0" FontFamily="{DynamicResource WbFontReadout}"
+                                           FontSize="{StaticResource WbText2xs}" Foreground="{DynamicResource WbTextMutedBrush}"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Border>
 
             <GridSplitter Grid.Row="1" ResizeDirection="Rows" HorizontalAlignment="Stretch"
-                          Background="#22808080"/>
+                          Background="{DynamicResource WbBorderBrush}"/>
 
-            <controls:TreemapControl Grid.Row="2" x:Name="Treemap"
-                                     Root="{Binding SelectedNode}"/>
+            <Border Grid.Row="2" Background="{DynamicResource WbSurfaceBrush}"
+                    BorderBrush="{DynamicResource WbBorderFaintBrush}" BorderThickness="1"
+                    CornerRadius="{StaticResource WbRadiusSm}" ClipToBounds="True">
+                <controls:TreemapControl x:Name="Treemap" Root="{Binding SelectedNode}"/>
+            </Border>
         </Grid>
 
     </DockPanel>

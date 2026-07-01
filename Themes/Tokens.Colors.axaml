@@ -1,0 +1,122 @@
+<!--
+  Duly Doted color tokens, ported from the design mockup's colors.css.
+  Monochrome ink scale + two accent palettes (red/green). The "Wb*Accent*" keys are the
+  LIVE, mutable resources every screen binds to via DynamicResource; ThemeService (see
+  Services/ThemeService.cs) copies the matching WbRed*/WbGreen* precomputed set into them
+  when the accent is toggled. Never bind directly to WbRed*/WbGreen* from a view.
+-->
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Styles.Resources>
+    <ResourceDictionary>
+
+      <!-- ==== INK SCALE ==== -->
+      <Color x:Key="WbBlackColor">#000000</Color>
+      <Color x:Key="WbInk950Color">#070707</Color>
+      <Color x:Key="WbInk900Color">#0E0E0E</Color>
+      <Color x:Key="WbInk850Color">#151515</Color>
+      <Color x:Key="WbInk800Color">#1B1B1B</Color>
+      <Color x:Key="WbInk700Color">#242424</Color>
+      <Color x:Key="WbInk600Color">#313131</Color>
+      <Color x:Key="WbInk500Color">#454545</Color>
+      <Color x:Key="WbInk400Color">#5E5E5E</Color>
+      <Color x:Key="WbInk300Color">#818181</Color>
+      <Color x:Key="WbInk200Color">#A9A9A9</Color>
+      <Color x:Key="WbInk150Color">#C4C4C4</Color>
+      <Color x:Key="WbInk100Color">#D9D9D9</Color>
+      <Color x:Key="WbInk050Color">#ECECEC</Color>
+      <Color x:Key="WbWhiteColor">#FFFFFF</Color>
+
+      <SolidColorBrush x:Key="WbBlackBrush" Color="{StaticResource WbBlackColor}"/>
+      <SolidColorBrush x:Key="WbInk950Brush" Color="{StaticResource WbInk950Color}"/>
+      <SolidColorBrush x:Key="WbInk900Brush" Color="{StaticResource WbInk900Color}"/>
+      <SolidColorBrush x:Key="WbInk850Brush" Color="{StaticResource WbInk850Color}"/>
+      <SolidColorBrush x:Key="WbInk800Brush" Color="{StaticResource WbInk800Color}"/>
+      <SolidColorBrush x:Key="WbInk700Brush" Color="{StaticResource WbInk700Color}"/>
+      <SolidColorBrush x:Key="WbInk600Brush" Color="{StaticResource WbInk600Color}"/>
+      <SolidColorBrush x:Key="WbInk500Brush" Color="{StaticResource WbInk500Color}"/>
+      <SolidColorBrush x:Key="WbInk400Brush" Color="{StaticResource WbInk400Color}"/>
+      <SolidColorBrush x:Key="WbInk300Brush" Color="{StaticResource WbInk300Color}"/>
+      <SolidColorBrush x:Key="WbInk200Brush" Color="{StaticResource WbInk200Color}"/>
+      <SolidColorBrush x:Key="WbWhiteBrush" Color="{StaticResource WbWhiteColor}"/>
+
+      <!-- ==== FUNCTIONAL SIGNALS (independent of the brand accent) ==== -->
+      <Color x:Key="WbSignalLiveColor">#E60012</Color>
+      <Color x:Key="WbSignalOkColor">#06C24A</Color>
+      <Color x:Key="WbSignalWarnColor">#FFB200</Color>
+      <Color x:Key="WbSignalInfoColor">#FFFFFF</Color>
+      <SolidColorBrush x:Key="WbSignalLiveBrush" Color="{StaticResource WbSignalLiveColor}"/>
+      <SolidColorBrush x:Key="WbSignalOkBrush" Color="{StaticResource WbSignalOkColor}"/>
+      <SolidColorBrush x:Key="WbSignalWarnBrush" Color="{StaticResource WbSignalWarnColor}"/>
+      <SolidColorBrush x:Key="WbSignalInfoBrush" Color="{StaticResource WbSignalInfoColor}"/>
+
+      <!-- ==== SEMANTIC SURFACES / BORDERS / TEXT (accent-independent) ==== -->
+      <SolidColorBrush x:Key="WbBgBrush" Color="{StaticResource WbBlackColor}"/>
+      <SolidColorBrush x:Key="WbBgDeepBrush" Color="{StaticResource WbBlackColor}"/>
+      <SolidColorBrush x:Key="WbSurfaceBrush" Color="{StaticResource WbInk800Color}"/>
+      <SolidColorBrush x:Key="WbSurface2Brush" Color="{StaticResource WbInk700Color}"/>
+      <SolidColorBrush x:Key="WbSurfaceInsetBrush" Color="{StaticResource WbInk900Color}"/>
+
+      <SolidColorBrush x:Key="WbBorderBrush" Color="#FFFFFF" Opacity="0.10"/>
+      <SolidColorBrush x:Key="WbBorderStrongBrush" Color="#FFFFFF" Opacity="0.20"/>
+      <SolidColorBrush x:Key="WbBorderFaintBrush" Color="#FFFFFF" Opacity="0.05"/>
+
+      <SolidColorBrush x:Key="WbTextBrush" Color="{StaticResource WbWhiteColor}"/>
+      <SolidColorBrush x:Key="WbTextSecondaryBrush" Color="{StaticResource WbInk200Color}"/>
+      <SolidColorBrush x:Key="WbTextTertiaryBrush" Color="{StaticResource WbInk300Color}"/>
+      <SolidColorBrush x:Key="WbTextMutedBrush" Color="{StaticResource WbInk400Color}"/>
+      <SolidColorBrush x:Key="WbTextInverseBrush" Color="{StaticResource WbBlackColor}"/>
+
+      <SolidColorBrush x:Key="WbDotOnBrush" Color="{StaticResource WbWhiteColor}"/>
+      <SolidColorBrush x:Key="WbDotOffBrush" Color="#FFFFFF" Opacity="0.08"/>
+
+      <!-- ==== LED RED PALETTE (precomputed derived steps) ==== -->
+      <Color x:Key="WbRedColor">#E60012</Color>
+      <Color x:Key="WbRedDimColor">#5C0007</Color>
+      <Color x:Key="WbRed700Color">#A30009</Color>
+      <Color x:Key="WbRed600Color">#CC0010</Color>
+      <Color x:Key="WbRedBrightColor">#FF2D2D</Color>
+      <SolidColorBrush x:Key="WbRedAccentBrush" Color="{StaticResource WbRedColor}"/>
+      <SolidColorBrush x:Key="WbRedAccentOnBrush" Color="#FFFFFF"/>
+      <SolidColorBrush x:Key="WbRedAccentBrightBrush" Color="#ED4250"/>
+      <SolidColorBrush x:Key="WbRedAccent600Brush" Color="#C60010"/>
+      <SolidColorBrush x:Key="WbRedAccent700Brush" Color="#98000C"/>
+      <SolidColorBrush x:Key="WbRedAccentDimBrush" Color="#530007"/>
+      <SolidColorBrush x:Key="WbRedAccentTintBrush" Color="#E60012" Opacity="0.12"/>
+      <SolidColorBrush x:Key="WbRedAccentHoverBrush" Color="#ED4250"/>
+      <SolidColorBrush x:Key="WbRedAccentPressBrush" Color="#98000C"/>
+      <SolidColorBrush x:Key="WbRedDotAccentBrush" Color="{StaticResource WbRedColor}"/>
+
+      <!-- ==== LED GREEN PALETTE (precomputed derived steps) ==== -->
+      <Color x:Key="WbGreenColor">#06C24A</Color>
+      <Color x:Key="WbGreenDimColor">#043A14</Color>
+      <Color x:Key="WbGreen700Color">#058033</Color>
+      <Color x:Key="WbGreen600Color">#06A33F</Color>
+      <Color x:Key="WbGreenBrightColor">#22E869</Color>
+      <SolidColorBrush x:Key="WbGreenAccentBrush" Color="{StaticResource WbGreenColor}"/>
+      <SolidColorBrush x:Key="WbGreenAccentOnBrush" Color="#04160D"/>
+      <SolidColorBrush x:Key="WbGreenAccentBrightBrush" Color="#47D279"/>
+      <SolidColorBrush x:Key="WbGreenAccent600Brush" Color="#05A740"/>
+      <SolidColorBrush x:Key="WbGreenAccent700Brush" Color="#048031"/>
+      <SolidColorBrush x:Key="WbGreenAccentDimBrush" Color="#02461B"/>
+      <SolidColorBrush x:Key="WbGreenAccentTintBrush" Color="#06C24A" Opacity="0.12"/>
+      <SolidColorBrush x:Key="WbGreenAccentHoverBrush" Color="#47D279"/>
+      <SolidColorBrush x:Key="WbGreenAccentPressBrush" Color="#048031"/>
+      <SolidColorBrush x:Key="WbGreenDotAccentBrush" Color="{StaticResource WbGreenColor}"/>
+
+      <!-- ==== LIVE ACCENT (mutable — ThemeService overwrites these on toggle) ====
+           Defaults to RED to match the mockup component's default prop. -->
+      <SolidColorBrush x:Key="WbAccentBrush" Color="{StaticResource WbRedColor}"/>
+      <SolidColorBrush x:Key="WbAccentOnBrush" Color="#FFFFFF"/>
+      <SolidColorBrush x:Key="WbAccentBrightBrush" Color="#ED4250"/>
+      <SolidColorBrush x:Key="WbAccentHoverBrush" Color="#ED4250"/>
+      <SolidColorBrush x:Key="WbAccent600Brush" Color="#C60010"/>
+      <SolidColorBrush x:Key="WbAccent700Brush" Color="#98000C"/>
+      <SolidColorBrush x:Key="WbAccentPressBrush" Color="#98000C"/>
+      <SolidColorBrush x:Key="WbAccentDimBrush" Color="#530007"/>
+      <SolidColorBrush x:Key="WbAccentTintBrush" Color="#E60012" Opacity="0.12"/>
+      <SolidColorBrush x:Key="WbDotAccentBrush" Color="{StaticResource WbRedColor}"/>
+
+    </ResourceDictionary>
+  </Styles.Resources>
+</Styles>

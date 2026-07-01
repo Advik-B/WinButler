@@ -42,6 +42,12 @@ public partial class CleanPageViewModel : ViewModelBase
             Categories.Add(new CategoryViewModel(scanner.Title, scanner.Category, UpdateTotals));
     }
 
+    /// <summary>Dedicated lookups so the per-category screens (Electron/Temp/Cache) can bind
+    /// directly to "their" category without the view needing to filter <see cref="Categories"/> itself.</summary>
+    public CategoryViewModel? ElectronCategory => Categories.FirstOrDefault(c => c.Category == CleanupCategory.ElectronLeftover);
+    public CategoryViewModel? TempCategory => Categories.FirstOrDefault(c => c.Category == CleanupCategory.Temp);
+    public CategoryViewModel? CacheCategory => Categories.FirstOrDefault(c => c.Category == CleanupCategory.Cache);
+
     public long SelectedBytes => Categories.Sum(c => c.SelectedBytes);
 
     public string SelectedSummary =>

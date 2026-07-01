@@ -22,6 +22,11 @@ public enum CleanupCategory
     ElectronLeftover,
     Temp,
     Cache,
+
+    /// <summary>Reclaimable subpath found under a dev-tool root by <see cref="Services.DevJunkAggregator"/>.
+    /// Not driven by an <see cref="Services.IScanner"/> or shown in <see cref="ViewModels.CleanPageViewModel"/>'s
+    /// category list — it's a distinct aggregation surfaced on the Dev Junk screen.</summary>
+    DevJunk,
 }
 
 /// <summary>How a delete is physically carried out.</summary>
@@ -32,4 +37,20 @@ public enum DeleteMode
 
     /// <summary>Sent to the Windows Recycle Bin so it can be restored.</summary>
     RecycleBin,
+}
+
+/// <summary>The app's single chromatic accent — the "Duly Doted" theme's one configurable knob.</summary>
+public enum AccentKind
+{
+    Red,
+    Green,
+}
+
+/// <summary>Toast severity — drives which signal color the toast's dot uses.</summary>
+public enum ToastKind
+{
+    Ok,
+    Dry,
+    Warn,
+    Live,
 }

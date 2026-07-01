@@ -1,0 +1,65 @@
+<!--
+  Duly Doted sidebar nav item: a styled RadioButton (exclusive-selection is the right native
+  primitive for a single-select nav list) with a left accent bar + tinted background when
+  checked, matching the mockup's ".wb-nav" style. Opt in via Theme="{StaticResource WbNavButtonTheme}";
+  content (icon/label/badge) is authored by the call site, not baked into the template.
+-->
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <ControlTheme x:Key="WbNavButtonTheme" TargetType="RadioButton">
+    <Setter Property="Padding" Value="14,9"/>
+    <Setter Property="Foreground" Value="{DynamicResource WbTextTertiaryBrush}"/>
+    <Setter Property="FontFamily" Value="{DynamicResource WbFontUi}"/>
+    <Setter Property="FontSize" Value="{StaticResource WbTextXs}"/>
+    <Setter Property="LetterSpacing" Value="0.5"/>
+    <Setter Property="CornerRadius" Value="{StaticResource WbRadiusSm}"/>
+    <Setter Property="Cursor" Value="Hand"/>
+    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Name="PART_Border" Background="Transparent" CornerRadius="{TemplateBinding CornerRadius}">
+          <Border.Transitions>
+            <Transitions>
+              <BrushTransition Property="Background" Duration="0:0:0.12"/>
+            </Transitions>
+          </Border.Transitions>
+          <Grid ColumnDefinitions="3,*">
+            <Border Name="PART_AccentBar" Grid.Column="0" Width="2.5" CornerRadius="2"
+                    Background="{DynamicResource WbAccentBrush}" Opacity="0"
+                    HorizontalAlignment="Left" Margin="0,6"
+                    BoxShadow="{DynamicResource WbGlowAccentSmBrush}">
+              <Border.Transitions>
+                <Transitions>
+                  <DoubleTransition Property="Opacity" Duration="0:0:0.12"/>
+                </Transitions>
+              </Border.Transitions>
+            </Border>
+            <ContentPresenter Grid.Column="1"
+                               Content="{TemplateBinding Content}"
+                               Foreground="{TemplateBinding Foreground}"
+                               Padding="{TemplateBinding Padding}"
+                               HorizontalAlignment="Stretch"/>
+          </Grid>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+
+    <Style Selector="^:pointerover /template/ Border#PART_Border">
+      <Setter Property="Background" Value="{DynamicResource WbSurface2Brush}"/>
+    </Style>
+    <Style Selector="^:pointerover">
+      <Setter Property="Foreground" Value="{DynamicResource WbTextSecondaryBrush}"/>
+    </Style>
+    <Style Selector="^:checked /template/ Border#PART_Border">
+      <Setter Property="Background" Value="{DynamicResource WbAccentTintBrush}"/>
+    </Style>
+    <Style Selector="^:checked /template/ Border#PART_AccentBar">
+      <Setter Property="Opacity" Value="1"/>
+    </Style>
+    <Style Selector="^:checked">
+      <Setter Property="Foreground" Value="{DynamicResource WbTextBrush}"/>
+    </Style>
+  </ControlTheme>
+
+</ResourceDictionary>

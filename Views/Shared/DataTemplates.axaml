@@ -1,0 +1,34 @@
+<!--
+  Shared checklist-row DataTemplate for CleanupTargetViewModel (Temp/Cache/Electron-version
+  screens) — one definition instead of duplicating the row XAML per screen.
+-->
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                     xmlns:vm="using:WinButler.ViewModels"
+                     xmlns:shared="using:WinButler.Views.Shared">
+
+  <DataTemplate x:Key="WbChecklistRowTemplate" x:DataType="vm:CleanupTargetViewModel">
+    <Border BorderBrush="{DynamicResource WbBorderFaintBrush}" BorderThickness="0,0,0,1" Padding="16,12">
+      <Border.Styles>
+        <Style Selector="Border:pointerover">
+          <Setter Property="Background" Value="{DynamicResource WbSurface2Brush}"/>
+        </Style>
+      </Border.Styles>
+      <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="14">
+        <CheckBox Grid.Column="0" IsChecked="{Binding IsSelected}" VerticalAlignment="Center"/>
+        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+          <TextBlock Text="{Binding FullPath}" FontFamily="{DynamicResource WbFontReadout}"
+                     FontSize="{StaticResource WbTextXs}" Foreground="{DynamicResource WbTextBrush}"
+                     TextTrimming="CharacterEllipsis"/>
+          <TextBlock Text="{Binding Reason}" FontFamily="{DynamicResource WbFontUi}"
+                     FontSize="{StaticResource WbText2xs}" Foreground="{DynamicResource WbTextMutedBrush}"/>
+        </StackPanel>
+        <shared:RiskBadgeView Grid.Column="2" Risk="{Binding Risk}" VerticalAlignment="Center"/>
+        <TextBlock Grid.Column="3" Text="{Binding SizeText}" FontFamily="{DynamicResource WbFontReadout}"
+                   VerticalAlignment="Center" Width="70" TextAlignment="Right"
+                   Foreground="{DynamicResource WbTextBrush}"/>
+      </Grid>
+    </Border>
+  </DataTemplate>
+
+</ResourceDictionary>

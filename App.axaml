@@ -2,15 +2,23 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="WinButler.App"
              xmlns:local="using:WinButler"
-             xmlns:sty="using:FluentAvalonia.Styling"
-             RequestedThemeVariant="Default">
-             <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
+             RequestedThemeVariant="Dark">
+             <!-- Always dark: the Duly Doted aesthetic is a true-black canvas regardless of OS theme. -->
 
     <Application.DataTemplates>
         <local:ViewLocator/>
     </Application.DataTemplates>
 
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="avares://WinButler/Views/Shared/DataTemplates.axaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+
     <Application.Styles>
-        <sty:FluentAvaloniaTheme />
+        <FluentTheme />
+        <StyleInclude Source="avares://WinButler/Themes/DulyDoted.axaml"/>
     </Application.Styles>
 </Application>

@@ -1,0 +1,27 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="160" d:DesignHeight="32"
+             x:Class="WinButler.Views.Shared.DryRunPillView"
+             x:Name="Root">
+
+    <Border CornerRadius="{StaticResource WbRadiusPill}" Padding="10,5,6,5"
+            BorderThickness="1">
+        <Border.Styles>
+            <Style Selector="Border">
+                <Setter Property="Background" Value="{DynamicResource WbSurfaceInsetBrush}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource WbBorderBrush}"/>
+            </Style>
+        </Border.Styles>
+        <StackPanel Orientation="Horizontal" Spacing="8">
+            <Ellipse Width="7" Height="7" VerticalAlignment="Center"
+                     Fill="{DynamicResource WbAccentBrush}"/>
+            <TextBlock Text="DRY RUN" VerticalAlignment="Center"
+                       FontFamily="{DynamicResource WbFontUi}" FontSize="{StaticResource WbText2xs}"
+                       LetterSpacing="1.5" Foreground="{DynamicResource WbAccentBrush}"/>
+            <ToggleSwitch IsChecked="{Binding IsDryRun, ElementName=Root, Mode=TwoWay}"/>
+        </StackPanel>
+    </Border>
+
+</UserControl>

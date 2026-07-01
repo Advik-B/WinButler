@@ -1,0 +1,114 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:WinButler.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="960" d:DesignHeight="660"
+             x:Class="WinButler.Views.DevJunkPageView"
+             x:Name="Root"
+             x:DataType="vm:DevJunkPageViewModel"
+             Background="{DynamicResource WbBgBrush}">
+
+    <DockPanel Margin="28,24">
+
+        <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="0,0,0,18">
+            <StackPanel Grid.Column="0" MaxWidth="580">
+                <TextBlock Text="CLEANER · DEVELOPER" FontFamily="{DynamicResource WbFontUi}"
+                           FontSize="{StaticResource WbText2xs}" LetterSpacing="2"
+                           Foreground="{DynamicResource WbAccentBrush}" Margin="0,0,0,6"/>
+                <TextBlock Text="Dev Junk" FontFamily="{DynamicResource WbFontDot}" FontWeight="Bold"
+                           FontSize="{StaticResource WbTextXl}" Foreground="{DynamicResource WbTextBrush}" Margin="0,0,0,6"/>
+                <TextBlock TextWrapping="Wrap" FontFamily="{DynamicResource WbFontUi}" FontSize="{StaticResource WbTextXs}"
+                           Foreground="{DynamicResource WbTextTertiaryBrush}"
+                           Text="Toolchain caches and stale versions across JetBrains, Android SDK, .vscode, .gradle and more. Big folders can be relocated instead of deleted."/>
+            </StackPanel>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Bottom">
+                <TextBlock Text="{Binding SelectedSummary}" VerticalAlignment="Center" FontFamily="{DynamicResource WbFontUi}"
+                           FontSize="{StaticResource WbTextXs}" Foreground="{DynamicResource WbTextTertiaryBrush}"/>
+                <Button Content="SCAN" Classes="secondary" Command="{Binding ScanCommand}"/>
+                <Button Content="CLEAN SELECTED" Classes="primary" Command="{Binding CleanSelectedCommand}"/>
+            </StackPanel>
+        </Grid>
+
+        <TextBlock DockPanel.Dock="Bottom" Text="{Binding StatusText}" TextWrapping="Wrap" Margin="0,12,0,0"
+                   FontFamily="{DynamicResource WbFontUi}" FontSize="{StaticResource WbTextXs}"
+                   Foreground="{DynamicResource WbTextTertiaryBrush}"/>
+
+        <ScrollViewer>
+            <ItemsControl ItemsSource="{Binding Groups}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel Orientation="Horizontal"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:DevToolGroupViewModel">
+                        <Border Width="440" Margin="0,0,13,13" Padding="15,14"
+                                BorderBrush="{DynamicResource WbBorderBrush}" BorderThickness="1"
+                                CornerRadius="{StaticResource WbRadiusMd}" Background="{DynamicResource WbSurfaceBrush}">
+                            <StackPanel Spacing="12">
+                                <Grid ColumnDefinitions="Auto,*,Auto">
+                                    <Border Grid.Column="0" Width="34" Height="34" CornerRadius="{StaticResource WbRadiusSm}"
+                                            Background="{DynamicResource WbSurfaceInsetBrush}"
+                                            BorderBrush="{DynamicResource WbBorderBrush}" BorderThickness="1">
+                                        <TextBlock Text="{Binding Mark}" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                   FontFamily="{DynamicResource WbFontDot}" FontWeight="Bold"
+                                                   FontSize="{StaticResource WbTextXs}" Foreground="{DynamicResource WbTextSecondaryBrush}"/>
+                                    </Border>
+                                    <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding DisplayName}" FontFamily="{DynamicResource WbFontUi}"
+                                                   FontSize="{StaticResource WbTextSm}" Foreground="{DynamicResource WbTextBrush}"/>
+                                        <TextBlock Text="{Binding SourcePath}" FontFamily="{DynamicResource WbFontReadout}"
+                                                   FontSize="{StaticResource WbText2xs}" Foreground="{DynamicResource WbTextMutedBrush}"
+                                                   TextTrimming="CharacterEllipsis"/>
+                                    </StackPanel>
+                                    <Border Grid.Column="2" VerticalAlignment="Top" Background="{DynamicResource WbSurfaceInsetBrush}"
+                                            CornerRadius="{StaticResource WbRadiusPill}" Padding="8,3">
+                                        <TextBlock Text="{Binding Category}" FontFamily="{DynamicResource WbFontUi}"
+                                                   FontSize="{StaticResource WbText2xs}" Foreground="{DynamicResource WbTextTertiaryBrush}"/>
+                                    </Border>
+                                </Grid>
+
+                                <TextBlock Text="{Binding Description}" TextWrapping="Wrap" FontFamily="{DynamicResource WbFontUi}"
+                                           FontSize="{StaticResource WbText2xs}" Foreground="{DynamicResource WbTextTertiaryBrush}"/>
+
+                                <Grid ColumnDefinitions="Auto,Auto,*">
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="ON DISK" FontFamily="{DynamicResource WbFontUi}" FontSize="{StaticResource WbText2xs}"
+                                                   LetterSpacing="1" Foreground="{DynamicResource WbTextMutedBrush}"/>
+                                        <TextBlock Text="{Binding OnDiskText}" FontFamily="{DynamicResource WbFontReadout}" FontWeight="Bold"
+                                                   FontSize="{StaticResource WbTextSm}" Foreground="{DynamicResource WbTextSecondaryBrush}"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Margin="20,0,0,0">
+                                        <TextBlock Text="RECLAIMABLE" FontFamily="{DynamicResource WbFontUi}" FontSize="{StaticResource WbText2xs}"
+                                                   LetterSpacing="1" Foreground="{DynamicResource WbTextMutedBrush}"/>
+                                        <TextBlock Text="{Binding ReclaimableText}" FontFamily="{DynamicResource WbFontReadout}" FontWeight="Bold"
+                                                   FontSize="{StaticResource WbTextSm}" Foreground="{DynamicResource WbAccentBrush}"/>
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8"
+                                                HorizontalAlignment="Right" VerticalAlignment="Bottom">
+                                        <Button Content="REDIRECT →" Classes="ghost" IsVisible="{Binding CanRedirect}"
+                                                Command="{Binding #Root.((vm:DevJunkPageViewModel)DataContext).GoToRedirectCommand}"
+                                                CommandParameter="{Binding}"/>
+                                        <CheckBox IsVisible="{Binding IsSelectable}" IsChecked="{Binding IsSelected}"
+                                                  Content="CLEAN" VerticalAlignment="Center"/>
+                                        <Border IsVisible="{Binding IsLocked}" BorderBrush="{DynamicResource WbSignalLiveBrush}"
+                                                BorderThickness="1" CornerRadius="{StaticResource WbRadiusPill}" Padding="9,4">
+                                            <TextBlock Text="🔒 PROTECTED" FontFamily="{DynamicResource WbFontUi}"
+                                                       FontSize="{StaticResource WbText2xs}" Foreground="{DynamicResource WbSignalLiveBrush}"/>
+                                        </Border>
+                                        <TextBlock Text="✓ CLEANED" IsVisible="{Binding Cleaned}" VerticalAlignment="Center"
+                                                   FontFamily="{DynamicResource WbFontUi}" FontSize="{StaticResource WbText2xs}"
+                                                   Foreground="{DynamicResource WbSignalOkBrush}"/>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+    </DockPanel>
+</UserControl>

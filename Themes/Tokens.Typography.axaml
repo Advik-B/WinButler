@@ -1,0 +1,44 @@
+<!--
+  Duly Doted typography tokens. Fonts are referenced by their containing avares:// folder
+  (not individual files) so Avalonia's font manager can pick Regular/Italic sub-faces of
+  the same family automatically by FontStyle (this matters for Geo, which ships as two
+  separate files — Geo-Regular.ttf and Geo-Italic.ttf — under one family name "Geo").
+-->
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Styles.Resources>
+    <ResourceDictionary>
+
+      <!-- ==== FONT FAMILIES ==== -->
+      <FontFamily x:Key="WbFontDot">avares://WinButler/Assets/Fonts#Bitcount Single</FontFamily>
+      <FontFamily x:Key="WbFontReadout">avares://WinButler/Assets/Fonts#Doto</FontFamily>
+      <FontFamily x:Key="WbFontUi">avares://WinButler/Assets/Fonts#Aldrich</FontFamily>
+      <FontFamily x:Key="WbFontEditorial">avares://WinButler/Assets/Fonts#Geo</FontFamily>
+      <FontFamily x:Key="WbFontPixel">avares://WinButler/Assets/Fonts#Pixelify Sans</FontFamily>
+      <FontFamily x:Key="WbFont8bit">avares://WinButler/Assets/Fonts#Press Start 2P</FontFamily>
+
+      <!-- ==== TYPE SCALE (px) ==== -->
+      <x:Double x:Key="WbText2xs">11</x:Double>
+      <x:Double x:Key="WbTextXs">12</x:Double>
+      <x:Double x:Key="WbTextSm">14</x:Double>
+      <x:Double x:Key="WbTextBase">16</x:Double>
+      <x:Double x:Key="WbTextMd">18</x:Double>
+      <x:Double x:Key="WbTextLg">22</x:Double>
+      <x:Double x:Key="WbTextXl">28</x:Double>
+      <x:Double x:Key="WbText2xl">36</x:Double>
+      <x:Double x:Key="WbText3xl">48</x:Double>
+      <x:Double x:Key="WbText4xl">64</x:Double>
+      <x:Double x:Key="WbText5xl">88</x:Double>
+      <x:Double x:Key="WbText6xl">120</x:Double>
+
+      <!-- ==== TRACKING (em ratios — multiply by FontSize at point of use since
+           Avalonia's TextBlock.LetterSpacing is in device-independent pixels, not em) ==== -->
+      <x:Double x:Key="WbTrackingTight">-0.01</x:Double>
+      <x:Double x:Key="WbTrackingNormal">0</x:Double>
+      <x:Double x:Key="WbTrackingWide">0.08</x:Double>
+      <x:Double x:Key="WbTrackingWider">0.16</x:Double>
+      <x:Double x:Key="WbTrackingWidest">0.28</x:Double>
+
+    </ResourceDictionary>
+  </Styles.Resources>
+</Styles>

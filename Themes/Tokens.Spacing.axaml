@@ -1,0 +1,48 @@
+<!-- Duly Doted spacing/radii/sizing tokens, ported from spacing.css. 4px dot-pitch grid. -->
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Styles.Resources>
+    <ResourceDictionary>
+
+      <!-- ==== SPACING ==== -->
+      <x:Double x:Key="WbSpace0">0</x:Double>
+      <x:Double x:Key="WbSpace1">4</x:Double>
+      <x:Double x:Key="WbSpace2">8</x:Double>
+      <x:Double x:Key="WbSpace3">12</x:Double>
+      <x:Double x:Key="WbSpace4">16</x:Double>
+      <x:Double x:Key="WbSpace5">20</x:Double>
+      <x:Double x:Key="WbSpace6">24</x:Double>
+      <x:Double x:Key="WbSpace8">32</x:Double>
+      <x:Double x:Key="WbSpace10">40</x:Double>
+      <x:Double x:Key="WbSpace12">48</x:Double>
+      <x:Double x:Key="WbSpace16">64</x:Double>
+
+      <!-- ==== RADII (CornerRadius resources — capsules + soft rectangles dominate) ==== -->
+      <CornerRadius x:Key="WbRadiusNone">0</CornerRadius>
+      <CornerRadius x:Key="WbRadiusXs">4</CornerRadius>
+      <CornerRadius x:Key="WbRadiusSm">8</CornerRadius>
+      <CornerRadius x:Key="WbRadiusMd">12</CornerRadius>
+      <CornerRadius x:Key="WbRadiusLg">18</CornerRadius>
+      <CornerRadius x:Key="WbRadiusXl">26</CornerRadius>
+      <CornerRadius x:Key="WbRadius2xl">36</CornerRadius>
+      <CornerRadius x:Key="WbRadiusPill">999</CornerRadius>
+
+      <!-- ==== CONTROL SIZING ==== -->
+      <x:Double x:Key="WbControlSm">32</x:Double>
+      <x:Double x:Key="WbControlMd">44</x:Double>
+      <x:Double x:Key="WbControlLg">56</x:Double>
+
+      <!-- ==== BORDER WIDTHS ==== -->
+      <Thickness x:Key="WbHairline">1</Thickness>
+      <Thickness x:Key="WbLine">1.5</Thickness>
+      <Thickness x:Key="WbLine2">2</Thickness>
+
+      <!-- ==== DOT-MATRIX PITCH ==== -->
+      <x:Double x:Key="WbDotPitch">10</x:Double>
+      <x:Double x:Key="WbDotSize">2</x:Double>
+      <x:Double x:Key="WbDotPitchLg">16</x:Double>
+      <x:Double x:Key="WbDotSizeLg">3</x:Double>
+
+    </ResourceDictionary>
+  </Styles.Resources>
+</Styles>

@@ -1,0 +1,29 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:WinButler.ViewModels"
+             xmlns:conv="using:WinButler.Converters"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="360" d:DesignHeight="50"
+             x:Class="WinButler.Views.Shared.ToastView"
+             x:DataType="vm:ToastViewModel">
+
+    <Border CornerRadius="{StaticResource WbRadiusPill}"
+            Background="{DynamicResource WbSurfaceBrush}"
+            BorderThickness="1" Padding="16,11"
+            MaxWidth="520" HorizontalAlignment="Center">
+        <Border.Styles>
+            <Style Selector="Border">
+                <Setter Property="BorderBrush" Value="{DynamicResource WbBorderStrongBrush}"/>
+            </Style>
+        </Border.Styles>
+        <StackPanel Orientation="Horizontal" Spacing="12">
+            <Ellipse Width="9" Height="9" VerticalAlignment="Center"
+                     Fill="{Binding Kind, Converter={x:Static conv:ToastKindConverter.Instance}}"/>
+            <TextBlock Text="{Binding Message}" TextWrapping="Wrap" VerticalAlignment="Center"
+                       FontFamily="{DynamicResource WbFontUi}" FontSize="{StaticResource WbTextXs}"
+                       Foreground="{DynamicResource WbTextBrush}"/>
+        </StackPanel>
+    </Border>
+
+</UserControl>

@@ -1,0 +1,53 @@
+<!--
+  Duly Doted CheckBox theme: an 18x18 rounded square with a lit accent dot when checked,
+  matching the mockup's checklist-row selection indicator.
+-->
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <ControlTheme x:Key="{x:Type CheckBox}" TargetType="CheckBox">
+    <Setter Property="Foreground" Value="{DynamicResource WbTextSecondaryBrush}"/>
+    <Setter Property="FontFamily" Value="{DynamicResource WbFontUi}"/>
+    <Setter Property="FontSize" Value="{StaticResource WbTextXs}"/>
+    <Setter Property="Cursor" Value="Hand"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+        <StackPanel Orientation="Horizontal" Spacing="10">
+          <Border Name="PART_Box" Width="18" Height="18" CornerRadius="4"
+                  BorderThickness="1.5"
+                  BorderBrush="{DynamicResource WbBorderStrongBrush}"
+                  Background="Transparent">
+            <Border.Transitions>
+              <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.12"/>
+                <BrushTransition Property="BorderBrush" Duration="0:0:0.12"/>
+              </Transitions>
+            </Border.Transitions>
+            <Ellipse Name="PART_Dot" Width="8" Height="8"
+                     Fill="{DynamicResource WbAccentBrush}"
+                     IsVisible="False"
+                     HorizontalAlignment="Center" VerticalAlignment="Center"/>
+          </Border>
+          <ContentPresenter Name="PART_ContentPresenter"
+                             Content="{TemplateBinding Content}"
+                             VerticalAlignment="Center"/>
+        </StackPanel>
+      </ControlTemplate>
+    </Setter>
+
+    <Style Selector="^:checked /template/ Border#PART_Box">
+      <Setter Property="BorderBrush" Value="{DynamicResource WbAccentBrush}"/>
+      <Setter Property="Background" Value="{DynamicResource WbAccentTintBrush}"/>
+    </Style>
+    <Style Selector="^:checked /template/ Ellipse#PART_Dot">
+      <Setter Property="IsVisible" Value="True"/>
+    </Style>
+    <Style Selector="^:pointerover /template/ Border#PART_Box">
+      <Setter Property="BorderBrush" Value="{DynamicResource WbAccentBrush}"/>
+    </Style>
+    <Style Selector="^:disabled">
+      <Setter Property="Opacity" Value="0.4"/>
+    </Style>
+  </ControlTheme>
+
+</ResourceDictionary>

@@ -1,0 +1,24 @@
+<!-- Duly Doted ProgressBar theme: a thin pill track with an accent-glow fill. -->
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <ControlTheme x:Key="{x:Type ProgressBar}" TargetType="ProgressBar">
+    <Setter Property="Background" Value="{DynamicResource WbInk700Brush}"/>
+    <Setter Property="Foreground" Value="{DynamicResource WbAccentBrush}"/>
+    <Setter Property="Height" Value="6"/>
+    <Setter Property="CornerRadius" Value="{StaticResource WbRadiusPill}"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Grid>
+          <Border Name="PART_Track" Background="{TemplateBinding Background}"
+                  CornerRadius="{TemplateBinding CornerRadius}"/>
+          <Border Name="PART_Indicator" Background="{TemplateBinding Foreground}"
+                  CornerRadius="{TemplateBinding CornerRadius}"
+                  HorizontalAlignment="Left"
+                  BoxShadow="{DynamicResource WbGlowAccentSmBrush}"/>
+        </Grid>
+      </ControlTemplate>
+    </Setter>
+  </ControlTheme>
+
+</ResourceDictionary>

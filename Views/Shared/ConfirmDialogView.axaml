@@ -1,0 +1,51 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:WinButler.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="430" d:DesignHeight="260"
+             x:Class="WinButler.Views.Shared.ConfirmDialogView"
+             x:DataType="vm:ConfirmDialogViewModel">
+
+    <Border Background="#9E000000" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <Border Width="430" HorizontalAlignment="Center" VerticalAlignment="Center"
+                Background="{DynamicResource WbSurfaceBrush}"
+                BorderBrush="{DynamicResource WbSignalLiveBrush}"
+                BorderThickness="1" CornerRadius="{StaticResource WbRadiusLg}">
+            <StackPanel>
+                <Border Padding="18,14" BorderBrush="{DynamicResource WbBorderFaintBrush}" BorderThickness="0,0,0,1">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <Ellipse Width="9" Height="9" Fill="{DynamicResource WbSignalLiveBrush}"/>
+                        <TextBlock Text="PERMANENT DELETION" FontFamily="{DynamicResource WbFontUi}"
+                                   FontSize="{StaticResource WbText2xs}" LetterSpacing="1.5"
+                                   Foreground="{DynamicResource WbSignalLiveBrush}"/>
+                    </StackPanel>
+                </Border>
+
+                <StackPanel Margin="22" Spacing="10">
+                    <TextBlock Text="{Binding Title}" FontFamily="{DynamicResource WbFontDot}" FontWeight="Bold"
+                               FontSize="{StaticResource WbTextMd}" Foreground="{DynamicResource WbTextBrush}"/>
+                    <TextBlock TextWrapping="Wrap" FontFamily="{DynamicResource WbFontUi}"
+                               FontSize="{StaticResource WbTextXs}" Foreground="{DynamicResource WbTextSecondaryBrush}">
+                        <Run Text="Permanently remove"/>
+                        <Run Text="{Binding Count}" FontFamily="{DynamicResource WbFontReadout}" Foreground="{DynamicResource WbTextBrush}"/>
+                        <Run Text="item(s) and reclaim"/>
+                        <Run Text="{Binding BytesText}" FontFamily="{DynamicResource WbFontReadout}" Foreground="{DynamicResource WbAccentBrush}"/>
+                        <Run Text=". This cannot be undone."/>
+                    </TextBlock>
+                    <Border Background="{DynamicResource WbSurfaceInsetBrush}" CornerRadius="{StaticResource WbRadiusSm}" Padding="11,9">
+                        <TextBlock TextWrapping="Wrap" FontSize="{StaticResource WbText2xs}"
+                                   Foreground="{DynamicResource WbTextTertiaryBrush}"
+                                   Text="Tip: enable Dry Run to preview deletions without touching disk."/>
+                    </Border>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,0,22,20">
+                    <Button Content="CANCEL" Classes="ghost" Command="{Binding CancelCommand}"/>
+                    <Button Content="DELETE NOW" Classes="primary" Command="{Binding ConfirmCommand}"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+    </Border>
+
+</UserControl>

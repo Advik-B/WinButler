@@ -2,7 +2,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:WinButler.ViewModels"
              xmlns:conv="using:WinButler.Converters"
-             xmlns:ui="using:FluentAvalonia.UI.Controls"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="760" d:DesignHeight="560"
@@ -18,7 +17,7 @@
         <!-- Action bar -->
         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="12" Margin="0,0,0,12">
             <TextBlock Text="Clean" FontSize="24" FontWeight="Bold" VerticalAlignment="Center"/>
-            <Button Content="Scan" Command="{Binding ScanCommand}" Theme="{DynamicResource AccentButtonTheme}" Width="100"/>
+            <Button Content="Scan" Command="{Binding ScanCommand}" Classes="primary" Width="100"/>
             <Button Content="Clean Selected" Command="{Binding CleanSelectedCommand}" Width="140"/>
             <ProgressBar IsIndeterminate="True" Width="120" VerticalAlignment="Center" IsVisible="{Binding IsBusy}"/>
         </StackPanel>

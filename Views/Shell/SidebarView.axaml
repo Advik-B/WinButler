@@ -1,0 +1,66 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:WinButler.ViewModels"
+             xmlns:conv="using:Avalonia.Data.Converters"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="236" d:DesignHeight="680"
+             x:Class="WinButler.Views.Shell.SidebarView"
+             x:DataType="vm:MainWindowViewModel">
+
+    <Border Width="236" Background="{DynamicResource WbSurfaceBrush}"
+            BorderBrush="{DynamicResource WbBorderFaintBrush}" BorderThickness="0,0,1,0">
+        <DockPanel Margin="10,12">
+
+            <!-- Wordmark -->
+            <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="8"
+                        Margin="6,0,6,14" VerticalAlignment="Bottom">
+                <TextBlock Text="WinButler" FontFamily="{DynamicResource WbFontDot}" FontWeight="Bold"
+                           FontSize="{StaticResource WbTextLg}" Foreground="{DynamicResource WbTextBrush}"/>
+                <TextBlock Text="v0.9" FontFamily="{DynamicResource WbFontReadout}"
+                           FontSize="{StaticResource WbText2xs}" Foreground="{DynamicResource WbTextMutedBrush}"
+                           VerticalAlignment="Bottom" Margin="0,0,0,2"/>
+            </StackPanel>
+
+            <!-- Bottom-pinned dry-run toggle (temporary footer until the real free-space
+                 mini readout has drive data wired up) -->
+            <ToggleSwitch DockPanel.Dock="Bottom" Content="Dry run"
+                          OnContent="Simulating" OffContent="Live"
+                          IsChecked="{Binding Settings.IsDryRun}"
+                          Margin="6,12,6,4"/>
+
+            <StackPanel Spacing="2">
+                <RadioButton Theme="{StaticResource WbNavButtonTheme}" GroupName="Nav"
+                             Content="Dashboard" IsChecked="{Binding ActiveNavTag, Converter={x:Static conv:ObjectConverters.Equal}, ConverterParameter=dashboard}"
+                             Command="{Binding NavigateCommand}" CommandParameter="dashboard"/>
+
+                <TextBlock Text="CLEANERS" Margin="10,14,6,5" FontSize="{StaticResource WbText2xs}"
+                           LetterSpacing="1.5" Foreground="{DynamicResource WbTextMutedBrush}"/>
+
+                <RadioButton Theme="{StaticResource WbNavButtonTheme}" GroupName="Nav"
+                             Content="Electron Leftovers" IsChecked="{Binding ActiveNavTag, Converter={x:Static conv:ObjectConverters.Equal}, ConverterParameter=electron}"
+                             Command="{Binding NavigateCommand}" CommandParameter="electron"/>
+                <RadioButton Theme="{StaticResource WbNavButtonTheme}" GroupName="Nav"
+                             Content="Temp Files" IsChecked="{Binding ActiveNavTag, Converter={x:Static conv:ObjectConverters.Equal}, ConverterParameter=temp}"
+                             Command="{Binding NavigateCommand}" CommandParameter="temp"/>
+                <RadioButton Theme="{StaticResource WbNavButtonTheme}" GroupName="Nav"
+                             Content="Cache Sweep" IsChecked="{Binding ActiveNavTag, Converter={x:Static conv:ObjectConverters.Equal}, ConverterParameter=cache}"
+                             Command="{Binding NavigateCommand}" CommandParameter="cache"/>
+                <RadioButton Theme="{StaticResource WbNavButtonTheme}" GroupName="Nav"
+                             Content="Dev Junk" IsChecked="{Binding ActiveNavTag, Converter={x:Static conv:ObjectConverters.Equal}, ConverterParameter=devjunk}"
+                             Command="{Binding NavigateCommand}" CommandParameter="devjunk"/>
+
+                <TextBlock Text="SPACE" Margin="10,14,6,5" FontSize="{StaticResource WbText2xs}"
+                           LetterSpacing="1.5" Foreground="{DynamicResource WbTextMutedBrush}"/>
+
+                <RadioButton Theme="{StaticResource WbNavButtonTheme}" GroupName="Nav"
+                             Content="Redirect to Drive" IsChecked="{Binding ActiveNavTag, Converter={x:Static conv:ObjectConverters.Equal}, ConverterParameter=redirect}"
+                             Command="{Binding NavigateCommand}" CommandParameter="redirect"/>
+                <RadioButton Theme="{StaticResource WbNavButtonTheme}" GroupName="Nav"
+                             Content="Disk Explorer" IsChecked="{Binding ActiveNavTag, Converter={x:Static conv:ObjectConverters.Equal}, ConverterParameter=disk}"
+                             Command="{Binding NavigateCommand}" CommandParameter="disk"/>
+            </StackPanel>
+        </DockPanel>
+    </Border>
+
+</UserControl>

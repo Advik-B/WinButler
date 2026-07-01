@@ -1,0 +1,51 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:WinButler.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="640"
+             x:Class="WinButler.Views.CachePageView"
+             x:DataType="vm:CachePageViewModel"
+             Background="{DynamicResource WbBgBrush}">
+
+    <DockPanel Margin="28,24">
+
+        <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="0,0,0,18">
+            <StackPanel Grid.Column="0" MaxWidth="560">
+                <TextBlock Text="CLEANER · CACHE" FontFamily="{DynamicResource WbFontUi}"
+                           FontSize="{StaticResource WbText2xs}" LetterSpacing="2"
+                           Foreground="{DynamicResource WbAccentBrush}" Margin="0,0,0,6"/>
+                <TextBlock Text="Cache Sweep" FontFamily="{DynamicResource WbFontDot}" FontWeight="Bold"
+                           FontSize="{StaticResource WbTextXl}" Foreground="{DynamicResource WbTextBrush}" Margin="0,0,0,6"/>
+                <TextBlock Text="Any folder matching *cache*. Most are throwaway; a few cost a one-time rebuild. Running apps are locked."
+                           TextWrapping="Wrap" FontFamily="{DynamicResource WbFontUi}" FontSize="{StaticResource WbTextXs}"
+                           Foreground="{DynamicResource WbTextTertiaryBrush}"/>
+            </StackPanel>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Bottom">
+                <TextBlock VerticalAlignment="Center" FontFamily="{DynamicResource WbFontUi}"
+                           FontSize="{StaticResource WbTextXs}" Foreground="{DynamicResource WbTextTertiaryBrush}">
+                    <Run Text="{Binding Clean.CacheCategory.SelectedCount}"/>
+                    <Run Text="selected ·"/>
+                    <Run Text="{Binding Clean.CacheCategory.SelectedBytesText}"/>
+                </TextBlock>
+                <Button Content="SELECT ALL" Classes="ghost" Command="{Binding Clean.CacheCategory.SelectAllCommand}"/>
+                <Button Content="CLEAR" Classes="ghost" Command="{Binding Clean.CacheCategory.SelectNoneCommand}"/>
+                <Button Content="CLEAN SELECTED" Classes="primary" Command="{Binding Clean.CleanSelectedCommand}"/>
+            </StackPanel>
+        </Grid>
+
+        <TextBlock DockPanel.Dock="Bottom" Text="{Binding Clean.StatusText}" TextWrapping="Wrap" Margin="0,12,0,0"
+                   FontFamily="{DynamicResource WbFontUi}" FontSize="{StaticResource WbTextXs}"
+                   Foreground="{DynamicResource WbTextTertiaryBrush}"/>
+
+        <Border BorderBrush="{DynamicResource WbBorderBrush}" BorderThickness="1"
+                CornerRadius="{StaticResource WbRadiusMd}" Background="{DynamicResource WbSurfaceBrush}"
+                ClipToBounds="True">
+            <ScrollViewer>
+                <ItemsControl ItemsSource="{Binding Clean.CacheCategory.Items}"
+                              ItemTemplate="{StaticResource WbChecklistRowTemplate}"/>
+            </ScrollViewer>
+        </Border>
+
+    </DockPanel>
+</UserControl>

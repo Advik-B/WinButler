@@ -24,4 +24,11 @@ public sealed class CleanupTarget
     /// <summary>The deletion policy implied by <see cref="Risk"/>.</summary>
     public DeleteMode DeleteMode =>
         Risk == RiskLevel.Safe ? DeleteMode.Permanent : DeleteMode.RecycleBin;
+
+    /// <summary>Optional grouping key for screens that cluster targets by parent app
+    /// (currently just <see cref="ElectronLeftoverScanner"/> — one group per Squirrel install).</summary>
+    public string? GroupKey { get; init; }
+
+    /// <summary>Optional "kept" version label for the group header, e.g. "v3.5.12 · KEPT".</summary>
+    public string? CurrentVersionLabel { get; init; }
 }

@@ -1,0 +1,34 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="220" d:DesignHeight="150"
+             x:Class="WinButler.Views.Shared.CategoryCardView"
+             x:Name="Root">
+
+    <Button Classes="secondary" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
+            Padding="15,14" CornerRadius="{StaticResource WbRadiusMd}"
+            Command="{Binding ClickCommand, ElementName=Root}">
+        <StackPanel Spacing="12">
+            <Grid ColumnDefinitions="Auto,*">
+                <Border Grid.Column="0" Width="30" Height="30" CornerRadius="{StaticResource WbRadiusXs}"
+                        Background="{DynamicResource WbSurfaceInsetBrush}">
+                    <TextBlock Text="{Binding IconGlyph, ElementName=Root}" HorizontalAlignment="Center"
+                               VerticalAlignment="Center" FontFamily="{DynamicResource WbFontDot}"
+                               FontSize="{StaticResource WbText2xs}" Foreground="{DynamicResource WbTextSecondaryBrush}"/>
+                </Border>
+            </Grid>
+            <StackPanel Spacing="3">
+                <TextBlock Text="{Binding Title, ElementName=Root}" FontFamily="{DynamicResource WbFontUi}"
+                           FontSize="{StaticResource WbTextXs}" Foreground="{DynamicResource WbTextSecondaryBrush}"/>
+                <TextBlock Text="{Binding SizeText, ElementName=Root}" FontFamily="{DynamicResource WbFontReadout}"
+                           FontWeight="Bold" FontSize="{StaticResource WbTextLg}" Foreground="{DynamicResource WbTextBrush}"/>
+                <TextBlock Text="{Binding CountText, ElementName=Root}" FontFamily="{DynamicResource WbFontUi}"
+                           FontSize="{StaticResource WbText2xs}" Foreground="{DynamicResource WbTextMutedBrush}"/>
+            </StackPanel>
+            <ProgressBar Height="4" Minimum="0" Maximum="100"
+                         Value="{Binding BarPercent, ElementName=Root}"/>
+        </StackPanel>
+    </Button>
+
+</UserControl>

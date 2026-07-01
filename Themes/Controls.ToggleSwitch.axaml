@@ -1,0 +1,60 @@
+<!--
+  Duly Doted ToggleSwitch theme: a capsule track with a sliding knob, matching the mockup's
+  LED "Switch" component (used for Dry Run). Accent-lit + glowing when on.
+-->
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <ControlTheme x:Key="{x:Type ToggleSwitch}" TargetType="ToggleSwitch">
+    <Setter Property="Cursor" Value="Hand"/>
+    <Setter Property="FontFamily" Value="{DynamicResource WbFontUi}"/>
+    <Setter Property="FontSize" Value="{StaticResource WbTextXs}"/>
+    <Setter Property="Foreground" Value="{DynamicResource WbTextSecondaryBrush}"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+        <StackPanel Orientation="Horizontal" Spacing="10">
+          <Panel Name="PART_MovingKnobs" Width="40" Height="22">
+            <Border Name="PART_SwitchTrack" CornerRadius="11"
+                    Background="{DynamicResource WbSurfaceInsetBrush}"
+                    BorderThickness="1" BorderBrush="{DynamicResource WbBorderBrush}">
+              <Border.Transitions>
+                <Transitions>
+                  <BrushTransition Property="Background" Duration="0:0:0.16"/>
+                  <BrushTransition Property="BorderBrush" Duration="0:0:0.16"/>
+                </Transitions>
+              </Border.Transitions>
+            </Border>
+            <Ellipse Name="PART_OuterEllipse" Width="16" Height="16"
+                     Fill="{DynamicResource WbTextMutedBrush}"
+                     HorizontalAlignment="Left" Margin="3,0,0,0"
+                     RenderTransformOrigin="0.5,0.5">
+              <Ellipse.Transitions>
+                <Transitions>
+                  <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.18"/>
+                  <BrushTransition Property="Fill" Duration="0:0:0.16"/>
+                </Transitions>
+              </Ellipse.Transitions>
+            </Ellipse>
+          </Panel>
+          <ContentPresenter Name="PART_ContentPresenter"
+                             Content="{TemplateBinding Content}"
+                             VerticalAlignment="Center"/>
+        </StackPanel>
+      </ControlTemplate>
+    </Setter>
+
+    <Style Selector="^:checked /template/ Border#PART_SwitchTrack">
+      <Setter Property="Background" Value="{DynamicResource WbAccentTintBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource WbAccentBrush}"/>
+      <Setter Property="BoxShadow" Value="{DynamicResource WbGlowAccentSmBrush}"/>
+    </Style>
+    <Style Selector="^:checked /template/ Ellipse#PART_OuterEllipse">
+      <Setter Property="Fill" Value="{DynamicResource WbAccentBrush}"/>
+      <Setter Property="RenderTransform" Value="translateX(18px)"/>
+    </Style>
+    <Style Selector="^:disabled">
+      <Setter Property="Opacity" Value="0.4"/>
+    </Style>
+  </ControlTheme>
+
+</ResourceDictionary>

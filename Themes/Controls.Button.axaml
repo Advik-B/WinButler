@@ -1,0 +1,110 @@
+<!--
+  Duly Doted Button theme. Capsule radius by default, mechanical press (scale-down),
+  brighten-on-hover. Variants selected via Classes: "primary" (accent fill), "ghost"
+  (borderless), "danger" (destructive text tint). Unclassed buttons render as "secondary"
+  (bordered surface) per the mockup's default.
+-->
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <ControlTheme x:Key="{x:Type Button}" TargetType="Button">
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="Foreground" Value="{DynamicResource WbTextTertiaryBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource WbBorderBrush}"/>
+    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="CornerRadius" Value="{StaticResource WbRadiusPill}"/>
+    <Setter Property="FontFamily" Value="{DynamicResource WbFontUi}"/>
+    <Setter Property="FontSize" Value="{StaticResource WbTextXs}"/>
+    <Setter Property="LetterSpacing" Value="1"/>
+    <Setter Property="Padding" Value="18,10"/>
+    <Setter Property="HorizontalAlignment" Value="Left"/>
+    <Setter Property="HorizontalContentAlignment" Value="Center"/>
+    <Setter Property="VerticalContentAlignment" Value="Center"/>
+    <Setter Property="Cursor" Value="Hand"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Name="PART_Border"
+                Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                CornerRadius="{TemplateBinding CornerRadius}"
+                RenderTransformOrigin="0.5,0.5"
+                RenderTransform="scale(1)">
+          <Border.Transitions>
+            <Transitions>
+              <BrushTransition Property="Background" Duration="0:0:0.12"/>
+              <BrushTransition Property="BorderBrush" Duration="0:0:0.12"/>
+              <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.12"/>
+            </Transitions>
+          </Border.Transitions>
+          <ContentPresenter Name="PART_ContentPresenter"
+                             Content="{TemplateBinding Content}"
+                             ContentTemplate="{TemplateBinding ContentTemplate}"
+                             Foreground="{TemplateBinding Foreground}"
+                             Padding="{TemplateBinding Padding}"
+                             HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                             VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+
+    <!-- === base (secondary) states === -->
+    <Style Selector="^:pointerover /template/ Border#PART_Border">
+      <Setter Property="Background" Value="{DynamicResource WbSurface2Brush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource WbBorderStrongBrush}"/>
+    </Style>
+    <Style Selector="^:pointerover">
+      <Setter Property="Foreground" Value="{DynamicResource WbTextBrush}"/>
+    </Style>
+    <Style Selector="^:pressed /template/ Border#PART_Border">
+      <Setter Property="RenderTransform" Value="scale(0.96)"/>
+    </Style>
+    <Style Selector="^:disabled">
+      <Setter Property="Opacity" Value="0.4"/>
+    </Style>
+
+    <!-- === secondary (explicit, bordered surface) === -->
+    <Style Selector="^.secondary">
+      <Setter Property="Background" Value="{DynamicResource WbSurfaceInsetBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource WbBorderBrush}"/>
+      <Setter Property="Foreground" Value="{DynamicResource WbTextSecondaryBrush}"/>
+    </Style>
+
+    <!-- === primary (accent fill) === -->
+    <Style Selector="^.primary">
+      <Setter Property="Background" Value="{DynamicResource WbAccentBrush}"/>
+      <Setter Property="Foreground" Value="{DynamicResource WbAccentOnBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource WbAccentBrush}"/>
+      <Setter Property="FontWeight" Value="Bold"/>
+    </Style>
+    <Style Selector="^.primary /template/ Border#PART_Border">
+      <Setter Property="BoxShadow" Value="{DynamicResource WbGlowAccentSmBrush}"/>
+    </Style>
+    <Style Selector="^.primary:pointerover /template/ Border#PART_Border">
+      <Setter Property="Background" Value="{DynamicResource WbAccentHoverBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource WbAccentHoverBrush}"/>
+      <Setter Property="BoxShadow" Value="{DynamicResource WbGlowAccentBrush}"/>
+    </Style>
+    <Style Selector="^.primary:pointerover">
+      <Setter Property="Foreground" Value="{DynamicResource WbAccentOnBrush}"/>
+    </Style>
+
+    <!-- === ghost (borderless) === -->
+    <Style Selector="^.ghost">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="BorderBrush" Value="Transparent"/>
+      <Setter Property="Foreground" Value="{DynamicResource WbTextTertiaryBrush}"/>
+    </Style>
+    <Style Selector="^.ghost:pointerover /template/ Border#PART_Border">
+      <Setter Property="Background" Value="{DynamicResource WbSurface2Brush}"/>
+      <Setter Property="BorderBrush" Value="Transparent"/>
+    </Style>
+
+    <!-- === danger (destructive tint) === -->
+    <Style Selector="^.danger">
+      <Setter Property="Foreground" Value="{DynamicResource WbSignalLiveBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource WbSignalLiveBrush}"/>
+    </Style>
+  </ControlTheme>
+
+</ResourceDictionary>

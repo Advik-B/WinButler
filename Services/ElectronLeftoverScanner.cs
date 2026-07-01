@@ -81,7 +81,9 @@ public sealed class ElectronLeftoverScanner : IScanner
             return;
 
         var newest = versions.Max(v => v.Version)!;
+        var newestRaw = versions.First(v => v.Version == newest).Raw;
         var appName = Path.GetFileName(parent);
+        var currentVersionLabel = $"{newestRaw} · KEPT";
 
         foreach (var (path, version, raw) in versions)
         {
@@ -98,6 +100,8 @@ public sealed class ElectronLeftoverScanner : IScanner
                 SizeBytes = size,
                 Risk = RiskLevel.Safe, // superseded program files; the live version stays
                 Reason = $"Old version; keeping the current app-{newest}",
+                GroupKey = appName,
+                CurrentVersionLabel = currentVersionLabel,
             });
         }
     }

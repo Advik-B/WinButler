@@ -1,0 +1,51 @@
+<!--
+  Duly Doted effect tokens: elevation shadows, LED glow (BoxShadows, precomputed per accent —
+  see Tokens.Colors.axaml note on why these aren't computed at runtime), and the dot-field
+  texture brush. Motion/easing is applied directly in each ControlTheme rather than as shared
+  resources, since Avalonia has no convenient resource type for Transitions/Duration.
+-->
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Styles.Resources>
+    <ResourceDictionary>
+
+      <!-- ==== ELEVATION (soft depth, no harsh drops) ==== -->
+      <BoxShadows x:Key="WbShadowSm">0 1 2 0 #99000000</BoxShadows>
+      <BoxShadows x:Key="WbShadowMd">0 6 20 0 #80000000</BoxShadows>
+      <BoxShadows x:Key="WbShadowLg">0 18 50 0 #99000000</BoxShadows>
+
+      <!-- ==== LED GLOW · RED ==== -->
+      <BoxShadows x:Key="WbGlowAccentSmRed">0 0 10 0 #73E60012</BoxShadows>
+      <BoxShadows x:Key="WbGlowAccentRed">0 0 0 1 #59E60012, 0 0 18 0 #7AE60012</BoxShadows>
+      <BoxShadows x:Key="WbGlowAccentLgRed">0 0 40 0 #8CE60012, 0 0 4 0 #D9E60012</BoxShadows>
+
+      <!-- ==== LED GLOW · GREEN ==== -->
+      <BoxShadows x:Key="WbGlowAccentSmGreen">0 0 10 0 #7306C24A</BoxShadows>
+      <BoxShadows x:Key="WbGlowAccentGreen">0 0 0 1 #5906C24A, 0 0 18 0 #7A06C24A</BoxShadows>
+      <BoxShadows x:Key="WbGlowAccentLgGreen">0 0 40 0 #8C06C24A, 0 0 4 0 #D906C24A</BoxShadows>
+
+      <!-- ==== LED GLOW · LIVE (mutable — ThemeService overwrites on accent toggle;
+           defaults to the red set to match WbAccentBrush's default) ==== -->
+      <BoxShadows x:Key="WbGlowAccentSmBrush">0 0 10 0 #73E60012</BoxShadows>
+      <BoxShadows x:Key="WbGlowAccentBrush">0 0 0 1 #59E60012, 0 0 18 0 #7AE60012</BoxShadows>
+      <BoxShadows x:Key="WbGlowAccentLgBrush">0 0 40 0 #8CE60012, 0 0 4 0 #D9E60012</BoxShadows>
+
+      <!-- ==== FUNCTIONAL SIGNAL GLOWS (accent-independent) ==== -->
+      <BoxShadows x:Key="WbGlowOkSm">0 0 7 0 #7306C24A</BoxShadows>
+      <BoxShadows x:Key="WbGlowWarnSm">0 0 7 0 #73FFB200</BoxShadows>
+      <BoxShadows x:Key="WbGlowLiveSm">0 0 7 0 #73E60012</BoxShadows>
+
+      <!-- ==== DOT-FIELD TEXTURE (faint unlit dots at the 10px pitch) ==== -->
+      <DrawingBrush x:Key="WbDotFieldBrush" TileMode="Tile" Stretch="None" DestinationRect="0,0,10,10">
+        <DrawingBrush.Drawing>
+          <GeometryDrawing Brush="#14FFFFFF">
+            <GeometryDrawing.Geometry>
+              <EllipseGeometry Center="1,1" RadiusX="1" RadiusY="1"/>
+            </GeometryDrawing.Geometry>
+          </GeometryDrawing>
+        </DrawingBrush.Drawing>
+      </DrawingBrush>
+
+    </ResourceDictionary>
+  </Styles.Resources>
+</Styles>
