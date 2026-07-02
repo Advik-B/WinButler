@@ -82,7 +82,7 @@ The custom theme embeds six typefaces (Google Fonts and JetBrains, all under the
 
 - Geo, Pixelify Sans, and Press Start 2P are embedded but not yet used anywhere in the current UI (Aldrich, Doto, and JetBrains Mono are the ones actually in use).
 - The Dashboard's System / Apps / Media split is classified by well-known location (Windows/ProgramData, Program Files, per-user media folders); everything else is bucketed as "Other". It reads from the shared whole-volume index that also backs Clean/Redirect/Dev Junk/Disk Explorer, so it costs one MFT read (a few seconds on first load), not a per-feature walk.
-- There's no automated UI test suite; UI changes in this project are verified manually (build, run, screenshot, compare against the design).
+- UI testing is split in two: a headless ViewModel suite (`Tests/Headless/`, via `Avalonia.Headless.XUnit`) covers interaction/logic — selection, command gating, dry-run clean, dashboard aggregation, navigation, toast/confirm — while *visual* design fidelity and the real elevated end-to-end run are still verified manually (build, run, screenshot, compare against the design) with the `tools/ui-harness/` scripts. Headless rendering is a different renderer than the on-screen compositor, so it can't stand in for the visual check.
 
 ## License
 

@@ -6,12 +6,17 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    <!-- xUnit1051: several tests deliberately call real-I/O overloads without a CancellationToken. -->
+    <NoWarn>$(NoWarn);xUnit1051</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
-    <PackageReference Include="xunit" Version="2.9.2" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+    <!-- xunit v3: required by Avalonia.Headless.XUnit 12.x (it targets xunit.v3.extensibility.core). -->
+    <PackageReference Include="xunit.v3" Version="3.2.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.0" />
+    <!-- Headless UI-thread harness for interaction/logic tests (matches the Avalonia 12.0.2 pin). -->
+    <PackageReference Include="Avalonia.Headless.XUnit" Version="12.0.2" />
   </ItemGroup>
 
   <ItemGroup>

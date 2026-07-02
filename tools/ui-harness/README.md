@@ -1,9 +1,12 @@
 # UI harness
 
-WinButler has no automated UI test suite — UI changes are verified manually by building,
-running, screenshotting, and comparing against the design (see the root `README.md`).
-These PowerShell scripts are that loop, made repeatable: launch the app, pin its window
-to a fixed size/position, capture it, drive its controls, and zoom in on detail.
+WinButler's UI is verified in two layers. **Interaction/logic** is covered by an automated
+headless ViewModel suite (`Tests/Headless/`, via `Avalonia.Headless.XUnit`) — run it with
+`dotnet test`. But **visual design fidelity** and the **real elevated end-to-end run** are
+still checked manually: headless rendering is a different renderer than the on-screen
+compositor, so it can't confirm the app *looks* right or that the elevated MFT/junction paths
+work. These PowerShell scripts are that manual loop, made repeatable: launch the app, pin its
+window to a fixed size/position, capture it, drive its controls, and zoom in on detail.
 
 Captures land in `out/` (gitignored). Everything is window-relative and the window is
 pinned to screen **(40, 40)** at **1320×900**, so coordinates are stable across runs.

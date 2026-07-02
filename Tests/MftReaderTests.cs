@@ -5,7 +5,6 @@ using System.Linq;
 using System.Security.Principal;
 using WinButler.Services.Mft;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace WinButler.Tests;
 

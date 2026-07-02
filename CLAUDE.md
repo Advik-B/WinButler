@@ -17,16 +17,29 @@ dotnet test Tests/WinButler.Tests.csproj
 
 - The app **self-elevates via UAC** on launch (`requireAdministrator` in `app.manifest`) —
   it needs all-user temp locations and NTFS junction privileges. Expect a UAC prompt.
-- `dotnet test`: 50 tests across 7 files. Takes ~90s — several tests hit **real** I/O
-  (the redirect scan sizes real dev-tool folders; MFT tests read the real `$MFT` on `C:`),
-  not mocked filesystems.
+- `dotnet test`: service/parser tests plus a headless ViewModel suite (`Tests/Headless/`).
+  Takes a few minutes — several service tests hit **real** I/O (the redirect scan sizes real
+  dev-tool folders; MFT tests read the real `$MFT` on `C:`), not mocked filesystems. The
+  headless tests touch no disk and need no admin.
+- The test project is **xunit v3** (`xunit.v3`), required by `Avalonia.Headless.XUnit` 12.x.
 
 ## UI verification
 
-There is **no automated UI test suite**. UI changes are verified manually: build, run,
-screenshot, compare against the design. The repeatable harness for that lives in
-`tools/ui-harness/` (launch + PrintWindow capture, UI Automation control-driving, crop/zoom).
-See `tools/ui-harness/README.md`.
+Two complementary layers — neither replaces the other:
+
+- **Headless interaction/logic tests** (`Tests/Headless/`, `Avalonia.Headless.XUnit`): boot the
+  real `App` on a windowless backend and assert ViewModel behavior/state — selection math,
+  command `CanExecute` gating, dry-run clean, dashboard aggregation, navigation, toast/confirm
+  slots. Fast, deterministic, no window/UAC. Use `[AvaloniaFact]`/`[AvaloniaTheory]` so bodies
+  run on the UI thread (needed for the `Dispatcher`/`DispatcherTimer` cases). **Gotchas:**
+  `WeakReferenceMessenger.Default` is a static singleton — reset it per test (see
+  `MessengerIsolatedTest`); pump `Dispatcher.UIThread.RunJobs()` before asserting on anything a
+  handler `Post`ed. This layer catches *logic* regressions, **not** visual/design fidelity —
+  headless rendering is a different renderer than the on-screen compositor.
+- **Design-fidelity + real elevated run** (`tools/ui-harness/`): launch + PrintWindow capture, UI
+  Automation control-driving, crop/zoom — the manual "screenshot and compare against the design"
+  loop, and the only way to exercise the real elevated app end-to-end (MFT read + junctions).
+  See `tools/ui-harness/README.md`.
 
 ## Architecture
 
