@@ -49,6 +49,11 @@
     <Style Selector="^:disabled">
       <Setter Property="Opacity" Value="0.4"/>
     </Style>
+    <!-- Keyboard focus: accent ring on the box. -->
+    <Style Selector="^:focus-visible /template/ Border#PART_Box">
+      <Setter Property="BorderBrush" Value="{DynamicResource WbAccentBrightBrush}"/>
+      <Setter Property="BoxShadow" Value="{DynamicResource WbGlowAccentSmBrush}"/>
+    </Style>
   </ControlTheme>
 
 </ResourceDictionary>

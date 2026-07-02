@@ -61,6 +61,14 @@
     <Style Selector="^:checked">
       <Setter Property="Foreground" Value="{DynamicResource WbTextBrush}"/>
     </Style>
+    <Style Selector="^:disabled">
+      <Setter Property="Opacity" Value="0.4"/>
+    </Style>
+    <!-- Keyboard focus: accent outline (nav items are the app's primary tab stops). -->
+    <Style Selector="^:focus-visible /template/ Border#PART_Border">
+      <Setter Property="BorderBrush" Value="{DynamicResource WbAccentBrightBrush}"/>
+      <Setter Property="BorderThickness" Value="1"/>
+    </Style>
   </ControlTheme>
 
 </ResourceDictionary>

@@ -23,6 +23,13 @@
     <Style Selector="^:pointerover">
       <Setter Property="Foreground" Value="{DynamicResource WbTextBrush}"/>
     </Style>
+    <!-- Keyboard focus: match the hover treatment so arrow-key movement is visible. -->
+    <Style Selector="^:focus-visible /template/ Border#PART_Border">
+      <Setter Property="Background" Value="{DynamicResource WbAccentTintBrush}"/>
+    </Style>
+    <Style Selector="^:focus-visible">
+      <Setter Property="Foreground" Value="{DynamicResource WbTextBrush}"/>
+    </Style>
     <Style Selector="^:selected /template/ Border#PART_Border">
       <Setter Property="Background" Value="{DynamicResource WbAccentTintBrush}"/>
     </Style>

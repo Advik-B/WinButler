@@ -63,6 +63,12 @@
     <Style Selector="^:disabled">
       <Setter Property="Opacity" Value="0.4"/>
     </Style>
+    <!-- Keyboard focus: an accent ring, visible on every variant (custom templates have
+         no FocusAdorner, so without this keyboard focus is invisible). -->
+    <Style Selector="^:focus-visible /template/ Border#PART_Border">
+      <Setter Property="BorderBrush" Value="{DynamicResource WbAccentBrightBrush}"/>
+      <Setter Property="BoxShadow" Value="{DynamicResource WbGlowAccentSmBrush}"/>
+    </Style>
 
     <!-- === secondary (explicit, bordered surface) === -->
     <Style Selector="^.secondary">

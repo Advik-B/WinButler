@@ -56,6 +56,19 @@
     <Style Selector="^:disabled">
       <Setter Property="Opacity" Value="0.4"/>
     </Style>
+    <Style Selector="^:pointerover /template/ Border#PART_SwitchTrack">
+      <Setter Property="BorderBrush" Value="{DynamicResource WbBorderStrongBrush}"/>
+    </Style>
+    <Style Selector="^:pointerover /template/ Ellipse#PART_OuterEllipse">
+      <Setter Property="Fill" Value="{DynamicResource WbTextSecondaryBrush}"/>
+    </Style>
+    <Style Selector="^:checked:pointerover /template/ Ellipse#PART_OuterEllipse">
+      <Setter Property="Fill" Value="{DynamicResource WbAccentBrightBrush}"/>
+    </Style>
+    <!-- Keyboard focus: accent ring on the track. -->
+    <Style Selector="^:focus-visible /template/ Border#PART_SwitchTrack">
+      <Setter Property="BorderBrush" Value="{DynamicResource WbAccentBrightBrush}"/>
+    </Style>
   </ControlTheme>
 
 </ResourceDictionary>
