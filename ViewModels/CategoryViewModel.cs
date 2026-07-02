@@ -59,6 +59,9 @@ public partial class CategoryViewModel : ViewModelBase
 
     public IEnumerable<CleanupTargetViewModel> SelectedItems => Items.Where(i => i.IsSelected);
 
+    /// <summary>Drives the per-category pages' list-vs-empty-state switch.</summary>
+    public bool HasItems => Items.Count > 0;
+
     public long TotalBytes => Items.Sum(i => i.SizeBytes);
     public long SelectedBytes => SelectedItems.Sum(i => i.SizeBytes);
     public int SelectedCount => SelectedItems.Count();
@@ -85,6 +88,7 @@ public partial class CategoryViewModel : ViewModelBase
 
     private void RaiseTotals()
     {
+        OnPropertyChanged(nameof(HasItems));
         OnPropertyChanged(nameof(TotalBytes));
         OnPropertyChanged(nameof(TotalBytesText));
         OnPropertyChanged(nameof(SelectedBytes));

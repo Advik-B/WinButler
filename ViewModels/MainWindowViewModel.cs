@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using WinButler.Models;
 using WinButler.Services;
 using WinButler.Services.Definitions;
@@ -91,7 +92,25 @@ public partial class MainWindowViewModel : ViewModelBase
 
         DashboardPage = new DashboardPageViewModel(CleanPage, RedirectPage, DevJunkPage, Navigate, _diskIndex);
 
+        // Surface every completed clean/redirect run as a toast (the Dashboard's activity
+        // feed subscribes to the same broadcast).
+        WeakReferenceMessenger.Default.Register<MainWindowViewModel, CleanupCompletedMessage>(
+            this, static (r, m) => r.OnCleanupCompleted(m));
+
         _currentPage = DashboardPage;
+    }
+
+    private void OnCleanupCompleted(CleanupCompletedMessage m)
+    {
+        var size = SizeFormatter.Format(m.Bytes);
+        var text = m.DryRun
+            ? $"Dry run — would reclaim {size} ({m.Count} item(s))"
+            : m.Action == CleanupAction.Redirect
+                ? $"Moved {size} ({m.Count} folder(s))"
+                : $"Reclaimed {size} ({m.Count} item(s))";
+
+        // The send happens on the UI thread today; marshal defensively like the Dashboard does.
+        Dispatcher.UIThread.Post(() => ShowToast(text, m.DryRun ? ToastKind.Dry : ToastKind.Ok));
     }
 
     /// <summary>Switches the visible page. Bound directly from the sidebar's nav buttons

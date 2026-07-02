@@ -36,7 +36,32 @@
                    FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold" FontSize="{StaticResource WbTextXs}"
                    Foreground="{DynamicResource WbTextTertiaryBrush}"/>
 
-        <ScrollViewer>
+        <Panel>
+        <!-- Empty states: scanning spinner, first-visit prompt, or all-clean. -->
+        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="14"
+                    IsVisible="{Binding !HasGroups}">
+            <StackPanel Spacing="14" IsVisible="{Binding IsBusy}">
+                <ProgressBar IsIndeterminate="True" Width="180" HorizontalAlignment="Center"/>
+                <TextBlock Text="SCANNING…" HorizontalAlignment="Center" LetterSpacing="2"
+                           FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
+                           FontSize="{StaticResource WbTextXs}" Foreground="{DynamicResource WbTextTertiaryBrush}"/>
+            </StackPanel>
+            <StackPanel Spacing="14" IsVisible="{Binding !IsBusy}">
+                <StackPanel Spacing="14" IsVisible="{Binding !HasScanned}">
+                    <TextBlock Text="NO DATA — RUN A SCAN TO SIZE YOUR TOOLCHAINS" HorizontalAlignment="Center" LetterSpacing="2"
+                               FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
+                               FontSize="{StaticResource WbTextXs}" Foreground="{DynamicResource WbTextMutedBrush}"/>
+                    <Button Content="SCAN" Classes="primary" HorizontalAlignment="Center"
+                            Command="{Binding ScanCommand}"/>
+                </StackPanel>
+                <TextBlock Text="NOTHING FOUND — NO DEV JUNK ON THIS MACHINE" HorizontalAlignment="Center" LetterSpacing="2"
+                           IsVisible="{Binding HasScanned}"
+                           FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
+                           FontSize="{StaticResource WbTextXs}" Foreground="{DynamicResource WbTextMutedBrush}"/>
+            </StackPanel>
+        </StackPanel>
+
+        <ScrollViewer IsVisible="{Binding HasGroups}">
             <ItemsControl ItemsSource="{Binding Groups}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
@@ -127,6 +152,7 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
         </ScrollViewer>
+        </Panel>
 
     </DockPanel>
 </UserControl>

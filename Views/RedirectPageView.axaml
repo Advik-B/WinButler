@@ -60,7 +60,29 @@
                     <Border BorderBrush="{DynamicResource WbBorderBrush}" BorderThickness="1"
                             CornerRadius="{StaticResource WbRadiusMd}" Background="{DynamicResource WbSurfaceBrush}"
                             ClipToBounds="True">
-                        <ItemsControl ItemsSource="{Binding Candidates}">
+                        <Panel>
+                        <!-- Empty states: scanning spinner, first-visit prompt, or nothing-found. -->
+                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="14" MinHeight="120"
+                                    IsVisible="{Binding !HasCandidates}">
+                            <StackPanel Spacing="14" VerticalAlignment="Center" IsVisible="{Binding IsBusy}">
+                                <ProgressBar IsIndeterminate="True" Width="180" HorizontalAlignment="Center"/>
+                                <TextBlock Text="SCANNING…" HorizontalAlignment="Center" LetterSpacing="2"
+                                           FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
+                                           FontSize="{StaticResource WbTextXs}" Foreground="{DynamicResource WbTextTertiaryBrush}"/>
+                            </StackPanel>
+                            <StackPanel Spacing="14" VerticalAlignment="Center" IsVisible="{Binding !IsBusy}">
+                                <TextBlock Text="NO DATA — RUN A SCAN TO FIND RELOCATABLE FOLDERS" HorizontalAlignment="Center" LetterSpacing="2"
+                                           IsVisible="{Binding !HasScanned}" Margin="0,24,0,0"
+                                           FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
+                                           FontSize="{StaticResource WbTextXs}" Foreground="{DynamicResource WbTextMutedBrush}"/>
+                                <TextBlock Text="NOTHING FOUND — NO KNOWN FOLDERS TO RELOCATE" HorizontalAlignment="Center" LetterSpacing="2"
+                                           IsVisible="{Binding HasScanned}" Margin="0,24,0,0"
+                                           FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
+                                           FontSize="{StaticResource WbTextXs}" Foreground="{DynamicResource WbTextMutedBrush}"/>
+                            </StackPanel>
+                        </StackPanel>
+
+                        <ItemsControl ItemsSource="{Binding Candidates}" IsVisible="{Binding HasCandidates}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="vm:RedirectCandidateViewModel">
                                     <Border BorderBrush="{DynamicResource WbBorderFaintBrush}" BorderThickness="0,0,0,1" Padding="16,12">
@@ -96,6 +118,7 @@
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
+                        </Panel>
                     </Border>
                 </StackPanel>
 

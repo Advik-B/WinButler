@@ -40,6 +40,12 @@ public partial class RedirectPageViewModel : ViewModelBase
     [ObservableProperty]
     private string _statusText = "Pick a drive and Scan to find space to reclaim.";
 
+    [ObservableProperty]
+    private bool _hasScanned;
+
+    /// <summary>Drives the candidates-vs-empty-state switch.</summary>
+    public bool HasCandidates => Candidates.Count > 0;
+
     public RedirectPageViewModel(AppSettings settings, IRedirectionService service, DiskIndexService diskIndex)
     {
         _settings = settings;
@@ -87,6 +93,8 @@ public partial class RedirectPageViewModel : ViewModelBase
                 Candidates.Clear();
                 foreach (var c in found)
                     Candidates.Add(new RedirectCandidateViewModel(c));
+                HasScanned = true;
+                OnPropertyChanged(nameof(HasCandidates));
                 RefreshActive();
 
                 var redirectable = found.Where(c => !c.IsAlreadyRedirected).Sum(c => c.SizeBytes);

@@ -41,6 +41,12 @@ public partial class DevJunkPageViewModel : ViewModelBase
     [ObservableProperty]
     private string _statusText = "Ready. Click Scan to find dev-tool space.";
 
+    [ObservableProperty]
+    private bool _hasScanned;
+
+    /// <summary>Drives the cards-vs-empty-state switch.</summary>
+    public bool HasGroups => Groups.Count > 0;
+
     public DevJunkPageViewModel(
         DevJunkAggregator aggregator, AppSettings settings, ICleaner cleaner,
         RedirectPageViewModel redirectPage, System.Action<string> navigate, DiskIndexService diskIndex)
@@ -98,6 +104,7 @@ public partial class DevJunkPageViewModel : ViewModelBase
                 }
                 RaiseTotals();
 
+                HasScanned = true;
                 var total = groups.Sum(g => g.ReclaimableBytes);
                 StatusText = $"Scan complete — {SizeFormatter.Format(total)} reclaimable across {groups.Count} tool(s).";
             }, s => StatusText = s, "Scan failed");
@@ -187,6 +194,7 @@ public partial class DevJunkPageViewModel : ViewModelBase
 
     private void RaiseTotals()
     {
+        OnPropertyChanged(nameof(HasGroups));
         OnPropertyChanged(nameof(SelectedBytes));
         OnPropertyChanged(nameof(SelectedSummary));
     }

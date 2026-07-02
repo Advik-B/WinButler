@@ -39,7 +39,32 @@
                    FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold" FontSize="{StaticResource WbTextXs}"
                    Foreground="{DynamicResource WbTextTertiaryBrush}"/>
 
-        <ScrollViewer>
+        <Panel>
+        <!-- Empty states: scanning spinner, first-visit prompt, or all-clean. -->
+        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="14"
+                    IsVisible="{Binding !Clean.ElectronCategory.HasItems}">
+            <StackPanel Spacing="14" IsVisible="{Binding Clean.IsBusy}">
+                <ProgressBar IsIndeterminate="True" Width="180" HorizontalAlignment="Center"/>
+                <TextBlock Text="SCANNING…" HorizontalAlignment="Center" LetterSpacing="2"
+                           FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
+                           FontSize="{StaticResource WbTextXs}" Foreground="{DynamicResource WbTextTertiaryBrush}"/>
+            </StackPanel>
+            <StackPanel Spacing="14" IsVisible="{Binding !Clean.IsBusy}">
+                <StackPanel Spacing="14" IsVisible="{Binding !Clean.HasScanned}">
+                    <TextBlock Text="NO DATA — RUN A SCAN TO FIND OLD ELECTRON VERSIONS" HorizontalAlignment="Center" LetterSpacing="2"
+                               FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
+                               FontSize="{StaticResource WbTextXs}" Foreground="{DynamicResource WbTextMutedBrush}"/>
+                    <Button Content="SCAN" Classes="primary" HorizontalAlignment="Center"
+                            Command="{Binding Clean.ScanCommand}"/>
+                </StackPanel>
+                <TextBlock Text="NOTHING FOUND — ALL CLEAN" HorizontalAlignment="Center" LetterSpacing="2"
+                           IsVisible="{Binding Clean.HasScanned}"
+                           FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
+                           FontSize="{StaticResource WbTextXs}" Foreground="{DynamicResource WbTextMutedBrush}"/>
+            </StackPanel>
+        </StackPanel>
+
+        <ScrollViewer IsVisible="{Binding Clean.ElectronCategory.HasItems}">
             <ItemsControl ItemsSource="{Binding Groups}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="vm:ElectronGroupViewModel">
@@ -110,6 +135,7 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
         </ScrollViewer>
+        </Panel>
 
     </DockPanel>
 </UserControl>
