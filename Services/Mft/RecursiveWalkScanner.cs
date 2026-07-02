@@ -16,76 +16,81 @@ public sealed class RecursiveWalkScanner
 {
     public DiskNode Scan(string rootPath, Action<string>? progress = null, CancellationToken ct = default)
     {
-        var root = BuildDirectory(rootPath, progress, ct);
+        // Explicit work stack instead of recursion: this is the very path the MFT engine
+        // degrades to on trouble, so a pathologically deep tree must not blow the stack.
+        var rootInfo = new DirectoryInfo(rootPath);
+        var root = NewDirectoryNode(rootInfo, rootPath);
+
+        // (node, parent) in creation order — a parent always precedes its children, so the
+        // reverse sweep below rolls every directory's totals up exactly once.
+        var all = new List<(DiskNode Node, DiskNode? Parent)> { (root, null) };
+        var work = new Stack<(DirectoryInfo Dir, DiskNode Node)>();
+        work.Push((rootInfo, root));
+
+        while (work.Count > 0)
+        {
+            ct.ThrowIfCancellationRequested();
+            var (dir, node) = work.Pop();
+            progress?.Invoke(node.FullPath);
+
+            // One enumeration per directory: the FileSystemInfos carry size/attributes/times
+            // from the find data, so there is no second stat per file.
+            try
+            {
+                foreach (var entry in dir.EnumerateFileSystemInfos())
+                {
+                    if ((entry.Attributes & FileAttributes.ReparsePoint) != 0)
+                        continue;
+
+                    if (entry is FileInfo file)
+                    {
+                        node.Children.Add(new DiskNode
+                        {
+                            Name = file.Name,
+                            FullPath = file.FullName,
+                            IsDirectory = false,
+                            SizeBytes = file.Length,
+                            AllocBytes = file.Length, // no cheap allocated-size source on the fallback path
+                            Modified = file.LastWriteTimeUtc,
+                        });
+                        node.SizeBytes += file.Length;
+                        node.AllocBytes += file.Length;
+                        node.FileCount++;
+                    }
+                    else if (entry is DirectoryInfo sub)
+                    {
+                        var child = NewDirectoryNode(sub, sub.FullName);
+                        node.Children.Add(child);
+                        all.Add((child, node));
+                        work.Push((sub, child));
+                    }
+                }
+            }
+            catch { /* skip unreadable directory contents */ }
+        }
+
+        // Bottom-up aggregation: reverse creation order visits every child before its own
+        // parent is rolled up, so each directory adds its completed subtree totals once.
+        for (int i = all.Count - 1; i >= 1; i--)
+        {
+            var (node, parent) = all[i];
+            parent!.SizeBytes += node.SizeBytes;
+            parent.AllocBytes += node.AllocBytes;
+            parent.FileCount += node.FileCount;
+            parent.FolderCount += node.FolderCount + 1;
+        }
+
         Finalize(root);
         return root;
     }
 
-    private static DiskNode BuildDirectory(string path, Action<string>? progress, CancellationToken ct)
+    private static DiskNode NewDirectoryNode(DirectoryInfo info, string path) => new()
     {
-        ct.ThrowIfCancellationRequested();
-        progress?.Invoke(path);
-
-        var info = new DirectoryInfo(path);
-        var node = new DiskNode
-        {
-            Name = info.Name.Length > 0 ? info.Name : path,
-            FullPath = path,
-            IsDirectory = true,
-            Modified = TryGetWriteTime(() => info.LastWriteTimeUtc),
-        };
-
-        // Files in this directory.
-        foreach (var file in SafeEnumerate(() => Directory.EnumerateFiles(path)))
-        {
-            ct.ThrowIfCancellationRequested();
-            long length;
-            DateTime? modified;
-            try
-            {
-                var fi = new FileInfo(file);
-                if ((fi.Attributes & FileAttributes.ReparsePoint) != 0)
-                    continue;
-                length = fi.Length;
-                modified = fi.LastWriteTimeUtc;
-            }
-            catch { continue; }
-
-            node.Children.Add(new DiskNode
-            {
-                Name = Path.GetFileName(file),
-                FullPath = file,
-                IsDirectory = false,
-                SizeBytes = length,
-                AllocBytes = length, // no cheap allocated-size source on the fallback path
-                Modified = modified,
-            });
-
-            node.SizeBytes += length;
-            node.AllocBytes += length;
-            node.FileCount++;
-        }
-
-        // Subdirectories.
-        foreach (var dir in SafeEnumerate(() => Directory.EnumerateDirectories(path)))
-        {
-            try
-            {
-                if ((File.GetAttributes(dir) & FileAttributes.ReparsePoint) != 0)
-                    continue;
-            }
-            catch { continue; }
-
-            var child = BuildDirectory(dir, progress, ct);
-            node.Children.Add(child);
-            node.SizeBytes += child.SizeBytes;
-            node.AllocBytes += child.AllocBytes;
-            node.FileCount += child.FileCount;
-            node.FolderCount += child.FolderCount + 1;
-        }
-
-        return node;
-    }
+        Name = info.Name.Length > 0 ? info.Name : path,
+        FullPath = path,
+        IsDirectory = true,
+        Modified = TryGetWriteTime(() => info.LastWriteTimeUtc),
+    };
 
     /// <summary>Sorts children largest-first and fills PercentOfParent (iterative DFS).</summary>
     private static void Finalize(DiskNode root)
@@ -103,12 +108,6 @@ public sealed class RecursiveWalkScanner
                 stack.Push(child);
             }
         }
-    }
-
-    private static IEnumerable<string> SafeEnumerate(Func<IEnumerable<string>> enumerate)
-    {
-        try { return enumerate(); }
-        catch { return Array.Empty<string>(); }
     }
 
     private static DateTime? TryGetWriteTime(Func<DateTime> get)

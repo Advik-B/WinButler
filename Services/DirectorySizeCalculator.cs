@@ -33,43 +33,42 @@ public static class DirectorySizeCalculator
         if (indexed is not null)
             return indexed.Value;
 
+        // Don't walk into a junction/symlink root — its contents live elsewhere.
+        try
+        {
+            if ((File.GetAttributes(path) & FileAttributes.ReparsePoint) != 0)
+                return 0;
+        }
+        catch
+        {
+            return 0;
+        }
+
         long total = 0;
-        var stack = new Stack<string>();
-        stack.Push(path);
+        var stack = new Stack<DirectoryInfo>();
+        stack.Push(new DirectoryInfo(path));
 
         while (stack.Count > 0)
         {
             ct.ThrowIfCancellationRequested();
             var current = stack.Pop();
 
-            // Don't walk into junctions/symlinks — their contents live elsewhere.
+            // One enumeration per directory: the FileSystemInfos carry size and attributes
+            // from the find data, so there is no second stat per file (which used to double
+            // the syscall count), and the reparse-point check comes free per entry.
             try
             {
-                var attrs = File.GetAttributes(current);
-                if ((attrs & FileAttributes.ReparsePoint) != 0)
-                    continue;
-            }
-            catch
-            {
-                continue;
-            }
-
-            try
-            {
-                foreach (var file in Directory.EnumerateFiles(current))
+                foreach (var entry in current.EnumerateFileSystemInfos())
                 {
-                    try { total += new FileInfo(file).Length; }
-                    catch { /* skip unreadable file */ }
+                    if ((entry.Attributes & FileAttributes.ReparsePoint) != 0)
+                        continue;
+                    if (entry is FileInfo file)
+                        total += file.Length;
+                    else if (entry is DirectoryInfo dir)
+                        stack.Push(dir);
                 }
             }
             catch { /* skip unreadable directory contents */ }
-
-            try
-            {
-                foreach (var dir in Directory.EnumerateDirectories(current))
-                    stack.Push(dir);
-            }
-            catch { /* skip unreadable directory listing */ }
         }
 
         return total;

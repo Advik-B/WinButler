@@ -88,6 +88,36 @@ public sealed class MftReaderTests
         }
     }
 
+    [Fact]
+    public void Recursive_walk_and_size_calculator_skip_junctions()
+    {
+        if (!OperatingSystem.IsWindows()) return;
+
+        string root = Path.Combine(Path.GetTempPath(), "WB_junc_" + Guid.NewGuid().ToString("N"));
+        string elsewhere = Path.Combine(root, "elsewhere");
+        string scanme = Path.Combine(root, "scanme");
+        Directory.CreateDirectory(elsewhere);
+        Directory.CreateDirectory(scanme);
+        File.WriteAllBytes(Path.Combine(elsewhere, "big.bin"), new byte[1000]);
+        File.WriteAllBytes(Path.Combine(scanme, "mine.bin"), new byte[500]);
+        WinButler.Services.Junction.Create(Path.Combine(scanme, "link"), elsewhere);
+
+        try
+        {
+            var node = new RecursiveWalkScanner().Scan(scanme);
+            Assert.Equal(500, node.SizeBytes);   // the junction's target bytes are not counted
+            Assert.Equal(1, node.FileCount);
+            Assert.Equal(0, node.FolderCount);   // the link itself is skipped, not descended
+
+            Assert.Equal(500, WinButler.Services.DirectorySizeCalculator.GetSize(scanme));
+        }
+        finally
+        {
+            try { WinButler.Services.Junction.Remove(Path.Combine(scanme, "link")); } catch { }
+            try { Directory.Delete(root, recursive: true); } catch { }
+        }
+    }
+
     /// <summary>
     /// Ground truth for the parser, cross-checked against an ordinary recursive walk of the same
     /// folder (which itself matches PowerShell's <c>Measure-Object Length</c> byte-for-byte). The
