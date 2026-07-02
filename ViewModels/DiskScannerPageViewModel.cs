@@ -104,7 +104,6 @@ public partial class DiskScannerPageViewModel : ViewModelBase
                 else
                     _root = await _service.ScanAsync(target, progress, cts.Token);
 
-                Sort(_root, SelectedSort);
                 ShowRoot();
                 SelectedNode = _root;
 
@@ -151,10 +150,18 @@ public partial class DiskScannerPageViewModel : ViewModelBase
         else
         {
             int insertAt = index + 1;
-            foreach (var child in row.Node.Children)
+            foreach (var child in OrderedChildren(row.Node))
                 Rows.Insert(insertAt++, new DiskRowViewModel(child, row.Depth + 1, Toggle));
             row.IsExpanded = true;
         }
+    }
+
+    /// <summary>Test seam: installs a prebuilt tree as if a scan had completed.</summary>
+    internal void SetRootForTest(DiskNode root)
+    {
+        _root = root;
+        ShowRoot();
+        SelectedNode = root;
     }
 
     partial void OnSelectedDriveChanged(ScanDrive? value)
@@ -174,32 +181,27 @@ public partial class DiskScannerPageViewModel : ViewModelBase
     {
         if (_root is null)
             return;
-        Sort(_root, value);
         ShowRoot();
         SelectedNode = _root;
     }
 
-    /// <summary>Recursively reorders every node's children by the chosen key.</summary>
-    private static void Sort(DiskNode node, string mode)
+    /// <summary>
+    /// The current sort applied to a COPY at row-materialization time. The tree itself is the
+    /// shared <see cref="DriveIndex"/> cache, documented immutable and read by other pages —
+    /// re-ordering its child lists in place (as this page used to) violated that contract.
+    /// The treemap keeps the builder's size-descending order, which its layout wants anyway.
+    /// </summary>
+    private IReadOnlyList<DiskNode> OrderedChildren(DiskNode node)
     {
-        Comparison<DiskNode> cmp = mode switch
+        Comparison<DiskNode> cmp = SelectedSort switch
         {
-            "Name" => (a, b) => string.Compare(a.Name, b.Name, StringComparison.OrdinalIgnoreCase),
-            "Allocated" => (a, b) => b.AllocBytes.CompareTo(a.AllocBytes),
-            _ => (a, b) => b.SizeBytes.CompareTo(a.SizeBytes),
+            "Name" => static (a, b) => string.Compare(a.Name, b.Name, StringComparison.OrdinalIgnoreCase),
+            "Allocated" => static (a, b) => b.AllocBytes.CompareTo(a.AllocBytes),
+            _ => static (a, b) => b.SizeBytes.CompareTo(a.SizeBytes),
         };
 
-        // Iterative post-order-free traversal: sort this node, then queue children.
-        var stack = new Stack<DiskNode>();
-        stack.Push(node);
-        while (stack.Count > 0)
-        {
-            var n = stack.Pop();
-            if (n.Children.Count > 1)
-                n.Children.Sort(cmp);
-            foreach (var c in n.Children)
-                if (c.HasChildren)
-                    stack.Push(c);
-        }
+        var copy = new List<DiskNode>(node.Children);
+        copy.Sort(cmp);
+        return copy;
     }
 }
