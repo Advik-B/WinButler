@@ -22,13 +22,20 @@ namespace WinButler.Services;
 /// </summary>
 public sealed class ElectronLeftoverScanner : IScanner
 {
+    private readonly SafeCaches _safeCaches;
+
+    public ElectronLeftoverScanner(SafeCaches safeCaches) => _safeCaches = safeCaches;
+
+    /// <summary>Convenience overload using the bundled definitions (tests/standalone).</summary>
+    public ElectronLeftoverScanner() : this(SafeCaches.FromBundled()) { }
+
     public CleanupCategory Category => CleanupCategory.ElectronLeftover;
     public string Title => "Old Electron app versions";
 
     public Task<IReadOnlyList<CleanupTarget>> ScanAsync(CancellationToken ct = default)
         => Task.Run<IReadOnlyList<CleanupTarget>>(() => Scan(ct), ct);
 
-    private static IReadOnlyList<CleanupTarget> Scan(CancellationToken ct)
+    private IReadOnlyList<CleanupTarget> Scan(CancellationToken ct)
     {
         var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         var roots = new[]
@@ -59,7 +66,8 @@ public sealed class ElectronLeftoverScanner : IScanner
         return results;
     }
 
-    private static void ScanParent(string parent, List<CleanupTarget> results, CancellationToken ct)
+    /// <summary>One Squirrel parent (internal as the test seam — the real roots are fixed).</summary>
+    internal void ScanParent(string parent, List<CleanupTarget> results, CancellationToken ct)
     {
         // Squirrel signature: Update.exe lives alongside the app-* folders.
         if (!File.Exists(Path.Combine(parent, "Update.exe")))
@@ -90,6 +98,11 @@ public sealed class ElectronLeftoverScanner : IScanner
             ct.ThrowIfCancellationRequested();
             if (version == newest)
                 continue; // keep the current version
+
+            // The deny-list holds on EVERY code path — even a version folder whose path
+            // matches a deny fragment is never offered.
+            if (_safeCaches.IsDenied(path))
+                continue;
 
             var size = DirectorySizeCalculator.GetSize(path, ct);
             results.Add(new CleanupTarget

@@ -73,11 +73,13 @@ public partial class MainWindowViewModel : ViewModelBase
         _diskIndex = new DiskIndexService(diskScan);
         DirectorySizeCalculator.Index = _diskIndex;
 
+        // One shared rule engine so the deny-list is enforced identically on every scanner.
+        var safeCaches = new SafeCaches(defs.Cache);
         IScanner[] scanners =
         {
-            new ElectronLeftoverScanner(),
-            new TempScanner(),
-            new CacheScanner(new SafeCaches(defs.Cache)),
+            new ElectronLeftoverScanner(safeCaches),
+            new TempScanner(safeCaches),
+            new CacheScanner(safeCaches),
         };
         CleanPage = new CleanPageViewModel(Settings, scanners, new Cleaner(), _diskIndex);
         RedirectPage = new RedirectPageViewModel(Settings, new RedirectionService(defs.Redirect), _diskIndex);
@@ -87,7 +89,7 @@ public partial class MainWindowViewModel : ViewModelBase
         TempPage = new TempPageViewModel(CleanPage);
         CachePage = new CachePageViewModel(CleanPage);
 
-        var devJunkAggregator = new DevJunkAggregator(new SafeCaches(defs.Cache));
+        var devJunkAggregator = new DevJunkAggregator(safeCaches);
         DevJunkPage = new DevJunkPageViewModel(devJunkAggregator, Settings, new Cleaner(), RedirectPage, Navigate, _diskIndex);
 
         DashboardPage = new DashboardPageViewModel(CleanPage, RedirectPage, DevJunkPage, Navigate, _diskIndex);

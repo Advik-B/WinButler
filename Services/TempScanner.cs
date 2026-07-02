@@ -14,13 +14,20 @@ namespace WinButler.Services;
 /// </summary>
 public sealed class TempScanner : IScanner
 {
+    private readonly SafeCaches _safeCaches;
+
+    public TempScanner(SafeCaches safeCaches) => _safeCaches = safeCaches;
+
+    /// <summary>Convenience overload using the bundled definitions (tests/standalone).</summary>
+    public TempScanner() : this(SafeCaches.FromBundled()) { }
+
     public CleanupCategory Category => CleanupCategory.Temp;
     public string Title => "Temporary files";
 
     public Task<IReadOnlyList<CleanupTarget>> ScanAsync(CancellationToken ct = default)
         => Task.Run<IReadOnlyList<CleanupTarget>>(() => Scan(ct), ct);
 
-    private static IReadOnlyList<CleanupTarget> Scan(CancellationToken ct)
+    private IReadOnlyList<CleanupTarget> Scan(CancellationToken ct)
     {
         var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         var windir = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
@@ -34,42 +41,52 @@ public sealed class TempScanner : IScanner
         };
 
         var results = new List<CleanupTarget>();
-
         foreach (var root in roots)
         {
             ct.ThrowIfCancellationRequested();
-            if (!Directory.Exists(root))
+            ScanRoot(root, results, ct);
+        }
+        return results;
+    }
+
+    /// <summary>One temp root (internal as the test seam — the real roots are fixed).</summary>
+    internal void ScanRoot(string root, List<CleanupTarget> results, CancellationToken ct)
+    {
+        if (!Directory.Exists(root))
+            return;
+
+        var rootLabel = Path.GetFileName(Path.GetDirectoryName(root) ?? root) is { Length: > 0 } p
+            ? $"{p}\\Temp"
+            : root;
+
+        foreach (var entry in SafeEnumerateEntries(root))
+        {
+            ct.ThrowIfCancellationRequested();
+
+            // The deny-list holds on EVERY code path: credential/secret-shaped material is
+            // never offered, even parked in a temp root where everything else is fair game.
+            if (_safeCaches.IsDenied(entry))
                 continue;
 
-            var rootLabel = Path.GetFileName(Path.GetDirectoryName(root) ?? root) is { Length: > 0 } p
-                ? $"{p}\\Temp"
-                : root;
-
-            foreach (var entry in SafeEnumerateEntries(root))
+            long size;
+            try
             {
-                ct.ThrowIfCancellationRequested();
-                long size;
-                try
-                {
-                    size = Directory.Exists(entry)
-                        ? DirectorySizeCalculator.GetSize(entry, ct)
-                        : new FileInfo(entry).Length;
-                }
-                catch { continue; }
-
-                results.Add(new CleanupTarget
-                {
-                    FullPath = entry,
-                    DisplayName = $"{rootLabel}\\{Path.GetFileName(entry)}",
-                    Category = CleanupCategory.Temp,
-                    SizeBytes = size,
-                    Risk = RiskLevel.Safe, // temp is regenerable by definition
-                    Reason = "Temporary file/folder",
-                });
+                size = Directory.Exists(entry)
+                    ? DirectorySizeCalculator.GetSize(entry, ct)
+                    : new FileInfo(entry).Length;
             }
-        }
+            catch { continue; }
 
-        return results;
+            results.Add(new CleanupTarget
+            {
+                FullPath = entry,
+                DisplayName = $"{rootLabel}\\{Path.GetFileName(entry)}",
+                Category = CleanupCategory.Temp,
+                SizeBytes = size,
+                Risk = RiskLevel.Safe, // temp is regenerable by definition
+                Reason = "Temporary file/folder",
+            });
+        }
     }
 
     private static IEnumerable<string> SafeEnumerateEntries(string path)
