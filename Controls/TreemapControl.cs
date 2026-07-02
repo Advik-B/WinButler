@@ -52,7 +52,11 @@ public sealed class TreemapControl : Control
     public TreemapControl()
     {
         ClipToBounds = true;
+        Focusable = true; // keyboard: arrows cycle cells, Enter/Space drills in
     }
+
+    /// <summary>Index into <see cref="_hitRects"/> of the keyboard-selected cell; -1 = none.</summary>
+    private int _keyboardIndex = -1;
 
     public override void Render(DrawingContext context)
     {
@@ -73,11 +77,24 @@ public sealed class TreemapControl : Control
         if (root.Children.Count == 0)
         {
             DrawCell(context, root, full, depth: 0, hue: 210);
+            DrawFocusIndicators(context, full);
             return;
         }
 
         foreach (var (child, rect) in Squarify(root.Children, full.Deflate(1)))
             DrawNode(context, child, rect, depth: 0);
+
+        DrawFocusIndicators(context, full);
+    }
+
+    private void DrawFocusIndicators(DrawingContext ctx, Rect full)
+    {
+        if (!IsFocused)
+            return;
+        ctx.DrawRectangle(null, new Pen(ResolveBrush("WbAccentBrush", Brushes.White), 1), full.Deflate(0.5));
+        if (_keyboardIndex >= 0 && _keyboardIndex < _hitRects.Count)
+            ctx.DrawRectangle(null, new Pen(ResolveBrush("WbAccentBrightBrush", Brushes.White), 2),
+                _hitRects[_keyboardIndex].rect);
     }
 
     private void DrawNode(DrawingContext ctx, DiskNode node, Rect rect, int depth)
@@ -149,9 +166,57 @@ public sealed class TreemapControl : Control
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
         base.OnPointerPressed(e);
+        Focus();
         var node = HitTest(e.GetPosition(this));
         if (node is not null)
             NodeInvoked?.Invoke(this, node);
+    }
+
+    protected override void OnKeyDown(KeyEventArgs e)
+    {
+        base.OnKeyDown(e);
+        if (_hitRects.Count == 0)
+            return;
+
+        switch (e.Key)
+        {
+            case Key.Right or Key.Down:
+                _keyboardIndex = (_keyboardIndex + 1) % _hitRects.Count;
+                ShowKeyboardTip();
+                InvalidateVisual();
+                e.Handled = true;
+                break;
+            case Key.Left or Key.Up:
+                _keyboardIndex = _keyboardIndex <= 0 ? _hitRects.Count - 1 : _keyboardIndex - 1;
+                ShowKeyboardTip();
+                InvalidateVisual();
+                e.Handled = true;
+                break;
+            case Key.Enter or Key.Space:
+                if (_keyboardIndex >= 0 && _keyboardIndex < _hitRects.Count)
+                {
+                    NodeInvoked?.Invoke(this, _hitRects[_keyboardIndex].node);
+                    e.Handled = true;
+                }
+                break;
+        }
+    }
+
+    private void ShowKeyboardTip()
+    {
+        if (_keyboardIndex < 0 || _keyboardIndex >= _hitRects.Count)
+            return;
+        var node = _hitRects[_keyboardIndex].node;
+        ToolTip.SetTip(this, $"{node.FullPath}\n{SizeFormatter.Format(node.SizeBytes)}");
+    }
+
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+        if (change.Property == RootProperty)
+            _keyboardIndex = -1; // the cells this indexed no longer exist
+        if (change.Property == IsFocusedProperty)
+            InvalidateVisual(); // show/hide the focus indicators
     }
 
     protected override void OnPointerMoved(PointerEventArgs e)
