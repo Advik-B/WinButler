@@ -3,11 +3,13 @@ using System.Globalization;
 using Avalonia.Data.Converters;
 using Avalonia.Media;
 using WinButler.Models;
+using WinButler.Services;
 
 namespace WinButler.Converters;
 
 /// <summary>Maps a <see cref="RiskLevel"/> to its Duly Doted signal-dot brush
-/// (SAFE=ok green, CAUTION=warn amber, RISKY=live red — independent of the app accent).</summary>
+/// (SAFE=ok green, CAUTION=warn amber, RISKY=live red — independent of the app accent).
+/// Brushes resolve from the theme tokens so they can never drift from the XAML.</summary>
 public sealed class RiskColorConverter : IValueConverter
 {
     public static readonly RiskColorConverter Instance = new();
@@ -15,9 +17,9 @@ public sealed class RiskColorConverter : IValueConverter
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture) =>
         value switch
         {
-            RiskLevel.Safe => new SolidColorBrush(Color.Parse("#06C24A")),
-            RiskLevel.Caution => new SolidColorBrush(Color.Parse("#FFB200")),
-            RiskLevel.Risky => new SolidColorBrush(Color.Parse("#E60012")),
+            RiskLevel.Safe => ThemeService.Brush("WbSignalOkBrush", "#06C24A"),
+            RiskLevel.Caution => ThemeService.Brush("WbSignalWarnBrush", "#FFB200"),
+            RiskLevel.Risky => ThemeService.Brush("WbSignalLiveBrush", "#E60012"),
             _ => Brushes.Gray,
         };
 

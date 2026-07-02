@@ -70,6 +70,10 @@
       <SolidColorBrush x:Key="WbDotOnBrush" Color="{StaticResource WbWhiteColor}"/>
       <SolidColorBrush x:Key="WbDotOffBrush" Color="#FFFFFF" Opacity="0.08"/>
 
+      <!-- Modal scrim (the dimmed backdrop behind the confirm dialog). -->
+      <Color x:Key="WbScrimColor">#9E000000</Color>
+      <SolidColorBrush x:Key="WbScrimBrush" Color="{StaticResource WbScrimColor}"/>
+
       <!-- ==== LED RED PALETTE (precomputed derived steps) ==== -->
       <Color x:Key="WbRedColor">#E60012</Color>
       <Color x:Key="WbRedDimColor">#5C0007</Color>

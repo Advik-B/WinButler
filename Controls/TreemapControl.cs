@@ -26,6 +26,11 @@ public sealed class TreemapControl : Control
     /// <summary>Leaf rectangles actually drawn this frame, smallest-last for hit testing.</summary>
     private readonly List<(DiskNode node, Rect rect)> _hitRects = new();
 
+    // Theme brushes, resolved once per render pass from this control's position in the
+    // visual tree (which cascades into the Styles-merged token dictionaries).
+    private IBrush _labelBrush = Brushes.White;
+    private Typeface _labelTypeface = Typeface.Default;
+
     public static readonly StyledProperty<DiskNode?> RootProperty =
         AvaloniaProperty.Register<TreemapControl, DiskNode?>(nameof(Root));
 
@@ -53,8 +58,13 @@ public sealed class TreemapControl : Control
     {
         _hitRects.Clear();
 
+        _labelBrush = ResolveBrush("WbTextBrush", Brushes.White);
+        _labelTypeface = this.TryFindResource("WbFontUi", out var font) && font is FontFamily family
+            ? new Typeface(family, weight: FontWeight.Bold)
+            : Typeface.Default;
+
         var full = new Rect(Bounds.Size);
-        context.FillRectangle(new SolidColorBrush(Color.FromRgb(0x1E, 0x1E, 0x1E)), full);
+        context.FillRectangle(ResolveBrush("WbSurfaceBrush", new SolidColorBrush(Color.FromRgb(0x1B, 0x1B, 0x1B))), full);
 
         var root = Root;
         if (root is null || full.Width < 2 || full.Height < 2)
@@ -108,7 +118,10 @@ public sealed class TreemapControl : Control
         _hitRects.Add((node, rect));
     }
 
-    private static void DrawLabel(DrawingContext ctx, DiskNode node, Rect rect)
+    private IBrush ResolveBrush(string key, IBrush fallback) =>
+        this.TryFindResource(key, out var value) && value is IBrush brush ? brush : fallback;
+
+    private void DrawLabel(DrawingContext ctx, DiskNode node, Rect rect)
     {
         if (rect.Width < LabelMinWidth || rect.Height < LabelMinHeight)
             return;
@@ -117,9 +130,9 @@ public sealed class TreemapControl : Control
             node.Name,
             CultureInfo.CurrentCulture,
             FlowDirection.LeftToRight,
-            Typeface.Default,
+            _labelTypeface,
             11,
-            Brushes.White)
+            _labelBrush)
         {
             MaxTextWidth = Math.Max(0, rect.Width - 6),
             MaxTextHeight = rect.Height,
