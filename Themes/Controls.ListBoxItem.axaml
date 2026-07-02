@@ -25,6 +25,7 @@
     <Setter Property="Padding" Value="16,12"/>
     <Setter Property="Foreground" Value="{DynamicResource WbTextBrush}"/>
     <Setter Property="FontFamily" Value="{DynamicResource WbFontUi}"/>
+    <Setter Property="FontWeight" Value="Bold"/>
     <Setter Property="Cursor" Value="Hand"/>
     <Setter Property="Template">
       <ControlTemplate>

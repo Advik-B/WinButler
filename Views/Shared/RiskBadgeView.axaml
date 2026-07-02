@@ -11,7 +11,7 @@
         <Ellipse Width="7" Height="7"
                  Fill="{Binding Risk, ElementName=Root, Converter={x:Static conv:RiskColorConverter.Instance}}"/>
         <TextBlock Text="{Binding Risk, ElementName=Root, Converter={x:Static conv:RiskLabelConverter.Instance}}"
-                   FontFamily="{DynamicResource WbFontUi}" FontSize="{StaticResource WbText2xs}"
+                   FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold" FontSize="{StaticResource WbText2xs}"
                    LetterSpacing="1" Foreground="{DynamicResource WbTextMutedBrush}"/>
     </StackPanel>
 

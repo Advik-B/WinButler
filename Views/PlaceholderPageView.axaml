@@ -13,7 +13,7 @@
                    FontFamily="{DynamicResource WbFontDot}" FontSize="{StaticResource WbTextXl}"
                    Foreground="{DynamicResource WbTextBrush}"/>
         <TextBlock Text="{Binding Message}" HorizontalAlignment="Center" TextAlignment="Center"
-                   TextWrapping="Wrap" FontFamily="{DynamicResource WbFontUi}"
+                   TextWrapping="Wrap" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
                    FontSize="{StaticResource WbTextXs}"
                    Foreground="{DynamicResource WbTextTertiaryBrush}"/>
     </StackPanel>

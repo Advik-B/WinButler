@@ -10,8 +10,10 @@
     <ResourceDictionary>
 
       <!-- ==== FONT FAMILIES ==== -->
-      <FontFamily x:Key="WbFontDot">avares://WinButler/Assets/Fonts#Bitcount Single</FontFamily>
-      <FontFamily x:Key="WbFontReadout">avares://WinButler/Assets/Fonts#Doto</FontFamily>
+      <!-- WbFontDot: dot-matrix display face for page titles (Doto). WbFontReadout: monospace for
+           numbers, paths and names (JetBrains Mono). WbFontUi: primary UI text (Aldrich). -->
+      <FontFamily x:Key="WbFontDot">avares://WinButler/Assets/Fonts#Doto</FontFamily>
+      <FontFamily x:Key="WbFontReadout">avares://WinButler/Assets/Fonts#JetBrains Mono</FontFamily>
       <FontFamily x:Key="WbFontUi">avares://WinButler/Assets/Fonts#Aldrich</FontFamily>
       <FontFamily x:Key="WbFontEditorial">avares://WinButler/Assets/Fonts#Geo</FontFamily>
       <FontFamily x:Key="WbFontPixel">avares://WinButler/Assets/Fonts#Pixelify Sans</FontFamily>

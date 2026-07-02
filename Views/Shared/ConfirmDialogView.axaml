@@ -16,7 +16,7 @@
                 <Border Padding="18,14" BorderBrush="{DynamicResource WbBorderFaintBrush}" BorderThickness="0,0,0,1">
                     <StackPanel Orientation="Horizontal" Spacing="10">
                         <Ellipse Width="9" Height="9" Fill="{DynamicResource WbSignalLiveBrush}"/>
-                        <TextBlock Text="PERMANENT DELETION" FontFamily="{DynamicResource WbFontUi}"
+                        <TextBlock Text="PERMANENT DELETION" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
                                    FontSize="{StaticResource WbText2xs}" LetterSpacing="1.5"
                                    Foreground="{DynamicResource WbSignalLiveBrush}"/>
                     </StackPanel>
@@ -25,7 +25,7 @@
                 <StackPanel Margin="22" Spacing="10">
                     <TextBlock Text="{Binding Title}" FontFamily="{DynamicResource WbFontDot}" FontWeight="Bold"
                                FontSize="{StaticResource WbTextMd}" Foreground="{DynamicResource WbTextBrush}"/>
-                    <TextBlock TextWrapping="Wrap" FontFamily="{DynamicResource WbFontUi}"
+                    <TextBlock TextWrapping="Wrap" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
                                FontSize="{StaticResource WbTextXs}" Foreground="{DynamicResource WbTextSecondaryBrush}">
                         <Run Text="Permanently remove"/>
                         <Run Text="{Binding Count}" FontFamily="{DynamicResource WbFontReadout}" Foreground="{DynamicResource WbTextBrush}"/>

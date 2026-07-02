@@ -1,9 +1,13 @@
+using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
+using WinButler.Models;
 using WinButler.Services;
+using WinButler.Services.Mft;
 
 namespace WinButler.ViewModels;
 
@@ -20,6 +24,7 @@ public partial class DevJunkPageViewModel : ViewModelBase
     private readonly ICleaner _cleaner;
     private readonly RedirectPageViewModel _redirectPage;
     private readonly System.Action<string> _navigate;
+    private readonly DiskIndexService _diskIndex;
 
     public ObservableCollection<DevToolGroupViewModel> Groups { get; } = new();
 
@@ -33,13 +38,14 @@ public partial class DevJunkPageViewModel : ViewModelBase
 
     public DevJunkPageViewModel(
         DevJunkAggregator aggregator, AppSettings settings, ICleaner cleaner,
-        RedirectPageViewModel redirectPage, System.Action<string> navigate)
+        RedirectPageViewModel redirectPage, System.Action<string> navigate, DiskIndexService diskIndex)
     {
         _aggregator = aggregator;
         _settings = settings;
         _cleaner = cleaner;
         _redirectPage = redirectPage;
         _navigate = navigate;
+        _diskIndex = diskIndex;
     }
 
     public long SelectedBytes => Groups.Where(g => g.IsSelected).Sum(g => g.Group.ReclaimableBytes);
@@ -54,6 +60,9 @@ public partial class DevJunkPageViewModel : ViewModelBase
         StatusText = "Scanning dev-tool folders…";
         try
         {
+            // Build (or reuse) the shared volume index so the reclaimable-subset sizing reads from it.
+            await _diskIndex.EnsureBuiltAsync(DiskIndexService.SystemDrive, new Progress<string>(s => StatusText = s));
+
             // Reuse the Redirect screen's own scan — it already sizes every dev-tool root,
             // so running it again here would pay that (expensive) cost twice.
             if (_redirectPage.Candidates.Count == 0)
@@ -118,10 +127,17 @@ public partial class DevJunkPageViewModel : ViewModelBase
                 }
             }
 
+            // Real deletions happened — the shared index is stale for these paths now.
+            if (!dryRun)
+                _diskIndex.Invalidate(DiskIndexService.SystemDrive);
+
             StatusText = dryRun
                 ? $"DRY RUN — nothing was deleted. Would reclaim {SizeFormatter.Format(reclaimed)} from {ok} item(s)."
                 : $"Cleaned {ok} item(s), reclaimed {SizeFormatter.Format(reclaimed)}." +
                   (failed > 0 ? $" {failed} skipped (in use / access denied)." : "");
+
+            WeakReferenceMessenger.Default.Send(
+                new CleanupCompletedMessage(CleanupAction.DevJunk, reclaimed, ok, dryRun, System.DateTime.Now));
         }
         finally
         {

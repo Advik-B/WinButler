@@ -38,5 +38,7 @@
       <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
     </PackageReference>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.1" />
+    <PackageReference Include="Optris.Icons.Avalonia" Version="12.0.7" />
+    <PackageReference Include="Optris.Icons.Avalonia.MaterialDesign" Version="12.0.7" />
   </ItemGroup>
 </Project>

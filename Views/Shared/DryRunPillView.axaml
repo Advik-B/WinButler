@@ -18,7 +18,7 @@
             <Ellipse Width="7" Height="7" VerticalAlignment="Center"
                      Fill="{DynamicResource WbAccentBrush}"/>
             <TextBlock Text="DRY RUN" VerticalAlignment="Center"
-                       FontFamily="{DynamicResource WbFontUi}" FontSize="{StaticResource WbText2xs}"
+                       FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold" FontSize="{StaticResource WbText2xs}"
                        LetterSpacing="1.5" Foreground="{DynamicResource WbAccentBrush}"/>
             <ToggleSwitch IsChecked="{Binding IsDryRun, ElementName=Root, Mode=TwoWay}"/>
         </StackPanel>

@@ -47,6 +47,10 @@ public partial class MainWindowViewModel : ViewModelBase
 
     private DispatcherTimer? _toastTimer;
 
+    /// <summary>The one shared whole-volume disk index, wired into the sizing chokepoint at
+    /// construction so every scan reuses a single MFT read instead of re-walking the filesystem.</summary>
+    private readonly DiskIndexService _diskIndex;
+
     /// <summary>Path-rule definitions (bundled now; can be refreshed from online sources later).</summary>
     public DefinitionsProvider Definitions { get; }
 
@@ -56,24 +60,31 @@ public partial class MainWindowViewModel : ViewModelBase
         Definitions = new DefinitionsProvider();
         var defs = Definitions.Current;
 
+        // One shared whole-volume index behind every scan (Clean/Redirect/Dev Junk/Dashboard/Disk
+        // Explorer) so none re-walks the filesystem. Wire it into the sizing chokepoint that every
+        // scanner already funnels through, then hand it to the pages that trigger scans.
+        var diskScan = new DiskScanService();
+        _diskIndex = new DiskIndexService(diskScan);
+        DirectorySizeCalculator.Index = _diskIndex;
+
         IScanner[] scanners =
         {
             new ElectronLeftoverScanner(),
             new TempScanner(),
             new CacheScanner(new SafeCaches(defs.Cache)),
         };
-        CleanPage = new CleanPageViewModel(Settings, scanners, new Cleaner());
-        RedirectPage = new RedirectPageViewModel(Settings, new RedirectionService(defs.Redirect));
-        DiskPage = new DiskScannerPageViewModel(new DiskScanService());
+        CleanPage = new CleanPageViewModel(Settings, scanners, new Cleaner(), _diskIndex);
+        RedirectPage = new RedirectPageViewModel(Settings, new RedirectionService(defs.Redirect), _diskIndex);
+        DiskPage = new DiskScannerPageViewModel(diskScan, _diskIndex);
 
         ElectronPage = new ElectronPageViewModel(CleanPage);
         TempPage = new TempPageViewModel(CleanPage);
         CachePage = new CachePageViewModel(CleanPage);
 
         var devJunkAggregator = new DevJunkAggregator(new SafeCaches(defs.Cache));
-        DevJunkPage = new DevJunkPageViewModel(devJunkAggregator, Settings, new Cleaner(), RedirectPage, Navigate);
+        DevJunkPage = new DevJunkPageViewModel(devJunkAggregator, Settings, new Cleaner(), RedirectPage, Navigate, _diskIndex);
 
-        DashboardPage = new DashboardPageViewModel(CleanPage, RedirectPage, DevJunkPage, Navigate);
+        DashboardPage = new DashboardPageViewModel(CleanPage, RedirectPage, DevJunkPage, Navigate, _diskIndex);
 
         _currentPage = DashboardPage;
     }
@@ -100,8 +111,13 @@ public partial class MainWindowViewModel : ViewModelBase
     [RelayCommand]
     private async Task RescanAllAsync()
     {
+        // Explicit refresh: drop the cached index so the first page scan rebuilds it once from disk,
+        // then the rest reuse that fresh build.
+        _diskIndex.Invalidate(DiskIndexService.SystemDrive);
         await CleanPage.ScanCommand.ExecuteAsync(null);
         await RedirectPage.ScanCommand.ExecuteAsync(null);
+        // Index is freshly rebuilt now — re-derive the disk breakdown from it (no extra MFT read).
+        await DashboardPage.RefreshBreakdownAsync();
     }
 
     [RelayCommand]

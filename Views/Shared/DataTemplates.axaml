@@ -20,7 +20,7 @@
           <TextBlock Text="{Binding FullPath}" FontFamily="{DynamicResource WbFontReadout}"
                      FontSize="{StaticResource WbTextXs}" Foreground="{DynamicResource WbTextBrush}"
                      TextTrimming="CharacterEllipsis"/>
-          <TextBlock Text="{Binding Reason}" FontFamily="{DynamicResource WbFontUi}"
+          <TextBlock Text="{Binding Reason}" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
                      FontSize="{StaticResource WbText2xs}" Foreground="{DynamicResource WbTextMutedBrush}"/>
         </StackPanel>
         <shared:RiskBadgeView Grid.Column="2" Risk="{Binding Risk}" VerticalAlignment="Center"/>

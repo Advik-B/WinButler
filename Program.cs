@@ -1,5 +1,7 @@
 ﻿using Avalonia;
 using System;
+using Optris.Icons.Avalonia;
+using Optris.Icons.Avalonia.MaterialDesign;
 
 namespace WinButler;
 
@@ -14,11 +16,15 @@ sealed class Program
 
     // Avalonia configuration, don't remove; also used by visual designer.
     public static AppBuilder BuildAvaloniaApp()
-        => AppBuilder.Configure<App>()
+    {
+        // Material Design vector icons (mdi-*), rendered via <i:Icon/> — replaces the old emoji glyphs.
+        IconProvider.Current.Register<MaterialDesignIconProvider>();
+        return AppBuilder.Configure<App>()
             .UsePlatformDetect()
 #if DEBUG
             .WithDeveloperTools()
 #endif
             .WithInterFont()
             .LogToTrace();
+    }
 }

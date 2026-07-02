@@ -14,6 +14,7 @@
     <Setter Property="BorderThickness" Value="1"/>
     <Setter Property="CornerRadius" Value="{StaticResource WbRadiusPill}"/>
     <Setter Property="FontFamily" Value="{DynamicResource WbFontUi}"/>
+    <Setter Property="FontWeight" Value="Bold"/>
     <Setter Property="FontSize" Value="{StaticResource WbTextXs}"/>
     <Setter Property="LetterSpacing" Value="1"/>
     <Setter Property="Padding" Value="18,10"/>

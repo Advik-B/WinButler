@@ -1,11 +1,14 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using WinButler.Models;
 using WinButler.Services;
+using WinButler.Services.Mft;
 
 namespace WinButler.ViewModels;
 
@@ -18,6 +21,7 @@ public partial class CleanPageViewModel : ViewModelBase
     private readonly IReadOnlyList<IScanner> _scanners;
     private readonly ICleaner _cleaner;
     private readonly AppSettings _settings;
+    private readonly DiskIndexService _diskIndex;
 
     public ObservableCollection<CategoryViewModel> Categories { get; } = new();
 
@@ -32,11 +36,12 @@ public partial class CleanPageViewModel : ViewModelBase
     [ObservableProperty]
     private bool _hasScanned;
 
-    public CleanPageViewModel(AppSettings settings, IReadOnlyList<IScanner> scanners, ICleaner cleaner)
+    public CleanPageViewModel(AppSettings settings, IReadOnlyList<IScanner> scanners, ICleaner cleaner, DiskIndexService diskIndex)
     {
         _settings = settings;
         _scanners = scanners;
         _cleaner = cleaner;
+        _diskIndex = diskIndex;
 
         foreach (var scanner in _scanners)
             Categories.Add(new CategoryViewModel(scanner.Title, scanner.Category, UpdateTotals));
@@ -63,6 +68,9 @@ public partial class CleanPageViewModel : ViewModelBase
         StatusText = "Scanning…";
         try
         {
+            // Build (or reuse) the one shared volume index first; the scanners' size lookups then hit it.
+            await _diskIndex.EnsureBuiltAsync(DiskIndexService.SystemDrive, new Progress<string>(s => StatusText = s));
+
             var tasks = _scanners.Select(s => s.ScanAsync()).ToArray();
             var resultsPerScanner = await Task.WhenAll(tasks);
 
@@ -124,8 +132,14 @@ public partial class CleanPageViewModel : ViewModelBase
                 StatusText =
                     $"Cleaned {ok} item(s), reclaimed {SizeFormatter.Format(reclaimed)}." +
                     (failed > 0 ? $" {failed} skipped (in use / access denied)." : "");
+                // Files were deleted for real — drop the stale index so the rescan reflects it.
+                _diskIndex.Invalidate(DiskIndexService.SystemDrive);
                 await ScanAsync();
             }
+
+            // Report the run to the Dashboard's Session Activity feed (dry runs included, tagged).
+            WeakReferenceMessenger.Default.Send(
+                new CleanupCompletedMessage(CleanupAction.Clean, reclaimed, ok, dryRun, DateTime.Now));
         }
         finally
         {

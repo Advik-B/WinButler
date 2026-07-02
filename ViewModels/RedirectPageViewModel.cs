@@ -1,11 +1,14 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using WinButler.Models;
 using WinButler.Services;
+using WinButler.Services.Mft;
 
 namespace WinButler.ViewModels;
 
@@ -17,6 +20,7 @@ public partial class RedirectPageViewModel : ViewModelBase
 {
     private readonly AppSettings _settings;
     private readonly IRedirectionService _service;
+    private readonly DiskIndexService _diskIndex;
 
     public ObservableCollection<RedirectCandidateViewModel> Candidates { get; } = new();
     public ObservableCollection<RedirectRecord> ActiveRedirects { get; } = new();
@@ -30,10 +34,11 @@ public partial class RedirectPageViewModel : ViewModelBase
     [ObservableProperty]
     private string _statusText = "Pick a drive and Scan to find space to reclaim.";
 
-    public RedirectPageViewModel(AppSettings settings, IRedirectionService service)
+    public RedirectPageViewModel(AppSettings settings, IRedirectionService service, DiskIndexService diskIndex)
     {
         _settings = settings;
         _service = service;
+        _diskIndex = diskIndex;
 
         foreach (var d in _service.GetEligibleDrives())
             Drives.Add(d);
@@ -60,6 +65,9 @@ public partial class RedirectPageViewModel : ViewModelBase
         StatusText = "Scanning redirectable folders…";
         try
         {
+            // Build (or reuse) the shared volume index first; candidate sizing then reads from it.
+            await _diskIndex.EnsureBuiltAsync(DiskIndexService.SystemDrive, new Progress<string>(s => StatusText = s));
+
             var found = await _service.ScanCandidatesAsync();
             Candidates.Clear();
             foreach (var c in found)
@@ -114,7 +122,14 @@ public partial class RedirectPageViewModel : ViewModelBase
                   (failed > 0 ? $" {failed} failed — {lastMessage}" : "");
 
             if (!dryRun)
+            {
+                // Data moved off C: behind a junction — the index is now stale for those paths.
+                _diskIndex.Invalidate(DiskIndexService.SystemDrive);
                 await ScanAsync();
+            }
+
+            WeakReferenceMessenger.Default.Send(
+                new CleanupCompletedMessage(CleanupAction.Redirect, moved, ok, dryRun, DateTime.Now));
         }
         finally
         {
@@ -135,7 +150,11 @@ public partial class RedirectPageViewModel : ViewModelBase
             var result = await _service.UndoAsync(record, dryRun);
             StatusText = result.Message;
             if (!dryRun && result.Succeeded)
+            {
+                // Data moved back onto C: — refresh the index before rescanning.
+                _diskIndex.Invalidate(DiskIndexService.SystemDrive);
                 await ScanAsync();
+            }
         }
         finally
         {

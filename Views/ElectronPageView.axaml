@@ -12,17 +12,17 @@
 
         <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="0,0,0,18">
             <StackPanel Grid.Column="0" MaxWidth="560">
-                <TextBlock Text="CLEANER · ELECTRON" FontFamily="{DynamicResource WbFontUi}"
+                <TextBlock Text="CLEANER · ELECTRON" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
                            FontSize="{StaticResource WbText2xs}" LetterSpacing="2"
                            Foreground="{DynamicResource WbAccentBrush}" Margin="0,0,0,6"/>
                 <TextBlock Text="Electron Leftovers" FontFamily="{DynamicResource WbFontDot}" FontWeight="Bold"
                            FontSize="{StaticResource WbTextXl}" Foreground="{DynamicResource WbTextBrush}" Margin="0,0,0,6"/>
-                <TextBlock TextWrapping="Wrap" FontFamily="{DynamicResource WbFontUi}" FontSize="{StaticResource WbTextXs}"
+                <TextBlock TextWrapping="Wrap" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold" FontSize="{StaticResource WbTextXs}"
                            Foreground="{DynamicResource WbTextTertiaryBrush}"
                            Text="Auto-updates leave the previous build in app-x.y.z\ folders. The current version stays; everything older is safe to remove."/>
             </StackPanel>
             <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Bottom">
-                <TextBlock VerticalAlignment="Center" FontFamily="{DynamicResource WbFontUi}"
+                <TextBlock VerticalAlignment="Center" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
                            FontSize="{StaticResource WbTextXs}" Foreground="{DynamicResource WbTextTertiaryBrush}">
                     <Run Text="{Binding Clean.ElectronCategory.SelectedCount}"/>
                     <Run Text="selected ·"/>
@@ -35,7 +35,7 @@
         </Grid>
 
         <TextBlock DockPanel.Dock="Bottom" Text="{Binding Clean.StatusText}" TextWrapping="Wrap" Margin="0,12,0,0"
-                   FontFamily="{DynamicResource WbFontUi}" FontSize="{StaticResource WbTextXs}"
+                   FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold" FontSize="{StaticResource WbTextXs}"
                    Foreground="{DynamicResource WbTextTertiaryBrush}"/>
 
         <ScrollViewer>
@@ -55,7 +55,7 @@
                                                    FontSize="{StaticResource WbTextXs}" Foreground="{DynamicResource WbTextSecondaryBrush}"/>
                                     </Border>
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                        <TextBlock Text="{Binding Name}" FontFamily="{DynamicResource WbFontUi}"
+                                        <TextBlock Text="{Binding Name}" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
                                                    FontSize="{StaticResource WbTextSm}" Foreground="{DynamicResource WbTextBrush}"/>
                                         <TextBlock Text="{Binding Path}" FontFamily="{DynamicResource WbFontReadout}"
                                                    FontSize="{StaticResource WbText2xs}" Foreground="{DynamicResource WbTextMutedBrush}"
@@ -65,14 +65,14 @@
                                             CornerRadius="{StaticResource WbRadiusPill}" Padding="9,4">
                                         <StackPanel Orientation="Horizontal" Spacing="6">
                                             <Ellipse Width="6" Height="6" Fill="{DynamicResource WbSignalOkBrush}"/>
-                                            <TextBlock Text="{Binding CurrentVersionLabel}" FontFamily="{DynamicResource WbFontUi}"
+                                            <TextBlock Text="{Binding CurrentVersionLabel}" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
                                                        FontSize="{StaticResource WbText2xs}" Foreground="{DynamicResource WbTextTertiaryBrush}"/>
                                         </StackPanel>
                                     </Border>
                                     <StackPanel Grid.Column="3" VerticalAlignment="Center" MinWidth="78">
                                         <TextBlock Text="{Binding OldBytesText}" HorizontalAlignment="Right" FontFamily="{DynamicResource WbFontReadout}"
                                                    FontWeight="Bold" FontSize="{StaticResource WbTextMd}" Foreground="{DynamicResource WbAccentBrush}"/>
-                                        <TextBlock HorizontalAlignment="Right" FontFamily="{DynamicResource WbFontUi}"
+                                        <TextBlock HorizontalAlignment="Right" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
                                                    FontSize="{StaticResource WbText2xs}" Foreground="{DynamicResource WbTextMutedBrush}">
                                             <Run Text="{Binding OldCount}"/><Run Text=" OLD"/>
                                         </TextBlock>
@@ -92,7 +92,7 @@
                                                                Foreground="{DynamicResource WbTextSecondaryBrush}"/>
                                                     <Border Grid.Column="2" VerticalAlignment="Center" BorderBrush="{DynamicResource WbBorderBrush}"
                                                             BorderThickness="1" CornerRadius="{StaticResource WbRadiusPill}" Padding="8,2">
-                                                        <TextBlock Text="OLD" FontFamily="{DynamicResource WbFontUi}"
+                                                        <TextBlock Text="OLD" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
                                                                    FontSize="{StaticResource WbText2xs}" Foreground="{DynamicResource WbTextMutedBrush}"/>
                                                     </Border>
                                                     <TextBlock Grid.Column="3" Text="{Binding SizeText}" FontFamily="{DynamicResource WbFontReadout}"

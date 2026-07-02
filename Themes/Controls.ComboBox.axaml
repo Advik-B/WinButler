@@ -6,6 +6,7 @@
     <Setter Property="Padding" Value="12,7"/>
     <Setter Property="Foreground" Value="{DynamicResource WbTextSecondaryBrush}"/>
     <Setter Property="FontFamily" Value="{DynamicResource WbFontUi}"/>
+    <Setter Property="FontWeight" Value="Bold"/>
     <Setter Property="FontSize" Value="{StaticResource WbTextXs}"/>
     <Setter Property="CornerRadius" Value="{StaticResource WbRadiusXs}"/>
     <Setter Property="Cursor" Value="Hand"/>
@@ -34,6 +35,7 @@
     <Setter Property="BorderThickness" Value="1"/>
     <Setter Property="CornerRadius" Value="{StaticResource WbRadiusPill}"/>
     <Setter Property="FontFamily" Value="{DynamicResource WbFontUi}"/>
+    <Setter Property="FontWeight" Value="Bold"/>
     <Setter Property="FontSize" Value="{StaticResource WbTextXs}"/>
     <Setter Property="Padding" Value="14,8"/>
     <Setter Property="HorizontalContentAlignment" Value="Left"/>

@@ -76,13 +76,12 @@ dotnet test Tests/WinButler.Tests.csproj
 
 ## Fonts
 
-The custom theme embeds six typefaces from Google Fonts, all under the SIL Open Font License: Aldrich, Bitcount Single, Doto, Geo, Pixelify Sans, and Press Start 2P.
+The custom theme embeds six typefaces (Google Fonts and JetBrains, all under the SIL Open Font License): Aldrich, Doto, Geo, JetBrains Mono, Pixelify Sans, and Press Start 2P.
 
 ## Known limitations
 
-- The Dashboard's disk-usage bar shows Reclaimable / Other-used / Free rather than a full System vs. Apps vs. Media breakdown — a precise breakdown would need its own slow directory walk for a number that's mostly cosmetic.
-- The Dashboard's "Session Activity" panel isn't wired to real clean/redirect completion events yet — it currently only shows the empty state.
-- Geo, Pixelify Sans, and Press Start 2P are embedded but not yet used anywhere in the current UI (Aldrich, Bitcount Single, and Doto are the ones actually in use).
+- Geo, Pixelify Sans, and Press Start 2P are embedded but not yet used anywhere in the current UI (Aldrich, Doto, and JetBrains Mono are the ones actually in use).
+- The Dashboard's System / Apps / Media split is classified by well-known location (Windows/ProgramData, Program Files, per-user media folders); everything else is bucketed as "Other". It reads from the shared whole-volume index that also backs Clean/Redirect/Dev Junk/Disk Explorer, so it costs one MFT read (a few seconds on first load), not a per-feature walk.
 - There's no automated UI test suite; UI changes in this project are verified manually (build, run, screenshot, compare against the design).
 
 ## License

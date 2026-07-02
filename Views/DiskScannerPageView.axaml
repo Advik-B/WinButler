@@ -13,7 +13,7 @@
     <DockPanel Margin="24,20">
 
         <StackPanel DockPanel.Dock="Top" Margin="0,0,0,14">
-            <TextBlock Text="EXPLORER · MFT SCAN" FontFamily="{DynamicResource WbFontUi}"
+            <TextBlock Text="EXPLORER · MFT SCAN" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
                        FontSize="{StaticResource WbText2xs}" LetterSpacing="2"
                        Foreground="{DynamicResource WbAccentBrush}" Margin="0,0,0,6"/>
             <TextBlock Text="Disk Explorer" FontFamily="{DynamicResource WbFontDot}" FontWeight="Bold"
@@ -30,7 +30,7 @@
                 </ComboBox>
                 <Button Content="SCAN" Command="{Binding ScanCommand}" Classes="primary"/>
                 <Button Content="CHOOSE FOLDER…" Click="OnChooseFolder" Classes="secondary"/>
-                <TextBlock Text="Sort:" VerticalAlignment="Center" FontFamily="{DynamicResource WbFontUi}"
+                <TextBlock Text="Sort:" VerticalAlignment="Center" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
                            FontSize="{StaticResource WbTextXs}" Foreground="{DynamicResource WbTextTertiaryBrush}"/>
                 <ComboBox ItemsSource="{Binding SortModes}" SelectedItem="{Binding SelectedSort}" MinWidth="100"/>
                 <ProgressBar IsIndeterminate="True" Width="90" VerticalAlignment="Center" IsVisible="{Binding IsBusy}"/>
@@ -44,7 +44,7 @@
 
         <!-- Status -->
         <TextBlock DockPanel.Dock="Bottom" Text="{Binding StatusText}" TextWrapping="Wrap" Margin="0,10,0,0"
-                   FontFamily="{DynamicResource WbFontUi}" FontSize="{StaticResource WbTextXs}"
+                   FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold" FontSize="{StaticResource WbTextXs}"
                    Foreground="{DynamicResource WbTextTertiaryBrush}"/>
 
         <Border DockPanel.Dock="Top" Padding="12,0"
@@ -52,13 +52,13 @@
                 BorderBrush="{DynamicResource WbBorderFaintBrush}" BorderThickness="1,1,1,0"
                 CornerRadius="8,8,0,0">
             <Grid ColumnDefinitions="*,110,150,110,80,80,150" Height="34">
-                <TextBlock Grid.Column="0" Text="NAME" VerticalAlignment="Center" FontFamily="{DynamicResource WbFontUi}" FontSize="{StaticResource WbText2xs}" LetterSpacing="1" Foreground="{DynamicResource WbTextMutedBrush}"/>
-                <TextBlock Grid.Column="1" Text="SIZE" VerticalAlignment="Center" HorizontalAlignment="Right" FontFamily="{DynamicResource WbFontUi}" FontSize="{StaticResource WbText2xs}" LetterSpacing="1" Foreground="{DynamicResource WbTextMutedBrush}"/>
-                <TextBlock Grid.Column="2" Text="% OF PARENT" VerticalAlignment="Center" HorizontalAlignment="Center" FontFamily="{DynamicResource WbFontUi}" FontSize="{StaticResource WbText2xs}" LetterSpacing="1" Foreground="{DynamicResource WbTextMutedBrush}"/>
-                <TextBlock Grid.Column="3" Text="ALLOCATED" VerticalAlignment="Center" HorizontalAlignment="Right" FontFamily="{DynamicResource WbFontUi}" FontSize="{StaticResource WbText2xs}" LetterSpacing="1" Foreground="{DynamicResource WbTextMutedBrush}"/>
-                <TextBlock Grid.Column="4" Text="FILES" VerticalAlignment="Center" HorizontalAlignment="Right" FontFamily="{DynamicResource WbFontUi}" FontSize="{StaticResource WbText2xs}" LetterSpacing="1" Foreground="{DynamicResource WbTextMutedBrush}"/>
-                <TextBlock Grid.Column="5" Text="FOLDERS" VerticalAlignment="Center" HorizontalAlignment="Right" FontFamily="{DynamicResource WbFontUi}" FontSize="{StaticResource WbText2xs}" LetterSpacing="1" Foreground="{DynamicResource WbTextMutedBrush}"/>
-                <TextBlock Grid.Column="6" Text="MODIFIED" VerticalAlignment="Center" Margin="8,0,0,0" FontFamily="{DynamicResource WbFontUi}" FontSize="{StaticResource WbText2xs}" LetterSpacing="1" Foreground="{DynamicResource WbTextMutedBrush}"/>
+                <TextBlock Grid.Column="0" Text="NAME" VerticalAlignment="Center" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold" FontSize="{StaticResource WbText2xs}" LetterSpacing="1" Foreground="{DynamicResource WbTextMutedBrush}"/>
+                <TextBlock Grid.Column="1" Text="SIZE" VerticalAlignment="Center" HorizontalAlignment="Right" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold" FontSize="{StaticResource WbText2xs}" LetterSpacing="1" Foreground="{DynamicResource WbTextMutedBrush}"/>
+                <TextBlock Grid.Column="2" Text="% OF PARENT" VerticalAlignment="Center" HorizontalAlignment="Center" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold" FontSize="{StaticResource WbText2xs}" LetterSpacing="1" Foreground="{DynamicResource WbTextMutedBrush}"/>
+                <TextBlock Grid.Column="3" Text="ALLOCATED" VerticalAlignment="Center" HorizontalAlignment="Right" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold" FontSize="{StaticResource WbText2xs}" LetterSpacing="1" Foreground="{DynamicResource WbTextMutedBrush}"/>
+                <TextBlock Grid.Column="4" Text="FILES" VerticalAlignment="Center" HorizontalAlignment="Right" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold" FontSize="{StaticResource WbText2xs}" LetterSpacing="1" Foreground="{DynamicResource WbTextMutedBrush}"/>
+                <TextBlock Grid.Column="5" Text="FOLDERS" VerticalAlignment="Center" HorizontalAlignment="Right" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold" FontSize="{StaticResource WbText2xs}" LetterSpacing="1" Foreground="{DynamicResource WbTextMutedBrush}"/>
+                <TextBlock Grid.Column="6" Text="MODIFIED" VerticalAlignment="Center" Margin="8,0,0,0" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold" FontSize="{StaticResource WbText2xs}" LetterSpacing="1" Foreground="{DynamicResource WbTextMutedBrush}"/>
             </Grid>
         </Border>
 
@@ -86,7 +86,7 @@
                                             IsVisible="{Binding HasChildren}" Classes="ghost"
                                             Width="20" Height="20" Padding="0" FontSize="11"/>
                                     <TextBlock Text="{Binding Name}" VerticalAlignment="Center"
-                                               FontFamily="{DynamicResource WbFontUi}" FontSize="{StaticResource WbTextXs}"
+                                               FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold" FontSize="{StaticResource WbTextXs}"
                                                Foreground="{DynamicResource WbTextBrush}" TextTrimming="CharacterEllipsis"/>
                                 </StackPanel>
 

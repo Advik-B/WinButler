@@ -21,7 +21,7 @@
             <Ellipse Width="9" Height="9" VerticalAlignment="Center"
                      Fill="{Binding Kind, Converter={x:Static conv:ToastKindConverter.Instance}}"/>
             <TextBlock Text="{Binding Message}" TextWrapping="Wrap" VerticalAlignment="Center"
-                       FontFamily="{DynamicResource WbFontUi}" FontSize="{StaticResource WbTextXs}"
+                       FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold" FontSize="{StaticResource WbTextXs}"
                        Foreground="{DynamicResource WbTextBrush}"/>
         </StackPanel>
     </Border>

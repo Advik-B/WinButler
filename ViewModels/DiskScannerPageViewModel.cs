@@ -19,6 +19,7 @@ namespace WinButler.ViewModels;
 public partial class DiskScannerPageViewModel : ViewModelBase
 {
     private readonly DiskScanService _service;
+    private readonly DiskIndexService _diskIndex;
 
     public ObservableCollection<ScanDrive> Drives { get; } = new();
 
@@ -57,9 +58,10 @@ public partial class DiskScannerPageViewModel : ViewModelBase
     [ObservableProperty]
     private DiskNode? _selectedNode;
 
-    public DiskScannerPageViewModel(DiskScanService service)
+    public DiskScannerPageViewModel(DiskScanService service, DiskIndexService diskIndex)
     {
         _service = service;
+        _diskIndex = diskIndex;
         foreach (var d in _service.GetScannableDrives())
             Drives.Add(d);
         SelectedDrive = Drives.FirstOrDefault(d => d.Letter == 'C') ?? Drives.FirstOrDefault();
@@ -81,7 +83,12 @@ public partial class DiskScannerPageViewModel : ViewModelBase
         var progress = new Progress<string>(s => StatusText = s);
         try
         {
-            _root = await _service.ScanAsync(target, progress, CancellationToken.None);
+            // Scanning a whole drive root reuses the shared volume index (built once, shared with
+            // Clean/Redirect/Dev Junk) rather than re-reading the MFT. A picked folder scans directly.
+            if (SelectedFolder is null && SelectedDrive is not null)
+                _root = (await _diskIndex.EnsureBuiltAsync(SelectedDrive.Letter, progress, CancellationToken.None)).Root;
+            else
+                _root = await _service.ScanAsync(target, progress, CancellationToken.None);
 
             Sort(_root, SelectedSort);
             ShowRoot();
