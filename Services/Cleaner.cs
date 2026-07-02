@@ -57,6 +57,8 @@ public sealed class Cleaner : ICleaner
                     break;
             }
 
+            // The audit trail for every real deletion (dry-run returned long before this point).
+            Log.Info("clean", $"{target.DeleteMode}: {target.FullPath} ({target.SizeBytes} B) — ok");
             return new CleanResult
             {
                 Target = target,
@@ -67,6 +69,7 @@ public sealed class Cleaner : ICleaner
         }
         catch (Exception ex)
         {
+            Log.Warn("clean", $"{target.DeleteMode}: {target.FullPath} — failed", ex);
             return new CleanResult
             {
                 Target = target,

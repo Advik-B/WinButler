@@ -39,6 +39,19 @@ internal static class RecycleBin
         if (!File.Exists(path) && !Directory.Exists(path))
             return;
 
+        // ReparsePoint guard (mirrors Cleaner.DeletePermanently): never hand a junction/symlink
+        // to the shell — delete the link itself and leave its target untouched. Closes the TOCTOU
+        // where a scanned folder becomes a junction by delete time.
+        if ((File.GetAttributes(path) & FileAttributes.ReparsePoint) != 0)
+        {
+            Log.Info("clean", $"Reparse point at {path} — removing the link only, target untouched.");
+            if (Directory.Exists(path))
+                Directory.Delete(path, recursive: false);
+            else
+                File.Delete(path);
+            return;
+        }
+
         var op = new SHFILEOPSTRUCT
         {
             wFunc = FO_DELETE,

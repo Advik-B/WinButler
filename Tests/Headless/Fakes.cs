@@ -32,6 +32,105 @@ public sealed class FakeScanner : IScanner
         Task.FromResult(_results);
 }
 
+/// <summary>A scanner that always faults — exercises the ViewModels' guarded error paths.</summary>
+public sealed class ThrowingScanner : IScanner
+{
+    private readonly Exception _exception;
+
+    public ThrowingScanner(CleanupCategory category, string title, Exception? exception = null)
+    {
+        Category = category;
+        Title = title;
+        _exception = exception ?? new System.IO.IOException("scanner exploded");
+    }
+
+    public CleanupCategory Category { get; }
+    public string Title { get; }
+
+    public Task<IReadOnlyList<CleanupTarget>> ScanAsync(CancellationToken ct = default) =>
+        Task.FromException<IReadOnlyList<CleanupTarget>>(_exception);
+}
+
+/// <summary>A scanner that never completes until its token is cancelled — for driving the
+/// cancel-mid-scan flow deterministically.</summary>
+public sealed class HangingScanner : IScanner
+{
+    public HangingScanner(CleanupCategory category, string title)
+    {
+        Category = category;
+        Title = title;
+    }
+
+    public CleanupCategory Category { get; }
+    public string Title { get; }
+
+    public Task<IReadOnlyList<CleanupTarget>> ScanAsync(CancellationToken ct = default)
+    {
+        var tcs = new TaskCompletionSource<IReadOnlyList<CleanupTarget>>(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        ct.Register(() => tcs.TrySetCanceled(ct));
+        return tcs.Task;
+    }
+}
+
+/// <summary>
+/// A cleaner that always faults. The real <see cref="Cleaner"/> never throws (it reports
+/// <c>Succeeded=false</c>), so this exercises the VM-level guard against a misbehaving one.
+/// </summary>
+public sealed class ThrowingCleaner : ICleaner
+{
+    public Task<CleanResult> CleanAsync(CleanupTarget target, bool dryRun, CancellationToken ct = default) =>
+        Task.FromException<CleanResult>(new System.IO.IOException("cleaner exploded"));
+}
+
+/// <summary>
+/// A <see cref="Services.Mft.DiskScanService"/> stub returning a canned tree (or faulting)
+/// instantly, so headless tests can drive commands that build the shared disk index without a
+/// real MFT read or admin rights.
+/// </summary>
+public sealed class FakeDiskScanService : Services.Mft.DiskScanService
+{
+    private readonly Func<Services.Mft.DiskNode> _result;
+
+    public FakeDiskScanService(Func<Services.Mft.DiskNode>? result = null) =>
+        _result = result ?? (() => new Services.Mft.DiskNode
+        {
+            Name = @"C:\",
+            FullPath = @"C:\",
+            IsDirectory = true,
+        });
+
+    public override Task<Services.Mft.DiskNode> ScanAsync(
+        string target, IProgress<string>? progress = null, CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        try { return Task.FromResult(_result()); }
+        catch (Exception ex) { return Task.FromException<Services.Mft.DiskNode>(ex); }
+    }
+}
+
+/// <summary>A redirection-service stub: no drives, no candidates, no ledger, mutates nothing.</summary>
+public sealed class FakeRedirectionService : IRedirectionService
+{
+    public Task<IReadOnlyList<RedirectCandidate>> ScanCandidatesAsync(CancellationToken ct = default) =>
+        Task.FromResult<IReadOnlyList<RedirectCandidate>>(Array.Empty<RedirectCandidate>());
+
+    public Task<RedirectResult> RedirectAsync(RedirectCandidate candidate, string driveLetter, bool dryRun,
+        CancellationToken ct = default) =>
+        Task.FromResult(new RedirectResult { Succeeded = true, WasDryRun = dryRun, Message = "fake" });
+
+    public Task<RedirectResult> UndoAsync(RedirectRecord record, bool dryRun, CancellationToken ct = default) =>
+        Task.FromResult(new RedirectResult { Succeeded = true, WasDryRun = dryRun, Message = "fake" });
+
+    public IReadOnlyList<RedirectRecord> GetActiveRedirects() => Array.Empty<RedirectRecord>();
+
+    public IReadOnlyList<string> FindOrphanedRedirects() => Array.Empty<string>();
+
+    public IReadOnlyList<string> GetEligibleDrives() => Array.Empty<string>();
+
+    public string? SuggestTargetDrive() => null;
+}
+
 /// <summary>
 /// A cleaner stub that mutates nothing and always reports success, projecting the target's own size
 /// as reclaimed. Lets the dry-run clean path be exercised with no filesystem access.
