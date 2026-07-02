@@ -44,10 +44,10 @@ public sealed class RecursiveWalkScanner
 
                     if (entry is FileInfo file)
                     {
-                        node.Children.Add(new DiskNode
+                        node.AddChild(new DiskNode
                         {
                             Name = file.Name,
-                            FullPath = file.FullName,
+                            Parent = node, // FullPath computed on demand, matching the MFT builder
                             IsDirectory = false,
                             SizeBytes = file.Length,
                             AllocBytes = file.Length, // no cheap allocated-size source on the fallback path
@@ -60,7 +60,7 @@ public sealed class RecursiveWalkScanner
                     else if (entry is DirectoryInfo sub)
                     {
                         var child = NewDirectoryNode(sub, sub.FullName);
-                        node.Children.Add(child);
+                        node.AddChild(child);
                         all.Add((child, node));
                         work.Push((sub, child));
                     }
@@ -101,11 +101,12 @@ public sealed class RecursiveWalkScanner
         while (stack.Count > 0)
         {
             var n = stack.Pop();
-            n.Children.Sort(static (a, b) => b.SizeBytes.CompareTo(a.SizeBytes));
+            n.SortChildren(static (a, b) => b.SizeBytes.CompareTo(a.SizeBytes));
             foreach (var child in n.Children)
             {
                 child.PercentOfParent = n.SizeBytes > 0 ? (double)child.SizeBytes / n.SizeBytes : 0;
-                stack.Push(child);
+                if (child.HasChildren)
+                    stack.Push(child);
             }
         }
     }

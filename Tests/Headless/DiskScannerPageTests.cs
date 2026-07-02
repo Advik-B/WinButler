@@ -27,11 +27,11 @@ public sealed class DiskScannerPageTests : MessengerIsolatedTest
     {
         var root = new DiskNode { Name = @"C:\", FullPath = @"C:\", IsDirectory = true };
         var dirB = new DiskNode { Name = "bravo", FullPath = @"C:\bravo", IsDirectory = true, SizeBytes = 200, AllocBytes = 90 };
-        dirB.Children.Add(File("inner.bin", 200));
+        dirB.AddChild(File("inner.bin", 200));
         // Deliberately NOT size-ordered, so tests can detect any in-place re-sorting.
-        root.Children.Add(File("alpha.bin", 100));
-        root.Children.Add(dirB);
-        root.Children.Add(File("charlie.bin", 50));
+        root.AddChild(File("alpha.bin", 100));
+        root.AddChild(dirB);
+        root.AddChild(File("charlie.bin", 50));
         root.SizeBytes = 350;
         return root;
     }

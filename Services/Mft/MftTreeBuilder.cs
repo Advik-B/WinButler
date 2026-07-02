@@ -29,7 +29,8 @@ public sealed class MftTreeBuilder
             nodes[i] = new DiskNode
             {
                 Name = e.Name,
-                FullPath = string.Empty, // assigned in the path pass
+                // FullPath: assigned in the path pass for directories; files get a Parent
+                // reference instead and compute theirs on demand.
                 IsDirectory = e.IsDirectory,
                 SizeBytes = e.RealSize,
                 AllocBytes = e.AllocSize,
@@ -90,7 +91,7 @@ public sealed class MftTreeBuilder
             int p = parentIdx[i];
             if (p < 0 || nodes[i] is null)
                 continue;
-            nodes[p]!.Children.Add(nodes[i]!);
+            nodes[p]!.AddChild(nodes[i]!);
         }
 
         // 4) Aggregate: each node contributes its own size and a +1 count to every ancestor.
@@ -129,7 +130,10 @@ public sealed class MftTreeBuilder
             }
         }
 
-        // 5) Reconstruct full paths top-down (iterative DFS).
+        // 5) Reconstruct full paths top-down (iterative DFS). Only directories STORE a path
+        //    (the DriveIndex keys them); the far more numerous file leaves keep a Parent
+        //    reference and compute theirs on demand — on a whole drive this is the single
+        //    biggest retained-memory cost in the app.
         root.FullPath = driveRoot;
         var stack = new Stack<DiskNode>();
         stack.Push(root);
@@ -139,8 +143,15 @@ public sealed class MftTreeBuilder
             string prefix = n.FullPath.EndsWith('\\') ? n.FullPath : n.FullPath + '\\';
             foreach (var child in n.Children)
             {
-                child.FullPath = prefix + child.Name;
-                stack.Push(child);
+                if (child.IsDirectory)
+                {
+                    child.FullPath = prefix + child.Name;
+                    stack.Push(child);
+                }
+                else
+                {
+                    child.Parent = n;
+                }
             }
         }
 
@@ -150,11 +161,12 @@ public sealed class MftTreeBuilder
         while (stack.Count > 0)
         {
             var n = stack.Pop();
-            n.Children.Sort(static (a, b) => b.SizeBytes.CompareTo(a.SizeBytes));
+            n.SortChildren(static (a, b) => b.SizeBytes.CompareTo(a.SizeBytes));
             foreach (var child in n.Children)
             {
                 child.PercentOfParent = n.SizeBytes > 0 ? (double)child.SizeBytes / n.SizeBytes : 0;
-                stack.Push(child);
+                if (child.HasChildren)
+                    stack.Push(child);
             }
         }
 
