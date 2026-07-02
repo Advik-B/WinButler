@@ -36,11 +36,16 @@ public partial class DiskScannerPageViewModel : ViewModelBase
 
     /// <summary>A specific folder to scan instead of the whole drive (set by "Choose folder…").</summary>
     [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(ScanCommand))]
     private string? _selectedFolder;
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(ScanCommand))]
+    [NotifyCanExecuteChangedFor(nameof(CancelCommand))]
     private bool _isBusy;
+
+    /// <summary>The in-flight scan's cancellation source; null when idle.</summary>
+    private CancellationTokenSource? _opCts;
 
     [ObservableProperty]
     private string _statusText = "Pick a drive or folder and click Scan.";
@@ -69,6 +74,11 @@ public partial class DiskScannerPageViewModel : ViewModelBase
 
     private bool CanScan() => !IsBusy && (SelectedFolder is not null || SelectedDrive is not null);
 
+    private bool CanCancel() => IsBusy;
+
+    [RelayCommand(CanExecute = nameof(CanCancel))]
+    private void Cancel() => _opCts?.Cancel();
+
     [RelayCommand(CanExecute = nameof(CanScan))]
     private async Task ScanAsync()
     {
@@ -81,34 +91,32 @@ public partial class DiskScannerPageViewModel : ViewModelBase
 
         IsBusy = true;
         var progress = new Progress<string>(s => StatusText = s);
+        using var cts = new CancellationTokenSource();
+        _opCts = cts;
         try
         {
-            // Scanning a whole drive root reuses the shared volume index (built once, shared with
-            // Clean/Redirect/Dev Junk) rather than re-reading the MFT. A picked folder scans directly.
-            if (SelectedFolder is null && SelectedDrive is not null)
-                _root = (await _diskIndex.EnsureBuiltAsync(SelectedDrive.Letter, progress, CancellationToken.None)).Root;
-            else
-                _root = await _service.ScanAsync(target, progress, CancellationToken.None);
+            await RunGuardedAsync(async () =>
+            {
+                // Scanning a whole drive root reuses the shared volume index (built once, shared with
+                // Clean/Redirect/Dev Junk) rather than re-reading the MFT. A picked folder scans directly.
+                if (SelectedFolder is null && SelectedDrive is not null)
+                    _root = (await _diskIndex.EnsureBuiltAsync(SelectedDrive.Letter, progress, cts.Token)).Root;
+                else
+                    _root = await _service.ScanAsync(target, progress, cts.Token);
 
-            Sort(_root, SelectedSort);
-            ShowRoot();
-            SelectedNode = _root;
+                Sort(_root, SelectedSort);
+                ShowRoot();
+                SelectedNode = _root;
 
-            SummaryText =
-                $"{_root.FullPath}  —  {SizeFormatter.Format(_root.SizeBytes)} in " +
-                $"{_root.FileCount:N0} files, {_root.FolderCount:N0} folders";
-            StatusText = "Scan complete. Click a folder's arrow to drill in.";
-        }
-        catch (OperationCanceledException)
-        {
-            StatusText = "Scan cancelled.";
-        }
-        catch (Exception ex)
-        {
-            StatusText = $"Scan failed: {ex.Message}";
+                SummaryText =
+                    $"{_root.FullPath}  —  {SizeFormatter.Format(_root.SizeBytes)} in " +
+                    $"{_root.FileCount:N0} files, {_root.FolderCount:N0} folders";
+                StatusText = "Scan complete. Click a folder's arrow to drill in.";
+            }, s => StatusText = s, "Scan failed");
         }
         finally
         {
+            _opCts = null;
             IsBusy = false;
         }
     }
@@ -147,6 +155,13 @@ public partial class DiskScannerPageViewModel : ViewModelBase
                 Rows.Insert(insertAt++, new DiskRowViewModel(child, row.Depth + 1, Toggle));
             row.IsExpanded = true;
         }
+    }
+
+    partial void OnSelectedDriveChanged(ScanDrive? value)
+    {
+        // Picking a drive returns future scans to whole-drive mode — otherwise a previously
+        // chosen folder would keep winning silently (ScanAsync prefers SelectedFolder).
+        SelectedFolder = null;
     }
 
     partial void OnSelectedRowChanged(DiskRowViewModel? value)

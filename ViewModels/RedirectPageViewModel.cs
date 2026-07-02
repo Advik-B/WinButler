@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -29,7 +30,12 @@ public partial class RedirectPageViewModel : ViewModelBase
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(ScanCommand))]
     [NotifyCanExecuteChangedFor(nameof(RedirectSelectedCommand))]
+    [NotifyCanExecuteChangedFor(nameof(UndoCommand))]
+    [NotifyCanExecuteChangedFor(nameof(CancelCommand))]
     private bool _isBusy;
+
+    /// <summary>The in-flight operation's cancellation source; null when idle.</summary>
+    private CancellationTokenSource? _opCts;
 
     [ObservableProperty]
     private string _statusText = "Pick a drive and Scan to find space to reclaim.";
@@ -58,27 +64,46 @@ public partial class RedirectPageViewModel : ViewModelBase
 
     private bool CanRun() => !IsBusy;
 
+    private bool CanCancel() => IsBusy;
+
+    [RelayCommand(CanExecute = nameof(CanCancel))]
+    private void Cancel() => _opCts?.Cancel();
+
     [RelayCommand(CanExecute = nameof(CanRun))]
     private async Task ScanAsync()
     {
         IsBusy = true;
         StatusText = "Scanning redirectable folders…";
+        using var cts = new CancellationTokenSource();
+        _opCts = cts;
         try
         {
-            // Build (or reuse) the shared volume index first; candidate sizing then reads from it.
-            await _diskIndex.EnsureBuiltAsync(DiskIndexService.SystemDrive, new Progress<string>(s => StatusText = s));
+            await RunGuardedAsync(async () =>
+            {
+                // Build (or reuse) the shared volume index first; candidate sizing then reads from it.
+                await _diskIndex.EnsureBuiltAsync(DiskIndexService.SystemDrive, new Progress<string>(s => StatusText = s), cts.Token);
 
-            var found = await _service.ScanCandidatesAsync();
-            Candidates.Clear();
-            foreach (var c in found)
-                Candidates.Add(new RedirectCandidateViewModel(c));
-            RefreshActive();
+                var found = await _service.ScanCandidatesAsync(cts.Token);
+                Candidates.Clear();
+                foreach (var c in found)
+                    Candidates.Add(new RedirectCandidateViewModel(c));
+                RefreshActive();
 
-            var redirectable = found.Where(c => !c.IsAlreadyRedirected).Sum(c => c.SizeBytes);
-            StatusText = $"Found {SizeFormatter.Format(redirectable)} redirectable across {found.Count} folder(s).";
+                var redirectable = found.Where(c => !c.IsAlreadyRedirected).Sum(c => c.SizeBytes);
+                StatusText = $"Found {SizeFormatter.Format(redirectable)} redirectable across {found.Count} folder(s).";
+
+                // Crash-recovery check: relocated data with no ledger record is invisible to Undo.
+                var orphans = await Task.Run(() => _service.FindOrphanedRedirects());
+                if (orphans.Count > 0)
+                {
+                    StatusText += $"  ⚠ {orphans.Count} orphaned folder(s) found in _redirected " +
+                                  "with no ledger record — data preserved, see the log.";
+                }
+            }, s => StatusText = s, "Scan failed");
         }
         finally
         {
+            _opCts = null;
             IsBusy = false;
         }
     }
@@ -102,42 +127,62 @@ public partial class RedirectPageViewModel : ViewModelBase
 
         IsBusy = true;
         var dryRun = _settings.IsDryRun;
+        using var cts = new CancellationTokenSource();
+        _opCts = cts;
         try
         {
-            long moved = 0;
-            int ok = 0, failed = 0;
-            string? lastMessage = null;
-
-            foreach (var c in selected)
+            await RunGuardedAsync(async () =>
             {
-                var result = await _service.RedirectAsync(c.Candidate, drive, dryRun);
-                lastMessage = result.Message;
-                if (result.Succeeded) { moved += result.BytesMoved; ok++; }
-                else failed++;
-            }
+                long moved = 0;
+                int ok = 0, failed = 0;
+                string? lastMessage = null;
 
-            StatusText = dryRun
-                ? $"DRY RUN — would move {SizeFormatter.Format(moved)} from {ok} folder(s) to {drive}:. Nothing changed."
-                : $"Redirected {ok} folder(s), {SizeFormatter.Format(moved)} moved to {drive}:." +
-                  (failed > 0 ? $" {failed} failed — {lastMessage}" : "");
+                foreach (var c in selected)
+                {
+                    if (cts.Token.IsCancellationRequested)
+                        break;
+                    try
+                    {
+                        // The token reaches robocopy: a mid-copy cancel kills the copy and the
+                        // service removes the partial dest (original untouched). Catch it here
+                        // so the folders that DID finish still get summarized below.
+                        var result = await _service.RedirectAsync(c.Candidate, drive, dryRun, cts.Token);
+                        lastMessage = result.Message;
+                        if (result.Succeeded) { moved += result.BytesMoved; ok++; }
+                        else failed++;
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        break;
+                    }
+                }
 
-            if (!dryRun)
-            {
-                // Data moved off C: behind a junction — the index is now stale for those paths.
-                _diskIndex.Invalidate(DiskIndexService.SystemDrive);
-                await ScanAsync();
-            }
+                StatusText = dryRun
+                    ? $"DRY RUN — would move {SizeFormatter.Format(moved)} from {ok} folder(s) to {drive}:. Nothing changed."
+                    : $"Redirected {ok} folder(s), {SizeFormatter.Format(moved)} moved to {drive}:." +
+                      (failed > 0 ? $" {failed} failed — {lastMessage}" : "");
+                if (cts.Token.IsCancellationRequested)
+                    StatusText = "Cancelled — " + StatusText;
 
-            WeakReferenceMessenger.Default.Send(
-                new CleanupCompletedMessage(CleanupAction.Redirect, moved, ok, dryRun, DateTime.Now));
+                if (!dryRun)
+                {
+                    // Data moved off C: behind a junction — the index is now stale for those paths.
+                    _diskIndex.Invalidate(DiskIndexService.SystemDrive);
+                    await ScanAsync();
+                }
+
+                WeakReferenceMessenger.Default.Send(
+                    new CleanupCompletedMessage(CleanupAction.Redirect, moved, ok, dryRun, DateTime.Now));
+            }, s => StatusText = s, "Redirect failed");
         }
         finally
         {
+            _opCts = null;
             IsBusy = false;
         }
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanRun))]
     private async Task UndoAsync(RedirectRecord? record)
     {
         if (record == null)
@@ -145,19 +190,25 @@ public partial class RedirectPageViewModel : ViewModelBase
 
         IsBusy = true;
         var dryRun = _settings.IsDryRun;
+        using var cts = new CancellationTokenSource();
+        _opCts = cts;
         try
         {
-            var result = await _service.UndoAsync(record, dryRun);
-            StatusText = result.Message;
-            if (!dryRun && result.Succeeded)
+            await RunGuardedAsync(async () =>
             {
-                // Data moved back onto C: — refresh the index before rescanning.
-                _diskIndex.Invalidate(DiskIndexService.SystemDrive);
-                await ScanAsync();
-            }
+                var result = await _service.UndoAsync(record, dryRun, cts.Token);
+                StatusText = result.Message;
+                if (!dryRun && result.Succeeded)
+                {
+                    // Data moved back onto C: — refresh the index before rescanning.
+                    _diskIndex.Invalidate(DiskIndexService.SystemDrive);
+                    await ScanAsync();
+                }
+            }, s => StatusText = s, "Undo failed");
         }
         finally
         {
+            _opCts = null;
             IsBusy = false;
         }
     }

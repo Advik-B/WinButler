@@ -21,7 +21,7 @@ public sealed class DiskIndexService
     private readonly DiskScanService _scan;
     private readonly object _gate = new();
     private readonly Dictionary<char, DriveIndex> _ready = new();
-    private readonly Dictionary<char, Task<DriveIndex>> _inFlight = new();
+    private readonly Dictionary<char, (Task<DriveIndex> Task, CancellationTokenSource Cts)> _inFlight = new();
     private readonly Dictionary<char, int> _generation = new();
 
     public DiskIndexService(DiskScanService scan) => _scan = scan;
@@ -39,29 +39,39 @@ public sealed class DiskIndexService
     public Task<DriveIndex> EnsureBuiltAsync(char drive, IProgress<string>? progress = null, CancellationToken ct = default)
     {
         drive = char.ToUpperInvariant(drive);
+        Task<DriveIndex> task;
         lock (_gate)
         {
             if (_ready.TryGetValue(drive, out var idx))
                 return Task.FromResult(idx);
             if (_inFlight.TryGetValue(drive, out var running))
-                return running;
-
-            _generation.TryGetValue(drive, out var gen);
-            var task = BuildAsync(drive, gen, progress, ct);
-            _inFlight[drive] = task;
-            return task;
+            {
+                task = running.Task;
+            }
+            else
+            {
+                _generation.TryGetValue(drive, out var gen);
+                // The build runs on its OWN token (cancelled only by Invalidate) — a caller's
+                // token must not kill the read that other joiners are sharing.
+                var cts = new CancellationTokenSource();
+                task = BuildAsync(drive, gen, progress, cts);
+                _inFlight[drive] = (task, cts);
+            }
         }
+        // Each joiner waits with its own token, so cancelling one page's scan abandons only
+        // that page's wait.
+        return ct.CanBeCanceled ? task.WaitAsync(ct) : task;
     }
 
-    private async Task<DriveIndex> BuildAsync(char drive, int gen, IProgress<string>? progress, CancellationToken ct)
+    private async Task<DriveIndex> BuildAsync(char drive, int gen, IProgress<string>? progress, CancellationTokenSource cts)
     {
         try
         {
-            var root = await _scan.ScanAsync($"{drive}:\\", progress, ct).ConfigureAwait(false);
+            var root = await _scan.ScanAsync($"{drive}:\\", progress, cts.Token).ConfigureAwait(false);
             var idx = DriveIndex.Build(drive, root);
             lock (_gate)
             {
-                _inFlight.Remove(drive);
+                RemoveIfCurrent(drive, cts);
                 // Publish only if we weren't invalidated mid-build (generation still matches).
                 _generation.TryGetValue(drive, out var current);
                 if (current == gen)
@@ -71,9 +81,24 @@ public sealed class DiskIndexService
         }
         catch
         {
-            lock (_gate) { _inFlight.Remove(drive); }
+            lock (_gate) { RemoveIfCurrent(drive, cts); }
             throw;
         }
+        finally
+        {
+            // Safe: Invalidate only cancels under _gate while the entry is still present, and
+            // both removal paths above run under _gate before this disposal.
+            cts.Dispose();
+        }
+    }
+
+    /// <summary>Removes this build's in-flight entry — but never a successor's (a fresh build
+    /// started after an Invalidate must not be evicted by the doomed one it replaced). Call
+    /// under <see cref="_gate"/>.</summary>
+    private void RemoveIfCurrent(char drive, CancellationTokenSource cts)
+    {
+        if (_inFlight.TryGetValue(drive, out var entry) && ReferenceEquals(entry.Cts, cts))
+            _inFlight.Remove(drive);
     }
 
     /// <summary>
@@ -109,7 +134,14 @@ public sealed class DiskIndexService
         lock (_gate)
         {
             _ready.Remove(drive);
-            _inFlight.Remove(drive);
+            if (_inFlight.TryGetValue(drive, out var entry))
+            {
+                // Actively stop the doomed build (its result would fail the generation check
+                // anyway). Merely forgetting it left the raw-volume read running while the
+                // post-invalidate rescan started a second concurrent MFT read of the same drive.
+                try { entry.Cts.Cancel(); } catch { }
+                _inFlight.Remove(drive);
+            }
             _generation[drive] = (_generation.TryGetValue(drive, out var g) ? g : 0) + 1;
         }
     }

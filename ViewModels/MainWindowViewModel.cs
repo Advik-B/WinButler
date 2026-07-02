@@ -45,6 +45,11 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty]
     private ConfirmDialogViewModel? _pendingConfirm;
 
+    /// <summary>True while RE-SCAN runs, so double-clicking it can't overlap two sweeps.</summary>
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(RescanAllCommand))]
+    private bool _isRescanning;
+
     private DispatcherTimer? _toastTimer;
 
     /// <summary>The one shared whole-volume disk index, wired into the sizing chokepoint at
@@ -107,17 +112,36 @@ public partial class MainWindowViewModel : ViewModelBase
         };
     }
 
+    private bool CanRescanAll() => !IsRescanning;
+
     /// <summary>File/Scan menu + toolbar "RE-SCAN": re-runs every scanner-backed page at once.</summary>
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanRescanAll))]
     private async Task RescanAllAsync()
     {
-        // Explicit refresh: drop the cached index so the first page scan rebuilds it once from disk,
-        // then the rest reuse that fresh build.
-        _diskIndex.Invalidate(DiskIndexService.SystemDrive);
-        await CleanPage.ScanCommand.ExecuteAsync(null);
-        await RedirectPage.ScanCommand.ExecuteAsync(null);
-        // Index is freshly rebuilt now — re-derive the disk breakdown from it (no extra MFT read).
-        await DashboardPage.RefreshBreakdownAsync();
+        IsRescanning = true;
+        try
+        {
+            // The page scans guard their own bodies and own their status lines; this outer guard
+            // only backstops the orchestration (failures land in the log).
+            await RunGuardedAsync(async () =>
+            {
+                // Explicit refresh: drop the cached index so the first page scan rebuilds it once from
+                // disk, then the rest reuse that fresh build.
+                _diskIndex.Invalidate(DiskIndexService.SystemDrive);
+                // ExecuteAsync ignores CanExecute, so check it — a page mid-scan is already doing
+                // this work and its collections must not be mutated by a second overlapping run.
+                if (CleanPage.ScanCommand.CanExecute(null))
+                    await CleanPage.ScanCommand.ExecuteAsync(null);
+                if (RedirectPage.ScanCommand.CanExecute(null))
+                    await RedirectPage.ScanCommand.ExecuteAsync(null);
+                // Index is freshly rebuilt now — re-derive the disk breakdown from it (no extra MFT read).
+                await DashboardPage.RefreshBreakdownAsync();
+            }, _ => { }, "Rescan All failed");
+        }
+        finally
+        {
+            IsRescanning = false;
+        }
     }
 
     [RelayCommand]

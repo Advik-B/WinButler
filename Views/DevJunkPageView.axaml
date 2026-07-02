@@ -28,6 +28,7 @@
                            FontSize="{StaticResource WbTextXs}" Foreground="{DynamicResource WbTextTertiaryBrush}"/>
                 <Button Content="SCAN" Classes="secondary" Command="{Binding ScanCommand}"/>
                 <Button Content="CLEAN SELECTED" Classes="primary" Command="{Binding CleanSelectedCommand}"/>
+                <Button Content="CANCEL" Classes="ghost" Command="{Binding CancelCommand}" IsVisible="{Binding IsBusy}"/>
             </StackPanel>
         </Grid>
 

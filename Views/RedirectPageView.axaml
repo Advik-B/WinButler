@@ -28,6 +28,7 @@
                 <Button Content="SCAN" Command="{Binding ScanCommand}" Classes="primary"/>
                 <Button Content="REDIRECT SELECTED" Command="{Binding RedirectSelectedCommand}" Classes="secondary"/>
                 <ProgressBar IsIndeterminate="True" Width="90" VerticalAlignment="Center" IsVisible="{Binding IsBusy}"/>
+                <Button Content="CANCEL" Classes="ghost" Command="{Binding CancelCommand}" IsVisible="{Binding IsBusy}"/>
             </StackPanel>
         </Grid>
 

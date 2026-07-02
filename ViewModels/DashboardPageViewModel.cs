@@ -55,6 +55,19 @@ public partial class DashboardPageViewModel : ViewModelBase
             category.PropertyChanged += OnChildChanged;
         _devJunkPage.Groups.CollectionChanged += (_, _) => RaiseAll();
 
+        // CLEAN ALL delegates to the two pages' clean commands — stay disabled while either
+        // page is mid-operation so it can't overlap (or double-fire) their work.
+        _cleanPage.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(CleanPageViewModel.IsBusy))
+                CleanAllCommand.NotifyCanExecuteChanged();
+        };
+        _devJunkPage.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(DevJunkPageViewModel.IsBusy))
+                CleanAllCommand.NotifyCanExecuteChanged();
+        };
+
         // Record completed clean/redirect/dev-junk runs into the Session Activity feed.
         WeakReferenceMessenger.Default.Register<DashboardPageViewModel, CleanupCompletedMessage>(
             this, static (r, m) => r.OnCleanupCompleted(m));
@@ -163,17 +176,22 @@ public partial class DashboardPageViewModel : ViewModelBase
         IsScanningDisk = true;
         try
         {
-            var index = await _diskIndex.EnsureBuiltAsync(
-                DiskIndexService.SystemDrive, new Progress<string>(s => DiskStatus = s));
-            var bd = index.ComputeBreakdown();
-            _systemBytes = bd.System;
-            _appsBytes = bd.Apps;
-            _mediaBytes = bd.Media;
-            _freeBytes = SystemDrive?.AvailableFreeSpace ?? 0;
-            // Everything uncategorized (caches, user data, NTFS metadata drift) lands in "Other".
-            _otherBytes = Math.Max(0, DiskUsedBytes - bd.System - bd.Apps - bd.Media);
-            HasBreakdown = true;
-            RaiseBreakdown();
+            // This auto-fires on the app's first paint — a failure here must degrade to a
+            // status line, never crash the shell.
+            await RunGuardedAsync(async () =>
+            {
+                var index = await _diskIndex.EnsureBuiltAsync(
+                    DiskIndexService.SystemDrive, new Progress<string>(s => DiskStatus = s));
+                var bd = index.ComputeBreakdown();
+                _systemBytes = bd.System;
+                _appsBytes = bd.Apps;
+                _mediaBytes = bd.Media;
+                _freeBytes = SystemDrive?.AvailableFreeSpace ?? 0;
+                // Everything uncategorized (caches, user data, NTFS metadata drift) lands in "Other".
+                _otherBytes = Math.Max(0, DiskUsedBytes - bd.System - bd.Apps - bd.Media);
+                HasBreakdown = true;
+                RaiseBreakdown();
+            }, s => DiskStatus = s, "Disk breakdown failed");
         }
         finally
         {
@@ -191,12 +209,22 @@ public partial class DashboardPageViewModel : ViewModelBase
         OnPropertyChanged(nameof(FreeText));
     }
 
-    [RelayCommand]
+    private bool CanCleanAll() => !_cleanPage.IsBusy && !_devJunkPage.IsBusy;
+
+    [RelayCommand(CanExecute = nameof(CanCleanAll))]
     private async Task CleanAllAsync()
     {
-        await _cleanPage.CleanSelectedCommand.ExecuteAsync(null);
-        await _devJunkPage.CleanSelectedCommand.ExecuteAsync(null);
-        RaiseAll();
+        // The child commands guard their own bodies; this outer guard only backstops the
+        // aggregation itself (failures land in the log, the children own their status lines).
+        await RunGuardedAsync(async () =>
+        {
+            // ExecuteAsync ignores CanExecute — re-check in case a page went busy since the click.
+            if (_cleanPage.CleanSelectedCommand.CanExecute(null))
+                await _cleanPage.CleanSelectedCommand.ExecuteAsync(null);
+            if (_devJunkPage.CleanSelectedCommand.CanExecute(null))
+                await _devJunkPage.CleanSelectedCommand.ExecuteAsync(null);
+            RaiseAll();
+        }, _ => { }, "Clean All failed");
     }
 
     [RelayCommand]

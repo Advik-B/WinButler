@@ -1,6 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -31,7 +32,11 @@ public partial class DevJunkPageViewModel : ViewModelBase
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(ScanCommand))]
     [NotifyCanExecuteChangedFor(nameof(CleanSelectedCommand))]
+    [NotifyCanExecuteChangedFor(nameof(CancelCommand))]
     private bool _isBusy;
+
+    /// <summary>The in-flight operation's cancellation source; null when idle.</summary>
+    private CancellationTokenSource? _opCts;
 
     [ObservableProperty]
     private string _statusText = "Ready. Click Scan to find dev-tool space.";
@@ -53,42 +58,53 @@ public partial class DevJunkPageViewModel : ViewModelBase
 
     private bool CanRun() => !IsBusy;
 
+    private bool CanCancel() => IsBusy;
+
+    [RelayCommand(CanExecute = nameof(CanCancel))]
+    private void Cancel() => _opCts?.Cancel();
+
     [RelayCommand(CanExecute = nameof(CanRun))]
     private async Task ScanAsync()
     {
         IsBusy = true;
         StatusText = "Scanning dev-tool folders…";
+        using var cts = new CancellationTokenSource();
+        _opCts = cts;
         try
         {
-            // Build (or reuse) the shared volume index so the reclaimable-subset sizing reads from it.
-            await _diskIndex.EnsureBuiltAsync(DiskIndexService.SystemDrive, new Progress<string>(s => StatusText = s));
-
-            // Reuse the Redirect screen's own scan — it already sizes every dev-tool root,
-            // so running it again here would pay that (expensive) cost twice.
-            if (_redirectPage.Candidates.Count == 0)
-                await _redirectPage.ScanCommand.ExecuteAsync(null);
-
-            var candidates = _redirectPage.Candidates.Select(c => c.Candidate).ToList();
-            var groups = await _aggregator.BuildAsync(candidates);
-
-            Groups.Clear();
-            foreach (var g in groups)
+            await RunGuardedAsync(async () =>
             {
-                var vm = new DevToolGroupViewModel(g);
-                vm.PropertyChanged += (_, e) =>
-                {
-                    if (e.PropertyName == nameof(DevToolGroupViewModel.IsSelected))
-                        RaiseTotals();
-                };
-                Groups.Add(vm);
-            }
-            RaiseTotals();
+                // Build (or reuse) the shared volume index so the reclaimable-subset sizing reads from it.
+                await _diskIndex.EnsureBuiltAsync(DiskIndexService.SystemDrive, new Progress<string>(s => StatusText = s), cts.Token);
 
-            var total = groups.Sum(g => g.ReclaimableBytes);
-            StatusText = $"Scan complete — {SizeFormatter.Format(total)} reclaimable across {groups.Count} tool(s).";
+                // Reuse the Redirect screen's own scan — it already sizes every dev-tool root,
+                // so running it again here would pay that (expensive) cost twice.
+                if (_redirectPage.Candidates.Count == 0)
+                    await _redirectPage.ScanCommand.ExecuteAsync(null);
+
+                var candidates = _redirectPage.Candidates.Select(c => c.Candidate).ToList();
+                var groups = await _aggregator.BuildAsync(candidates, cts.Token);
+
+                Groups.Clear();
+                foreach (var g in groups)
+                {
+                    var vm = new DevToolGroupViewModel(g);
+                    vm.PropertyChanged += (_, e) =>
+                    {
+                        if (e.PropertyName == nameof(DevToolGroupViewModel.IsSelected))
+                            RaiseTotals();
+                    };
+                    Groups.Add(vm);
+                }
+                RaiseTotals();
+
+                var total = groups.Sum(g => g.ReclaimableBytes);
+                StatusText = $"Scan complete — {SizeFormatter.Format(total)} reclaimable across {groups.Count} tool(s).";
+            }, s => StatusText = s, "Scan failed");
         }
         finally
         {
+            _opCts = null;
             IsBusy = false;
         }
     }
@@ -106,41 +122,54 @@ public partial class DevJunkPageViewModel : ViewModelBase
         IsBusy = true;
         var dryRun = _settings.IsDryRun;
         StatusText = dryRun ? "Simulating clean…" : "Cleaning…";
+        using var cts = new CancellationTokenSource();
+        _opCts = cts;
         try
         {
-            long reclaimed = 0;
-            int ok = 0, failed = 0;
-
-            foreach (var group in selected)
+            await RunGuardedAsync(async () =>
             {
-                bool groupOk = true;
-                foreach (var target in group.Group.ReclaimableTargets)
+                long reclaimed = 0;
+                int ok = 0, failed = 0;
+
+                foreach (var group in selected)
                 {
-                    var result = await _cleaner.CleanAsync(target, dryRun);
-                    if (result.Succeeded) { reclaimed += result.BytesReclaimed; ok++; }
-                    else { failed++; groupOk = false; }
+                    // Soft-stop between groups (never mid-delete) so the partial summary,
+                    // invalidation and activity broadcast below still happen on cancellation.
+                    if (cts.Token.IsCancellationRequested)
+                        break;
+
+                    bool groupOk = true;
+                    foreach (var target in group.Group.ReclaimableTargets)
+                    {
+                        var result = await _cleaner.CleanAsync(target, dryRun);
+                        if (result.Succeeded) { reclaimed += result.BytesReclaimed; ok++; }
+                        else { failed++; groupOk = false; }
+                    }
+                    if (!dryRun && groupOk)
+                    {
+                        group.Cleaned = true;
+                        group.IsSelected = false;
+                    }
                 }
-                if (!dryRun && groupOk)
-                {
-                    group.Cleaned = true;
-                    group.IsSelected = false;
-                }
-            }
 
-            // Real deletions happened — the shared index is stale for these paths now.
-            if (!dryRun)
-                _diskIndex.Invalidate(DiskIndexService.SystemDrive);
+                // Real deletions happened — the shared index is stale for these paths now.
+                if (!dryRun)
+                    _diskIndex.Invalidate(DiskIndexService.SystemDrive);
 
-            StatusText = dryRun
-                ? $"DRY RUN — nothing was deleted. Would reclaim {SizeFormatter.Format(reclaimed)} from {ok} item(s)."
-                : $"Cleaned {ok} item(s), reclaimed {SizeFormatter.Format(reclaimed)}." +
-                  (failed > 0 ? $" {failed} skipped (in use / access denied)." : "");
+                StatusText = dryRun
+                    ? $"DRY RUN — nothing was deleted. Would reclaim {SizeFormatter.Format(reclaimed)} from {ok} item(s)."
+                    : $"Cleaned {ok} item(s), reclaimed {SizeFormatter.Format(reclaimed)}." +
+                      (failed > 0 ? $" {failed} skipped (in use / access denied)." : "");
+                if (cts.Token.IsCancellationRequested)
+                    StatusText = "Cancelled — " + StatusText;
 
-            WeakReferenceMessenger.Default.Send(
-                new CleanupCompletedMessage(CleanupAction.DevJunk, reclaimed, ok, dryRun, System.DateTime.Now));
+                WeakReferenceMessenger.Default.Send(
+                    new CleanupCompletedMessage(CleanupAction.DevJunk, reclaimed, ok, dryRun, System.DateTime.Now));
+            }, s => StatusText = s, "Clean failed");
         }
         finally
         {
+            _opCts = null;
             IsBusy = false;
         }
     }
