@@ -18,8 +18,10 @@ public sealed record ScanDrive(char Letter, string Format, bool IsNtfs, string D
 /// (<see cref="MftReader"/> + <see cref="MftTreeBuilder"/>) and the
 /// <see cref="RecursiveWalkScanner"/> fallback, and handles "scan just this folder" by reading
 /// the whole volume's MFT and re-rooting the tree at the subpath — exactly what WizTree does.
+/// <see cref="ScanAsync"/> is virtual as the test seam: headless tests substitute a canned
+/// tree so index-building commands can run without touching a real disk.
 /// </summary>
-public sealed class DiskScanService
+public class DiskScanService
 {
     /// <summary>Fixed/removable volumes that are ready, for the drive dropdown.</summary>
     public IReadOnlyList<ScanDrive> GetScannableDrives()
@@ -54,7 +56,7 @@ public sealed class DiskScanService
     /// Scans a volume root (e.g. <c>C:\</c>) or any folder, off the UI thread.
     /// <paramref name="progress"/> receives human-readable status lines.
     /// </summary>
-    public Task<DiskNode> ScanAsync(string target, IProgress<string>? progress = null, CancellationToken ct = default)
+    public virtual Task<DiskNode> ScanAsync(string target, IProgress<string>? progress = null, CancellationToken ct = default)
         => Task.Run(() => Scan(target, progress, ct), ct);
 
     private DiskNode Scan(string target, IProgress<string>? progress, CancellationToken ct)
@@ -77,6 +79,14 @@ public sealed class DiskScanService
                     (done, total) => progress?.Report($"Parsing MFT — {done:N0} / {total:N0} records"),
                     ct);
 
+                if (reader.SkippedRecords > 0)
+                {
+                    // Below the reader's corruption threshold: results are complete except for
+                    // the skipped records. Say so — a silently-partial total is worse.
+                    Log.Warn("mft", $"{reader.SkippedRecords} unreadable MFT record(s) skipped on {letter}:.");
+                    progress?.Report($"{reader.SkippedRecords:N0} unreadable MFT record(s) skipped.");
+                }
+
                 progress?.Report("Building the directory tree…");
                 var root = new MftTreeBuilder().Build(entries, letter);
 
@@ -92,9 +102,13 @@ public sealed class DiskScanService
             {
                 throw;
             }
-            catch
+            catch (Exception ex)
             {
-                // MFT path failed (access, exotic geometry) — degrade gracefully to a walk.
+                // MFT path failed (access, exotic geometry, corruption past the reader's
+                // threshold) — degrade gracefully to a walk, but never silently: the walk is
+                // minutes where the MFT is seconds, and that cliff must be diagnosable.
+                Log.Warn("mft", $"MFT read of {letter}: failed — falling back to a directory walk (slower).", ex);
+                progress?.Report("MFT read failed — falling back to a directory walk (slower)…");
             }
         }
 

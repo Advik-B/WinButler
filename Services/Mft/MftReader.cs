@@ -53,20 +53,35 @@ public sealed class MftReader
     // The 48-bit record-number mask of an 8-byte MFT file reference (high 16 bits = sequence).
     private const ulong RecordNumberMask = 0x0000_FFFF_FFFF_FFFF;
 
+    /// <summary>Records skipped because they were individually unparseable (see <see cref="Read"/>).
+    /// Reset at the start of every read; surfaced so callers can tell the user the totals are partial.</summary>
+    public int SkippedRecords { get; private set; }
+
     /// <summary>
     /// Reads and parses the entire MFT of the given drive. <paramref name="progress"/> is
     /// invoked occasionally with (recordsParsed, totalRecords). Throws if the volume can't be
     /// opened or isn't NTFS — callers fall back to a recursive walk in that case.
+    /// A malformed record is skipped and counted (<see cref="SkippedRecords"/>) rather than
+    /// aborting the read; past a corruption threshold the whole read throws so the caller's
+    /// walk fallback produces complete numbers instead of a badly partial tree.
     /// </summary>
     public MftEntry[] Read(char driveLetter, Action<long, long>? progress = null, CancellationToken ct = default)
     {
+        SkippedRecords = 0;
+
         using var volume = NtfsNative.OpenVolume(driveLetter);
         var vd = NtfsNative.GetVolumeData(volume);
 
         int frs = (int)vd.BytesPerFileRecordSegment;     // file record size, typically 1024
         int cluster = (int)vd.BytesPerCluster;
-        if (frs <= 0 || cluster <= 0)
-            throw new IOException("Unexpected NTFS geometry (zero record/cluster size).");
+        if (frs <= 0 || frs > 64 * 1024 || cluster <= 0 || cluster > 16 * 1024 * 1024)
+            throw new IOException("Unexpected NTFS geometry (implausible record/cluster size).");
+
+        // Never trust on-disk lengths: a corrupt MftValidDataLength must not size a huge
+        // allocation or overflow the record-count arithmetic below.
+        long volumeBytes = vd.TotalClusters * (long)cluster;
+        if (vd.MftValidDataLength <= 0 || (volumeBytes > 0 && vd.MftValidDataLength > volumeBytes))
+            throw new IOException("MFT length is implausible for this volume — refusing to parse.");
 
         long mftByteOffset = vd.MftStartLcn * cluster;
 
@@ -80,7 +95,12 @@ public sealed class MftReader
         long recordCount = vd.MftValidDataLength / frs;
         if (recordCount <= 0)
             throw new IOException("MFT reports zero valid records.");
+        if (recordCount > int.MaxValue)
+            throw new IOException("MFT record count is implausible — refusing to parse.");
         var entries = new MftEntry[recordCount];
+
+        // Tolerate isolated corruption; treat widespread corruption as a broken MFT.
+        long skipThreshold = Math.Max(1000, recordCount / 100);
 
         // 2) Stream the MFT extents in large, cluster-aligned chunks and parse each FILE record.
         int chunkBytes = RoundUpToCluster(4 * 1024 * 1024, cluster);
@@ -94,7 +114,7 @@ public sealed class MftReader
         foreach (var (lcn, clusterCount) in runs)
         {
             if (recordIndex >= recordCount) break;
-            if (lcn < 0) continue; // sparse run — never happens for $MFT, but be safe.
+            if (lcn < 0 || clusterCount <= 0) continue; // sparse/bogus run — never valid for $MFT.
 
             long extentBytes = clusterCount * (long)cluster;
             long extentOffset = lcn * (long)cluster;
@@ -109,7 +129,24 @@ public sealed class MftReader
 
                 for (int off = 0; off + frs <= got && recordIndex < recordCount; off += frs)
                 {
-                    ParseRecord(buffer.AsSpan(off, frs), (uint)recordIndex, vd, ref entries[recordIndex], extensionSizes);
+                    // One malformed record must not abort the whole volume: skip it (leaving the
+                    // default InUse=false entry) and keep count. The bounds checks inside
+                    // ParseRecord should make this catch unreachable — it's defence in depth
+                    // against on-disk structures we haven't imagined.
+                    try
+                    {
+                        ParseRecord(buffer.AsSpan(off, frs), (uint)recordIndex, ref entries[recordIndex], extensionSizes);
+                    }
+                    catch (Exception ex)
+                    {
+                        entries[recordIndex] = default;
+                        SkippedRecords++;
+                        if (SkippedRecords == 1)
+                            Log.Warn("mft", $"Unparseable MFT record #{recordIndex} on {driveLetter}: — skipped.", ex);
+                        if (SkippedRecords > skipThreshold)
+                            throw new IOException(
+                                $"Too many unreadable MFT records ({SkippedRecords}) — MFT presumed corrupt.");
+                    }
                     recordIndex++;
 
                     if ((recordIndex & 0xFFFF) == 0)
@@ -138,15 +175,25 @@ public sealed class MftReader
 
     // ---- FILE record parsing -------------------------------------------------------------
 
-    private static void ParseRecord(
-        Span<byte> rec, uint recordNo, NtfsNative.VolumeData vd, ref MftEntry entry,
+    // The smallest well-formed attribute (resident header) is 0x18 bytes; anything shorter
+    // means the attribute chain is corrupt and can't be walked further.
+    private const int MinAttrLen = 0x18;
+
+    internal static void ParseRecord(
+        Span<byte> rec, uint recordNo, ref MftEntry entry,
         Dictionary<uint, (long real, long alloc)> extensionSizes)
     {
+        // A record shorter than its fixed header can't be inspected at all.
+        if (rec.Length < 0x30)
+            return;
+
         // Records that aren't "FILE" (zeroed, or "BAAD") leave the default entry (InUse = false).
         if (rec[0] != (byte)'F' || rec[1] != (byte)'I' || rec[2] != (byte)'L' || rec[3] != (byte)'E')
             return;
 
-        ApplyUsaFixup(rec);
+        // A record whose fix-up array is invalid has corrupt sector tails — unusable.
+        if (!ApplyUsaFixup(rec))
+            return;
 
         ushort flags = U16(rec, 22);
         if ((flags & FLAG_IN_USE) == 0)
@@ -176,8 +223,10 @@ public sealed class MftReader
             if (type == ATTR_END)
                 break;
 
+            // Compare against the REMAINING bytes — `pos + attrLen` can overflow int on a
+            // hostile length and sail straight past a `> rec.Length` check.
             int attrLen = (int)U32(rec, pos + 4);
-            if (attrLen <= 0 || pos + attrLen > rec.Length)
+            if (attrLen < MinAttrLen || attrLen > rec.Length - pos)
                 break;
 
             byte nonResident = rec[pos + 8];
@@ -229,7 +278,7 @@ public sealed class MftReader
                             realSize = U32(rec, pos + 0x10);
                             allocSize = realSize;
                         }
-                        else
+                        else if (attrLen >= 0x38) // size fields need the full non-resident header
                         {
                             allocSize = I64(rec, pos + 0x28); // AllocatedSize (cluster-rounded)
                             realSize = I64(rec, pos + 0x30);  // RealSize (actual bytes)
@@ -273,10 +322,10 @@ public sealed class MftReader
                 break;
 
             int attrLen = (int)U32(rec, pos + 4);
-            if (attrLen <= 0 || pos + attrLen > rec.Length)
+            if (attrLen < MinAttrLen || attrLen > rec.Length - pos) // overflow-safe (see ParseRecord)
                 break;
 
-            if (type == ATTR_DATA && rec[pos + 9] == 0 && rec[pos + 8] == 1) // unnamed, non-resident
+            if (type == ATTR_DATA && attrLen >= 0x38 && rec[pos + 9] == 0 && rec[pos + 8] == 1) // unnamed, non-resident
             {
                 long startVcn = I64(rec, pos + 0x10);
                 if (startVcn == 0)
@@ -295,35 +344,51 @@ public sealed class MftReader
     /// Applies the NTFS Update Sequence Array fix-up: the last two bytes of every sector in the
     /// record were swapped out for the update-sequence number when written, and must be restored
     /// from the fix-up array before the record is parseable. Skipping this corrupts any field that
-    /// straddles a sector boundary.
+    /// straddles a sector boundary. Returns false (record unusable) when the on-disk USA header is
+    /// inconsistent with the record size — the values are untrusted input and must never index
+    /// outside the record.
     /// </summary>
-    internal static void ApplyUsaFixup(Span<byte> rec)
+    internal static bool ApplyUsaFixup(Span<byte> rec)
     {
+        if (rec.Length < 8)
+            return false;
+
         int usaOffset = U16(rec, 4);
         int usaCount = U16(rec, 6); // 1 update-sequence number + one fix-up word per sector
         int sectors = usaCount - 1;
         if (sectors <= 0)
-            return;
+            return true; // no fix-up words — nothing to restore.
 
-        int stride = rec.Length / sectors; // self-consistent regardless of physical sector size
+        // The record must divide evenly into `sectors` stride-sized sectors (stride is the
+        // sector size, ≥ 256 on any real volume; ≥ 2 is the hard floor that keeps sectorEnd
+        // non-negative below), and the whole USA must lie inside the record.
+        int stride = rec.Length / sectors;
+        if (stride < 2 || rec.Length % sectors != 0)
+            return false;
+        if (usaOffset < 0 || usaOffset + (usaCount * 2) > rec.Length)
+            return false;
+
         for (int k = 1; k <= sectors; k++)
         {
-            int sectorEnd = k * stride - 2;
-            int usaPos = usaOffset + k * 2;
-            if (sectorEnd + 2 > rec.Length || usaPos + 2 > rec.Length)
-                break;
+            int sectorEnd = k * stride - 2;   // ≥ 0: stride ≥ 2, k ≥ 1; max = rec.Length - 2.
+            int usaPos = usaOffset + k * 2;   // ≤ usaOffset + usaCount*2 - 2 ≤ rec.Length - 2.
             rec[sectorEnd] = rec[usaPos];
             rec[sectorEnd + 1] = rec[usaPos + 1];
         }
+        return true;
     }
 
-    /// <summary>Finds record 0's non-resident unnamed $DATA and decodes its data runs.</summary>
-    private static List<(long lcn, long count)> ParseMftSelfDataRuns(Span<byte> rec0)
+    /// <summary>Finds record 0's non-resident unnamed $DATA and decodes its data runs. Throws
+    /// <see cref="IOException"/> on any malformation — record 0 is the map to every other record,
+    /// so there is nothing to salvage (callers degrade to the walk).</summary>
+    internal static List<(long lcn, long count)> ParseMftSelfDataRuns(Span<byte> rec0)
     {
-        if (rec0[0] != (byte)'F' || rec0[1] != (byte)'I' || rec0[2] != (byte)'L' || rec0[3] != (byte)'E')
+        if (rec0.Length < 0x30 ||
+            rec0[0] != (byte)'F' || rec0[1] != (byte)'I' || rec0[2] != (byte)'L' || rec0[3] != (byte)'E')
             throw new IOException("$MFT record 0 has no FILE signature.");
 
-        ApplyUsaFixup(rec0);
+        if (!ApplyUsaFixup(rec0))
+            throw new IOException("$MFT record 0 has an invalid update sequence array.");
 
         int pos = U16(rec0, 20);
         while (pos + 8 <= rec0.Length)
@@ -333,7 +398,7 @@ public sealed class MftReader
                 break;
 
             int attrLen = (int)U32(rec0, pos + 4);
-            if (attrLen <= 0 || pos + attrLen > rec0.Length)
+            if (attrLen < MinAttrLen || attrLen > rec0.Length - pos) // overflow-safe (see ParseRecord)
                 break;
 
             byte nonResident = rec0[pos + 8];
@@ -341,7 +406,13 @@ public sealed class MftReader
 
             if (type == ATTR_DATA && nameLen == 0 && nonResident == 1)
             {
+                // The runs offset is untrusted: it must land after the non-resident header
+                // (0x40) and inside the attribute, or the slice below would go out of bounds.
+                if (attrLen < 0x42)
+                    throw new IOException("$MFT $DATA attribute is truncated.");
                 int runsOffset = U16(rec0, pos + 0x20);
+                if (runsOffset < 0x40 || runsOffset >= attrLen)
+                    throw new IOException("$MFT $DATA attribute has an invalid data-run offset.");
                 return DecodeDataRuns(rec0.Slice(pos + runsOffset, attrLen - runsOffset));
             }
 
@@ -369,11 +440,15 @@ public sealed class MftReader
 
             int lenBytes = header & 0x0F;
             int offBytes = (header >> 4) & 0x0F;
-            if (lenBytes == 0 || i + lenBytes + offBytes > runs.Length)
+            // A count/offset wider than 8 bytes can't be a real cluster count (and would
+            // silently wrap the 64-bit accumulation below) — treat as corruption and stop.
+            if (lenBytes == 0 || lenBytes > 8 || offBytes > 8 || i + lenBytes + offBytes > runs.Length)
                 break;
 
             long length = ReadVarUnsigned(runs.Slice(i, lenBytes));
             i += lenBytes;
+            if (length <= 0) // 8-byte counts with the top bit set read negative — corrupt.
+                break;
 
             if (offBytes == 0)
             {

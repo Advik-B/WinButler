@@ -51,6 +51,7 @@ internal static class NtfsNative
         uint BytesPerSector,
         uint BytesPerCluster,
         uint BytesPerFileRecordSegment,
+        long TotalClusters,
         long MftValidDataLength,
         long MftStartLcn);
 
@@ -91,13 +92,14 @@ internal static class NtfsNative
         //   32 TotalReserved        40 BytesPerSector  44 BytesPerCluster 48 BytesPerFileRecordSegment
         //   52 ClustersPerFileRecordSegment            56 MftValidDataLength   64 MftStartLcn
         var span = buffer.AsSpan();
+        long totalClusters = System.Buffers.Binary.BinaryPrimitives.ReadInt64LittleEndian(span.Slice(16));
         uint bytesPerSector = System.Buffers.Binary.BinaryPrimitives.ReadUInt32LittleEndian(span.Slice(40));
         uint bytesPerCluster = System.Buffers.Binary.BinaryPrimitives.ReadUInt32LittleEndian(span.Slice(44));
         uint bytesPerFrs = System.Buffers.Binary.BinaryPrimitives.ReadUInt32LittleEndian(span.Slice(48));
         long mftValidDataLength = System.Buffers.Binary.BinaryPrimitives.ReadInt64LittleEndian(span.Slice(56));
         long mftStartLcn = System.Buffers.Binary.BinaryPrimitives.ReadInt64LittleEndian(span.Slice(64));
 
-        return new VolumeData(bytesPerSector, bytesPerCluster, bytesPerFrs, mftValidDataLength, mftStartLcn);
+        return new VolumeData(bytesPerSector, bytesPerCluster, bytesPerFrs, totalClusters, mftValidDataLength, mftStartLcn);
     }
 
     /// <summary>

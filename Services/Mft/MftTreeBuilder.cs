@@ -56,6 +56,34 @@ public sealed class MftTreeBuilder
             parentIdx[i] = (p < nodes.Length && nodes[p] is not null && p != i) ? (int)p : RootRecord;
         }
 
+        // 2b) Break parent cycles (A→B→A — both records individually valid, so step 2 kept
+        //     them). A cycle would make the climb in step 4 spin to its guard for EVERY node
+        //     beneath it and leave the whole subtree unreachable from the root. Walk each
+        //     node's ancestor chain, stamping with the origin index: re-entering a stamp from
+        //     the same walk closes a cycle — reparent that node to root. Hitting an older
+        //     stamp joins a chain already proven to terminate. Each node is stamped once, so
+        //     the whole pass is O(N).
+        var stamp = new int[entries.Length];
+        Array.Fill(stamp, -1);
+        for (int i = 0; i < entries.Length; i++)
+        {
+            if (nodes[i] is null)
+                continue;
+            int cur = i;
+            while (cur >= 0 && cur != RootRecord)
+            {
+                if (stamp[cur] == i)
+                {
+                    parentIdx[cur] = RootRecord;
+                    break;
+                }
+                if (stamp[cur] != -1)
+                    break;
+                stamp[cur] = i;
+                cur = parentIdx[cur];
+            }
+        }
+
         // 3) Link children.
         for (int i = 0; i < entries.Length; i++)
         {
@@ -80,9 +108,12 @@ public sealed class MftTreeBuilder
             long al = entries[i].AllocSize;
             bool isFile = !n.IsDirectory;
 
+            // Step 2b guarantees every chain terminates at the root, so this loop is bounded
+            // by real tree depth; the guard is purely defensive (65536 clears the deepest
+            // path NTFS can legally express — ~16K components — by 4×).
             int cur = parentIdx[i];
             int guard = 0;
-            while (cur >= 0 && guard++ < 1_000_000)
+            while (cur >= 0 && guard++ < 65_536)
             {
                 var p = nodes[cur];
                 if (p is null)
