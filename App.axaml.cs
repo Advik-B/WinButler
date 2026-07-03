@@ -29,11 +29,20 @@ public partial class App : Application
             {
                 var vm = new MainWindowViewModel();
 
+                // Restore saved accent + target drive (never dry-run — that resets to ON every
+                // launch). Only reached under the classic-desktop lifetime, so headless tests
+                // never touch the real settings file.
+                SettingsStore.Load(vm.Settings);
+
                 ThemeService.Apply(vm.Settings.Accent);
                 vm.Settings.PropertyChanged += (_, e) =>
                 {
                     if (e.PropertyName == nameof(AppSettings.Accent))
                         ThemeService.Apply(vm.Settings.Accent);
+
+                    // Persist the preferences a user expects to survive a restart — never dry-run.
+                    if (e.PropertyName is nameof(AppSettings.Accent) or nameof(AppSettings.TargetDrive))
+                        SettingsStore.Save(vm.Settings);
                 };
 
                 desktop.MainWindow = new MainWindow
