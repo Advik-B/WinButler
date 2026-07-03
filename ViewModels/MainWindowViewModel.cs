@@ -38,6 +38,13 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty]
     private string _activeNavTag = "dashboard";
 
+    /// <summary>Non-null when the rule definitions failed to load; shown as a persistent banner.
+    /// Cleaning is disabled in this state (no scanners were constructed).</summary>
+    [ObservableProperty]
+    private string? _definitionsError;
+
+    public bool HasDefinitionsError => DefinitionsError is not null;
+
     /// <summary>The single toast overlay slot (bottom-center), auto-dismissed after ~3.6s.</summary>
     [ObservableProperty]
     private ToastViewModel? _currentToast;
@@ -60,10 +67,13 @@ public partial class MainWindowViewModel : ViewModelBase
     /// <summary>Path-rule definitions (bundled now; can be refreshed from online sources later).</summary>
     public DefinitionsProvider Definitions { get; }
 
-    public MainWindowViewModel()
+    public MainWindowViewModel() : this(new DefinitionsProvider()) { }
+
+    /// <summary>Test seam: inject a provider (e.g. a fail-closed one) without touching startup.</summary>
+    internal MainWindowViewModel(DefinitionsProvider definitions)
     {
         Settings = new AppSettings();
-        Definitions = new DefinitionsProvider();
+        Definitions = definitions;
         var defs = Definitions.Current;
 
         // One shared whole-volume index behind every scan (Clean/Redirect/Dev Junk/Dashboard/Disk
@@ -73,14 +83,23 @@ public partial class MainWindowViewModel : ViewModelBase
         _diskIndex = new DiskIndexService(diskScan);
         DirectorySizeCalculator.Index = _diskIndex;
 
+        // Fail closed on a bad definitions load: an empty ruleset means an empty deny-list, so
+        // scanning against it would offer everything (incl. credential-shaped paths) for deletion.
+        // Construct NO scanners and surface a persistent error instead of scanning unsafely.
+        DefinitionsError = Definitions.LoadFailed
+            ? "Rule definitions failed to load — cleaning is disabled to stay safe. See the log."
+            : null;
+
         // One shared rule engine so the deny-list is enforced identically on every scanner.
         var safeCaches = new SafeCaches(defs.Cache);
-        IScanner[] scanners =
-        {
-            new ElectronLeftoverScanner(safeCaches),
-            new TempScanner(safeCaches),
-            new CacheScanner(safeCaches),
-        };
+        IScanner[] scanners = Definitions.LoadFailed
+            ? Array.Empty<IScanner>()
+            : new IScanner[]
+            {
+                new ElectronLeftoverScanner(safeCaches),
+                new TempScanner(safeCaches),
+                new CacheScanner(safeCaches),
+            };
         CleanPage = new CleanPageViewModel(Settings, scanners, new Cleaner(), _diskIndex);
         RedirectPage = new RedirectPageViewModel(Settings, new RedirectionService(defs.Redirect), _diskIndex);
         DiskPage = new DiskScannerPageViewModel(diskScan, _diskIndex);

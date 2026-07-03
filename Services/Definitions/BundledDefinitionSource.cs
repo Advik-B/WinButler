@@ -20,8 +20,32 @@ public sealed class BundledDefinitionSource : IDefinitionSource
     public Task<WinButlerDefinitions?> LoadAsync(CancellationToken ct = default)
         => Task.FromResult<WinButlerDefinitions?>(Load());
 
-    /// <summary>Synchronous load — used at startup since the resource is local and tiny.</summary>
-    public static WinButlerDefinitions Load()
+    /// <summary>Synchronous load — used at startup since the resource is local and tiny.
+    /// Throws on a missing or unparseable resource (see <see cref="TryLoad"/> for the
+    /// fail-closed variant the startup provider uses).</summary>
+    public static WinButlerDefinitions Load() => Parse(ReadEmbeddedJson());
+
+    /// <summary>Fail-soft load for startup: returns null (logged) instead of throwing, so a bad
+    /// bundled edit can be handled gracefully rather than crashing the app.</summary>
+    public static WinButlerDefinitions? TryLoad()
+    {
+        try
+        {
+            return Load();
+        }
+        catch (Exception ex)
+        {
+            Log.Error("definitions", "Bundled definitions.json failed to load.", ex);
+            return null;
+        }
+    }
+
+    /// <summary>Parses definitions JSON (test seam for the malformed-input path).</summary>
+    internal static WinButlerDefinitions Parse(string json) =>
+        JsonSerializer.Deserialize<WinButlerDefinitions>(json, DefinitionsJson.Options)
+            ?? throw new InvalidOperationException("Embedded definitions.json failed to parse.");
+
+    private static string ReadEmbeddedJson()
     {
         var asm = Assembly.GetExecutingAssembly();
         var resourceName = asm.GetManifestResourceNames()
@@ -30,9 +54,6 @@ public sealed class BundledDefinitionSource : IDefinitionSource
 
         using var stream = asm.GetManifestResourceStream(resourceName)!;
         using var reader = new StreamReader(stream);
-        var json = reader.ReadToEnd();
-
-        return JsonSerializer.Deserialize<WinButlerDefinitions>(json, DefinitionsJson.Options)
-            ?? throw new InvalidOperationException("Embedded definitions.json failed to parse.");
+        return reader.ReadToEnd();
     }
 }

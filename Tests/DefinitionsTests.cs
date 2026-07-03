@@ -108,6 +108,33 @@ public class DefinitionsTests
         Assert.Equal(5, WinButlerDefinitions.Merge(baseDefs, overlay).Version);
     }
 
+    [Fact]
+    public void Parse_throws_on_malformed_json()
+    {
+        Assert.ThrowsAny<System.Exception>(() => BundledDefinitionSource.Parse("{ not valid json "));
+    }
+
+    [Fact]
+    public void Provider_fails_closed_when_the_bundled_load_fails()
+    {
+        var provider = new DefinitionsProvider(() => null); // simulate a failed load
+
+        Assert.True(provider.LoadFailed);
+        // Fail closed: an EMPTY ruleset, so no scanner constructed from it can offer anything.
+        Assert.Empty(provider.Current.Cache.DenyFragments);
+        Assert.Empty(provider.Current.Cache.AlwaysSafeNames);
+        Assert.Empty(provider.Current.Redirect.Entries);
+    }
+
+    [Fact]
+    public void Provider_loads_normally_when_the_bundled_load_succeeds()
+    {
+        var provider = new DefinitionsProvider();
+
+        Assert.False(provider.LoadFailed);
+        Assert.True(provider.Current.Cache.AlwaysSafeNames.Count > 20);
+    }
+
     private static RedirectEntry Entry(string rel, string name, string target) => new()
     {
         RelativeToProfile = rel,

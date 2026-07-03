@@ -77,6 +77,18 @@
                 </StackPanel>
             </Border>
 
+            <!-- DEFINITIONS-ERROR BANNER (fail-closed: cleaning disabled) -->
+            <Border DockPanel.Dock="Top" IsVisible="{Binding HasDefinitionsError}"
+                    Background="{DynamicResource WbSignalLiveBrush}" Padding="16,8">
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                    <i:Icon Value="mdi-alert" FontSize="15" VerticalAlignment="Center"
+                            Foreground="{DynamicResource WbWhiteBrush}"/>
+                    <TextBlock Text="{Binding DefinitionsError}" VerticalAlignment="Center"
+                               FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
+                               FontSize="{StaticResource WbTextXs}" Foreground="{DynamicResource WbWhiteBrush}"/>
+                </StackPanel>
+            </Border>
+
             <!-- STATUS BAR -->
             <Border DockPanel.Dock="Bottom" Height="28"
                     Background="{DynamicResource WbSurface2Brush}"

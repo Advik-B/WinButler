@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,11 +17,31 @@ public sealed class DefinitionsProvider
 
     public WinButlerDefinitions Current { get; private set; }
 
-    public DefinitionsProvider()
+    /// <summary>
+    /// True if the bundled definitions couldn't be loaded. <see cref="Current"/> is then an EMPTY
+    /// ruleset, and the caller MUST fail closed — an empty ruleset means an empty deny-list, so
+    /// scanning with it would offer everything for deletion. The shell responds by constructing no
+    /// scanners and showing a persistent error, never by scanning against the empty rules.
+    /// </summary>
+    public bool LoadFailed { get; }
+
+    public DefinitionsProvider() : this(BundledDefinitionSource.TryLoad) { }
+
+    /// <summary>Test seam: supply the bundled loader (return null to simulate a load failure).</summary>
+    internal DefinitionsProvider(Func<WinButlerDefinitions?> bundledLoader)
     {
         // Bundled definitions are always available and load synchronously.
         _sources.Add(new BundledDefinitionSource());
-        Current = BundledDefinitionSource.Load();
+        var loaded = bundledLoader();
+        if (loaded is null)
+        {
+            LoadFailed = true;
+            Current = new WinButlerDefinitions(); // empty — the shell fails closed on this
+        }
+        else
+        {
+            Current = loaded;
+        }
     }
 
     /// <summary>Registers an additional source (e.g. a <see cref="RemoteDefinitionSource"/>).</summary>
