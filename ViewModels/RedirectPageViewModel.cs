@@ -59,6 +59,10 @@ public partial class RedirectPageViewModel : ViewModelBase
         RefreshActive();
     }
 
+    /// <summary>False when the machine has no eligible target drive (single-drive systems) —
+    /// redirect can't run, so the page shows an explanatory banner instead of a dead picker.</summary>
+    public bool HasEligibleDrives => Drives.Count > 0;
+
     /// <summary>Two-way bound to the drive picker; stored in shared settings.</summary>
     public string? SelectedDrive
     {

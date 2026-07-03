@@ -14,6 +14,10 @@ namespace WinButler.Services.Mft;
 /// </summary>
 public sealed class RecursiveWalkScanner
 {
+    /// <summary>Directories skipped because their contents couldn't be read (access denied,
+    /// in use, vanished mid-walk). Surfaced so a walk's totals aren't silently partial.</summary>
+    public int SkippedDirectories { get; private set; }
+
     public DiskNode Scan(string rootPath, Action<string>? progress = null, CancellationToken ct = default)
     {
         // Explicit work stack instead of recursion: this is the very path the MFT engine
@@ -66,8 +70,15 @@ public sealed class RecursiveWalkScanner
                     }
                 }
             }
-            catch { /* skip unreadable directory contents */ }
+            catch
+            {
+                // Unreadable directory (denied / in use / vanished): skip it but count the gap.
+                SkippedDirectories++;
+            }
         }
+
+        if (SkippedDirectories > 0)
+            progress?.Invoke($"{SkippedDirectories:N0} folder(s) skipped (access denied / in use).");
 
         // Bottom-up aggregation: reverse creation order visits every child before its own
         // parent is rolled up, so each directory adds its completed subtree totals once.

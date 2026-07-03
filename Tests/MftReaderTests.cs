@@ -74,13 +74,15 @@ public sealed class MftReaderTests
 
         try
         {
-            var node = new RecursiveWalkScanner().Scan(root);
+            var scanner = new RecursiveWalkScanner();
+            var node = scanner.Scan(root);
 
             Assert.Equal(6000, node.SizeBytes);
             Assert.Equal(3, node.FileCount);
             Assert.Equal(2, node.FolderCount);          // "a" and "a\b"
             Assert.Equal("a", node.Children[0].Name);   // 5000-byte subtree sorts above the 1000-byte file
             Assert.InRange(node.Children[0].PercentOfParent, 0.83, 0.84); // 5000/6000
+            Assert.Equal(0, scanner.SkippedDirectories); // a fully readable tree skips nothing
         }
         finally
         {

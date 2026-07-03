@@ -118,10 +118,11 @@ public class DiskScanService
     private static DiskNode Walk(string target, IProgress<string>? progress, CancellationToken ct)
     {
         progress?.Report($"Scanning {target} …");
-        return new RecursiveWalkScanner().Scan(
-            target,
-            p => progress?.Report($"Scanning {p}"),
-            ct);
+        var scanner = new RecursiveWalkScanner();
+        var root = scanner.Scan(target, p => progress?.Report($"Scanning {p}"), ct);
+        if (scanner.SkippedDirectories > 0)
+            Log.Warn("scan", $"{scanner.SkippedDirectories} folder(s) skipped while walking {target}.");
+        return root;
     }
 
     private static bool IsNtfs(char letter)
