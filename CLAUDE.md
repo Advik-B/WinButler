@@ -74,12 +74,31 @@ resource keys that screens bind to via `DynamicResource`, so the whole app re-co
 - **Dry-run is the default everywhere** and is a true no-op: `Services/Cleaner.cs` returns
   before any filesystem mutation when dry-run is on. Keep it that way.
 - **Deny-list paths** (SSH/GPG keys, credential stores, browser login data, etc.) are never
-  touched and never even offered as suggestions, regardless of what else matches.
+  touched and never even offered as suggestions, regardless of what else matches. Enforced on
+  **every** scan path — `CacheScanner`, `DevJunkAggregator`, `TempScanner` and
+  `ElectronLeftoverScanner` all funnel candidates through `SafeCaches.IsDenied`.
 - **Hybrid delete:** `Safe` items are deleted permanently; `Caution`/`Risky` items go to the
-  Recycle Bin (recoverable).
+  Recycle Bin (recoverable). `RecycleBin.Send` and `Cleaner.DeletePermanently` both guard against
+  reparse points — a junction is unlinked, never followed into its target.
+- **Confirm before real deletes:** every dry-run-**off** clean/redirect/undo routes through the
+  shell's confirm modal (`ViewModelBase.ConfirmInteraction`, wired in `MainWindowViewModel`);
+  dry-run never prompts. An unset delegate auto-confirms, so headless tests drive commands directly.
+- **Fail-closed definitions:** if `Data/definitions.json` won't load, `DefinitionsProvider.LoadFailed`
+  is set, the shell builds **zero** scanners and shows a persistent error banner — never scans
+  against an empty (⇒ empty deny-list) ruleset.
 - **`Tests/**` is excluded from the app build** (explicit `Remove` items in `WinButler.csproj`).
   `InternalsVisibleTo("WinButler.Tests")` exposes internal MFT helpers (USA fixup, data-run
   decoder) to the test project.
 - **Avalonia resource-lookup gotcha:** `Application.Resources.TryGetResource(...)` does **not**
   find resources merged in via `Styles`/`ControlThemes`. Look them up from a control in the
-  visual tree, or from the specific `ResourceDictionary`, instead.
+  visual tree, or from the specific `ResourceDictionary`, instead. `ThemeService.Brush(key, hex)`
+  wraps this correctly for C# call sites (converters, custom-drawn controls).
+- **Diagnostics & state on disk** (all under `%APPDATA%\WinButler\`): `logs\winbutler.log`
+  (`Services/Log.cs` — append-only, rotates once per session at 2 MB, never throws; logs every
+  destructive action); `redirects.json` (undo ledger, atomic write); `settings.json`
+  (`Services/SettingsStore.cs`). **`settings.json` persists accent + target drive only — never
+  `IsDryRun`**, so every launch starts dry-run ON (a past dry-run-off session must not carry over).
+- **Crash-protection:** async command bodies run through `ViewModelBase.RunGuardedAsync`
+  (catch → log + `StatusText`, `OperationCanceledException` → "Cancelled."); without it,
+  CommunityToolkit's `AsyncRelayCommand` rethrows on the UI thread and crashes the process.
+  `Program.cs` adds `AppDomain`/`TaskScheduler` backstops (log-only).

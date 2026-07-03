@@ -14,8 +14,12 @@ using WinButler.Services.Mft;
 namespace WinButler.ViewModels;
 
 /// <summary>
-/// The Clean page: scans for reclaimable space and deletes the selected targets through
-/// the <see cref="ICleaner"/> chokepoint. Dry-run state comes from shared <see cref="AppSettings"/>.
+/// The scan/clean orchestration hub shared by the Electron, Temp and Cache pages (and the
+/// Dashboard): it owns the three scanners, the category collections those pages bind to via
+/// <c>.Clean.…</c>, and the delete path through the <see cref="ICleaner"/> chokepoint. There is
+/// intentionally no page that hosts this ViewModel directly — <c>MainWindowViewModel.Navigate</c>
+/// has no "clean" tag; the per-category pages are the visible surface. Dry-run state comes from
+/// shared <see cref="AppSettings"/>.
 /// </summary>
 public partial class CleanPageViewModel : ViewModelBase
 {
