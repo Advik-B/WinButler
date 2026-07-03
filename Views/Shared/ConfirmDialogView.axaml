@@ -16,7 +16,7 @@
                 <Border Padding="18,14" BorderBrush="{DynamicResource WbBorderFaintBrush}" BorderThickness="0,0,0,1">
                     <StackPanel Orientation="Horizontal" Spacing="10">
                         <Ellipse Width="9" Height="9" Fill="{DynamicResource WbSignalLiveBrush}"/>
-                        <TextBlock Text="PERMANENT DELETION" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
+                        <TextBlock Text="CONFIRM ACTION" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
                                    FontSize="{StaticResource WbText2xs}" LetterSpacing="1.5"
                                    Foreground="{DynamicResource WbSignalLiveBrush}"/>
                     </StackPanel>
@@ -27,22 +27,23 @@
                                FontSize="{StaticResource WbTextMd}" Foreground="{DynamicResource WbTextBrush}"/>
                     <TextBlock TextWrapping="Wrap" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
                                FontSize="{StaticResource WbTextXs}" Foreground="{DynamicResource WbTextSecondaryBrush}">
-                        <Run Text="Permanently remove"/>
                         <Run Text="{Binding Count}" FontFamily="{DynamicResource WbFontReadout}" Foreground="{DynamicResource WbTextBrush}"/>
-                        <Run Text="item(s) and reclaim"/>
+                        <Run Text="item(s),"/>
                         <Run Text="{Binding BytesText}" FontFamily="{DynamicResource WbFontReadout}" Foreground="{DynamicResource WbAccentBrush}"/>
-                        <Run Text=". This cannot be undone."/>
+                        <Run Text="total."/>
                     </TextBlock>
-                    <Border Background="{DynamicResource WbSurfaceInsetBrush}" CornerRadius="{StaticResource WbRadiusSm}" Padding="11,9">
-                        <TextBlock TextWrapping="Wrap" FontSize="{StaticResource WbText2xs}"
+                    <Border IsVisible="{Binding HasDetail}" Background="{DynamicResource WbSurfaceInsetBrush}"
+                            CornerRadius="{StaticResource WbRadiusSm}" Padding="11,9">
+                        <TextBlock TextWrapping="Wrap" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
+                                   FontSize="{StaticResource WbText2xs}"
                                    Foreground="{DynamicResource WbTextTertiaryBrush}"
-                                   Text="Tip: enable Dry Run to preview deletions without touching disk."/>
+                                   Text="{Binding Detail}"/>
                     </Border>
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,0,22,20">
                     <Button Content="CANCEL" Classes="ghost" Command="{Binding CancelCommand}"/>
-                    <Button Content="DELETE NOW" Classes="primary" Command="{Binding ConfirmCommand}"/>
+                    <Button Content="CONFIRM" Classes="primary" Command="{Binding ConfirmCommand}"/>
                 </StackPanel>
             </StackPanel>
         </Border>

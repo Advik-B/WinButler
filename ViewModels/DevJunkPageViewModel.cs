@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
@@ -116,15 +117,44 @@ public partial class DevJunkPageViewModel : ViewModelBase
         }
     }
 
+    /// <summary>The selected, cleanable tool groups.</summary>
+    internal IReadOnlyList<DevToolGroupViewModel> SelectedGroups =>
+        Groups.Where(g => g.IsSelected && g.IsSelectable).ToList();
+
+    /// <summary>Every delete target across the selected groups — for the confirm prompt and
+    /// the Dashboard's aggregate CLEAN ALL count.</summary>
+    internal IReadOnlyList<CleanupTarget> SelectedTargets =>
+        SelectedGroups.SelectMany(g => g.Group.ReclaimableTargets).ToList();
+
     [RelayCommand(CanExecute = nameof(CanRun))]
     private async Task CleanSelectedAsync()
     {
-        var selected = Groups.Where(g => g.IsSelected && g.IsSelectable).ToList();
+        var selected = SelectedGroups;
         if (selected.Count == 0)
         {
             StatusText = "Nothing selected.";
             return;
         }
+
+        if (!_settings.IsDryRun)
+        {
+            var targets = SelectedTargets;
+            var title = $"Delete {targets.Count} item(s) across {selected.Count} tool(s)?";
+            if (!await ConfirmAsync(ConfirmRequest.ForDeletion(title, targets)))
+            {
+                StatusText = "Cancelled — nothing was deleted.";
+                return;
+            }
+        }
+
+        await CleanSelectedCoreAsync(selected);
+    }
+
+    /// <summary>The delete loop, WITHOUT confirmation (see <see cref="CleanPageViewModel"/>).</summary>
+    internal async Task CleanSelectedCoreAsync(IReadOnlyList<DevToolGroupViewModel> selected)
+    {
+        if (selected.Count == 0)
+            return;
 
         IsBusy = true;
         var dryRun = _settings.IsDryRun;

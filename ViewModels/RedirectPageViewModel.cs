@@ -133,6 +133,20 @@ public partial class RedirectPageViewModel : ViewModelBase
             return;
         }
 
+        // Confirm real moves (copy → verify → delete original → junction). Dry-run never prompts.
+        if (!_settings.IsDryRun)
+        {
+            long total = selected.Sum(c => c.SizeBytes);
+            var request = new ConfirmRequest(
+                $"Redirect {selected.Count} folder(s) to {drive}:?", selected.Count, total,
+                $"Moved behind a junction — apps still find them at their original path.");
+            if (!await ConfirmAsync(request))
+            {
+                StatusText = "Cancelled — nothing was moved.";
+                return;
+            }
+        }
+
         IsBusy = true;
         var dryRun = _settings.IsDryRun;
         using var cts = new CancellationTokenSource();
@@ -195,6 +209,19 @@ public partial class RedirectPageViewModel : ViewModelBase
     {
         if (record == null)
             return;
+
+        // Confirm the real move-back (removes the junction, copies data home). Dry-run never prompts.
+        if (!_settings.IsDryRun)
+        {
+            var request = new ConfirmRequest(
+                $"Undo redirect of {System.IO.Path.GetFileName(record.SourcePath)}?", 1, record.SizeBytes,
+                $"Removes the junction and moves the data back to {record.SourcePath}.");
+            if (!await ConfirmAsync(request))
+            {
+                StatusText = "Cancelled — the redirect is unchanged.";
+                return;
+            }
+        }
 
         IsBusy = true;
         var dryRun = _settings.IsDryRun;

@@ -214,15 +214,27 @@ public partial class DashboardPageViewModel : ViewModelBase
     [RelayCommand(CanExecute = nameof(CanCleanAll))]
     private async Task CleanAllAsync()
     {
-        // The child commands guard their own bodies; this outer guard only backstops the
+        // The child cores guard their own bodies; this outer guard only backstops the
         // aggregation itself (failures land in the log, the children own their status lines).
         await RunGuardedAsync(async () =>
         {
-            // ExecuteAsync ignores CanExecute — re-check in case a page went busy since the click.
-            if (_cleanPage.CleanSelectedCommand.CanExecute(null))
-                await _cleanPage.CleanSelectedCommand.ExecuteAsync(null);
-            if (_devJunkPage.CleanSelectedCommand.CanExecute(null))
-                await _devJunkPage.CleanSelectedCommand.ExecuteAsync(null);
+            // Capture both pages' selections up front so ONE confirm covers the whole sweep
+            // (the child cores skip their own prompt when driven here).
+            var cleanSelection = _cleanPage.SelectedTargets;
+            var devGroups = _devJunkPage.SelectedGroups;
+            var allTargets = cleanSelection.Concat(_devJunkPage.SelectedTargets).ToList();
+            if (allTargets.Count == 0)
+                return;
+
+            if (!_cleanPage.IsDryRun &&
+                !await ConfirmAsync(ConfirmRequest.ForDeletion(
+                    $"Clean All — delete {allTargets.Count} item(s)?", allTargets)))
+            {
+                return;
+            }
+
+            await _cleanPage.CleanSelectedCoreAsync(cleanSelection);
+            await _devJunkPage.CleanSelectedCoreAsync(devGroups);
             RaiseAll();
         }, _ => { }, "Clean All failed");
     }

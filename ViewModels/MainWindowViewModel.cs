@@ -94,6 +94,13 @@ public partial class MainWindowViewModel : ViewModelBase
 
         DashboardPage = new DashboardPageViewModel(CleanPage, RedirectPage, DevJunkPage, Navigate, _diskIndex);
 
+        // Route every page's destructive-confirm through the shell's modal slot. Dashboard
+        // CLEAN ALL confirms once itself, so its children skip their own prompt when it drives them.
+        CleanPage.ConfirmInteraction = ConfirmViaModalAsync;
+        RedirectPage.ConfirmInteraction = ConfirmViaModalAsync;
+        DevJunkPage.ConfirmInteraction = ConfirmViaModalAsync;
+        DashboardPage.ConfirmInteraction = ConfirmViaModalAsync;
+
         // Surface every completed clean/redirect run as a toast (the Dashboard's activity
         // feed subscribes to the same broadcast).
         WeakReferenceMessenger.Default.Register<MainWindowViewModel, CleanupCompletedMessage>(
@@ -206,5 +213,18 @@ public partial class MainWindowViewModel : ViewModelBase
         PendingConfirm = new ConfirmDialogViewModel(title, count, bytes,
             onConfirmed: () => { PendingConfirm = null; onConfirmed(); },
             onCancelled: () => PendingConfirm = null);
+    }
+
+    /// <summary>Awaitable confirm used by page ViewModels: shows the modal and completes with
+    /// the user's choice. Wired into each page's <see cref="ViewModelBase.ConfirmInteraction"/>.</summary>
+    private Task<bool> ConfirmViaModalAsync(ConfirmRequest request)
+    {
+        var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        PendingConfirm = new ConfirmDialogViewModel(
+            request.Title, request.Count, request.Bytes,
+            onConfirmed: () => { PendingConfirm = null; tcs.TrySetResult(true); },
+            onCancelled: () => { PendingConfirm = null; tcs.TrySetResult(false); },
+            detail: request.Detail);
+        return tcs.Task;
     }
 }

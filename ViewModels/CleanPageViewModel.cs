@@ -58,6 +58,8 @@ public partial class CleanPageViewModel : ViewModelBase
     public CategoryViewModel? TempCategory => Categories.FirstOrDefault(c => c.Category == CleanupCategory.Temp);
     public CategoryViewModel? CacheCategory => Categories.FirstOrDefault(c => c.Category == CleanupCategory.Cache);
 
+    public bool IsDryRun => _settings.IsDryRun;
+
     public long SelectedBytes => Categories.Sum(c => c.SelectedBytes);
 
     public string SelectedSummary =>
@@ -105,15 +107,38 @@ public partial class CleanPageViewModel : ViewModelBase
         }
     }
 
+    /// <summary>The current selection as delete targets — used by the confirm prompt and by
+    /// the Dashboard's CLEAN ALL to aggregate across pages.</summary>
+    internal IReadOnlyList<CleanupTarget> SelectedTargets =>
+        Categories.SelectMany(c => c.SelectedItems).Select(i => i.Target).ToList();
+
     [RelayCommand(CanExecute = nameof(CanRun))]
     private async Task CleanSelectedAsync()
     {
-        var selected = Categories.SelectMany(c => c.SelectedItems).ToList();
+        var selected = SelectedTargets;
         if (selected.Count == 0)
         {
             StatusText = "Nothing selected.";
             return;
         }
+
+        // Confirm real deletions (dry-run is a no-op, so it never prompts).
+        if (!_settings.IsDryRun &&
+            !await ConfirmAsync(ConfirmRequest.ForDeletion($"Delete {selected.Count} item(s)?", selected)))
+        {
+            StatusText = "Cancelled — nothing was deleted.";
+            return;
+        }
+
+        await CleanSelectedCoreAsync(selected);
+    }
+
+    /// <summary>The delete loop, WITHOUT confirmation. The command wrapper confirms first;
+    /// Dashboard CLEAN ALL confirms once for both pages, then drives this directly.</summary>
+    internal async Task CleanSelectedCoreAsync(IReadOnlyList<CleanupTarget> selected)
+    {
+        if (selected.Count == 0)
+            return;
 
         IsBusy = true;
         var dryRun = _settings.IsDryRun;
@@ -127,14 +152,14 @@ public partial class CleanPageViewModel : ViewModelBase
                 long reclaimed = 0;
                 int ok = 0, failed = 0;
 
-                foreach (var item in selected)
+                foreach (var target in selected)
                 {
                     // Soft-stop between items (never mid-delete) so the partial summary,
                     // rescan and activity broadcast below still happen on cancellation.
                     if (cts.Token.IsCancellationRequested)
                         break;
 
-                    var result = await _cleaner.CleanAsync(item.Target, dryRun);
+                    var result = await _cleaner.CleanAsync(target, dryRun);
                     if (result.Succeeded)
                     {
                         reclaimed += result.BytesReclaimed;

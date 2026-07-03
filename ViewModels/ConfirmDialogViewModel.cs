@@ -17,11 +17,17 @@ public sealed partial class ConfirmDialogViewModel : ViewModelBase
     public int Count { get; }
     public string BytesText { get; }
 
-    public ConfirmDialogViewModel(string title, int count, long bytes, Action onConfirmed, Action onCancelled)
+    /// <summary>Optional one-line breakdown (e.g. "7 deleted permanently · 3 to Recycle Bin").</summary>
+    public string? Detail { get; }
+    public bool HasDetail => !string.IsNullOrEmpty(Detail);
+
+    public ConfirmDialogViewModel(string title, int count, long bytes, Action onConfirmed, Action onCancelled,
+        string? detail = null)
     {
         Title = title;
         Count = count;
         BytesText = SizeFormatter.Format(bytes);
+        Detail = detail;
         _onConfirmed = onConfirmed;
         _onCancelled = onCancelled;
     }
