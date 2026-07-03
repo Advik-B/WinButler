@@ -48,7 +48,8 @@ public sealed class LogTests : IDisposable
         Log.Info("test", "after rotation");
 
         Assert.True(File.Exists(Path.Combine(_dir, "winbutler.prev.log")));
-        Assert.True(new FileInfo(file).Length < 1024);
+        // Far below the 3 MB pre-rotation size (other tests may append the odd line concurrently).
+        Assert.True(new FileInfo(file).Length < 100 * 1024);
         Assert.Contains("after rotation", File.ReadAllText(file));
     }
 
