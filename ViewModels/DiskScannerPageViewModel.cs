@@ -90,7 +90,10 @@ public partial class DiskScannerPageViewModel : ViewModelBase
         }
 
         IsBusy = true;
-        var progress = new Progress<string>(s => StatusText = s);
+        ReportProgress("Reading disk…", null);
+        // Mirror scan progress into both the page status line and the shell status-bar bar (the
+        // page's own inline spinner was removed — the status bar is the single progress surface).
+        var progress = new Progress<string>(s => { StatusText = s; ReportProgress(s, null); });
         using var cts = new CancellationTokenSource();
         _opCts = cts;
         try
@@ -115,6 +118,7 @@ public partial class DiskScannerPageViewModel : ViewModelBase
         }
         finally
         {
+            ClearProgress();
             _opCts = null;
             IsBusy = false;
         }

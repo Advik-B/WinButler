@@ -50,7 +50,7 @@ public sealed class SettingsStoreTests : IDisposable
         var settings = new AppSettings();
         SettingsStore.Load(settings); // nothing saved yet
 
-        Assert.Equal(AccentKind.Red, settings.Accent);
+        Assert.Equal(AccentKind.Green, settings.Accent);
         Assert.Null(settings.TargetDrive);
         Assert.True(settings.IsDryRun);
     }

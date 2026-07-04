@@ -17,7 +17,8 @@ public partial class AppSettings : ObservableObject
     [ObservableProperty]
     private string? _targetDrive;
 
-    /// <summary>The one chromatic accent — LED red (default, matches the design mockup) or green.</summary>
+    /// <summary>The one chromatic accent. The app is green-only now; the field is kept so a
+    /// stale "Red" in an existing settings.json still loads (it renders green regardless).</summary>
     [ObservableProperty]
-    private AccentKind _accent = AccentKind.Red;
+    private AccentKind _accent = AccentKind.Green;
 }

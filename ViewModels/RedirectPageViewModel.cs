@@ -31,6 +31,7 @@ public partial class RedirectPageViewModel : ViewModelBase
     [NotifyCanExecuteChangedFor(nameof(ScanCommand))]
     [NotifyCanExecuteChangedFor(nameof(RedirectSelectedCommand))]
     [NotifyCanExecuteChangedFor(nameof(UndoCommand))]
+    [NotifyCanExecuteChangedFor(nameof(UndoCandidateCommand))]
     [NotifyCanExecuteChangedFor(nameof(CancelCommand))]
     private bool _isBusy;
 
@@ -161,12 +162,15 @@ public partial class RedirectPageViewModel : ViewModelBase
             {
                 long moved = 0;
                 int ok = 0, failed = 0;
+                int done = 0;
                 string? lastMessage = null;
 
                 foreach (var c in selected)
                 {
                     if (cts.Token.IsCancellationRequested)
                         break;
+                    // Determinate status-bar progress across the selected folders.
+                    ReportProgress(dryRun ? "Simulating redirect…" : "Moving folders…", (double)done / selected.Count);
                     try
                     {
                         // The token reaches robocopy: a mid-copy cancel kills the copy and the
@@ -181,6 +185,7 @@ public partial class RedirectPageViewModel : ViewModelBase
                     {
                         break;
                     }
+                    done++;
                 }
 
                 StatusText = dryRun
@@ -194,6 +199,7 @@ public partial class RedirectPageViewModel : ViewModelBase
                 {
                     // Data moved off C: behind a junction — the index is now stale for those paths.
                     _diskIndex.Invalidate(DiskIndexService.SystemDrive);
+                    ReportProgress("Rebuilding index…", null);
                     await ScanAsync();
                 }
 
@@ -203,6 +209,7 @@ public partial class RedirectPageViewModel : ViewModelBase
         }
         finally
         {
+            ClearProgress();
             _opCts = null;
             IsBusy = false;
         }
@@ -235,21 +242,44 @@ public partial class RedirectPageViewModel : ViewModelBase
         {
             await RunGuardedAsync(async () =>
             {
+                ReportProgress(dryRun ? "Simulating undo…" : "Restoring folder…", null);
                 var result = await _service.UndoAsync(record, dryRun, cts.Token);
                 StatusText = result.Message;
                 if (!dryRun && result.Succeeded)
                 {
                     // Data moved back onto C: — refresh the index before rescanning.
                     _diskIndex.Invalidate(DiskIndexService.SystemDrive);
+                    ReportProgress("Rebuilding index…", null);
                     await ScanAsync();
                 }
             }, s => StatusText = s, "Undo failed");
         }
         finally
         {
+            ClearProgress();
             _opCts = null;
             IsBusy = false;
         }
+    }
+
+    /// <summary>Undo for an already-redirected row in the candidate list. Such a junction may have
+    /// no ledger record (redirected manually or by an older build), so we synthesize a record from
+    /// the detected target and route it through the same <see cref="UndoAsync"/> flow — the service
+    /// re-verifies by copying the data back, so a placeholder <c>SizeBytes = 0</c> is safe.</summary>
+    [RelayCommand(CanExecute = nameof(CanRun))]
+    private async Task UndoCandidateAsync(RedirectCandidateViewModel? candidate)
+    {
+        if (candidate?.Candidate.ExistingTarget is not { } target || !candidate.IsAlreadyRedirected)
+            return;
+
+        var record = new RedirectRecord
+        {
+            SourcePath = candidate.SourcePath,
+            TargetPath = target,
+            TimestampUtc = DateTime.UtcNow.ToString("o"),
+            SizeBytes = 0,
+        };
+        await UndoAsync(record);
     }
 
     public bool HasActiveRedirects => ActiveRedirects.Count > 0;

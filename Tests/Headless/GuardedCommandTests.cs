@@ -1,5 +1,4 @@
 using System;
-using System.IO;
 using System.Threading.Tasks;
 using Avalonia.Headless.XUnit;
 using WinButler.Models;
@@ -85,25 +84,5 @@ public sealed class GuardedCommandTests : MessengerIsolatedTest
         Assert.Contains("no volume handle", vm.StatusText);
         Assert.False(vm.IsBusy);
         Assert.True(vm.ScanCommand.CanExecute(null));
-    }
-
-    [AvaloniaFact]
-    public async Task Dashboard_breakdown_failure_degrades_to_a_status_line()
-    {
-        var settings = new AppSettings();
-        var index = FakeIndex(() => throw new IOException("device gone"));
-        var clean = new CleanPageViewModel(settings, Fakes.CleanScanners(), new FakeCleaner(), index);
-        var redirect = new RedirectPageViewModel(settings, new FakeRedirectionService(), index);
-        var devJunk = new DevJunkPageViewModel(
-            new DevJunkAggregator(), settings, new FakeCleaner(), redirect, _ => { }, index);
-        var dash = new DashboardPageViewModel(clean, redirect, devJunk, _ => { }, index);
-
-        // Auto-fired on the app's first paint in production — the crash-on-first-paint path.
-        await dash.LoadBreakdownCommand.ExecuteAsync(null);
-
-        Assert.StartsWith("Disk breakdown failed:", dash.DiskStatus);
-        Assert.Contains("device gone", dash.DiskStatus);
-        Assert.False(dash.IsScanningDisk);
-        Assert.False(dash.HasBreakdown);
     }
 }

@@ -1,9 +1,9 @@
 <!--
   Duly Doted color tokens, ported from the design mockup's colors.css.
-  Monochrome ink scale + two accent palettes (red/green). The "Wb*Accent*" keys are the
-  LIVE, mutable resources every screen binds to via DynamicResource; ThemeService (see
-  Services/ThemeService.cs) copies the matching WbRed*/WbGreen* precomputed set into them
-  when the accent is toggled. Never bind directly to WbRed*/WbGreen* from a view.
+  Monochrome ink scale + the LED green accent palette. The "Wb*Accent*" keys are the
+  LIVE resources every screen binds to via DynamicResource; ThemeService (see
+  Services/ThemeService.cs) copies the WbGreen* precomputed set into them at startup.
+  Never bind directly to WbGreen* from a view.
 -->
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
@@ -74,23 +74,6 @@
       <Color x:Key="WbScrimColor">#9E000000</Color>
       <SolidColorBrush x:Key="WbScrimBrush" Color="{StaticResource WbScrimColor}"/>
 
-      <!-- ==== LED RED PALETTE (precomputed derived steps) ==== -->
-      <Color x:Key="WbRedColor">#E60012</Color>
-      <Color x:Key="WbRedDimColor">#5C0007</Color>
-      <Color x:Key="WbRed700Color">#A30009</Color>
-      <Color x:Key="WbRed600Color">#CC0010</Color>
-      <Color x:Key="WbRedBrightColor">#FF2D2D</Color>
-      <SolidColorBrush x:Key="WbRedAccentBrush" Color="{StaticResource WbRedColor}"/>
-      <SolidColorBrush x:Key="WbRedAccentOnBrush" Color="#FFFFFF"/>
-      <SolidColorBrush x:Key="WbRedAccentBrightBrush" Color="#ED4250"/>
-      <SolidColorBrush x:Key="WbRedAccent600Brush" Color="#C60010"/>
-      <SolidColorBrush x:Key="WbRedAccent700Brush" Color="#98000C"/>
-      <SolidColorBrush x:Key="WbRedAccentDimBrush" Color="#530007"/>
-      <SolidColorBrush x:Key="WbRedAccentTintBrush" Color="#E60012" Opacity="0.12"/>
-      <SolidColorBrush x:Key="WbRedAccentHoverBrush" Color="#ED4250"/>
-      <SolidColorBrush x:Key="WbRedAccentPressBrush" Color="#98000C"/>
-      <SolidColorBrush x:Key="WbRedDotAccentBrush" Color="{StaticResource WbRedColor}"/>
-
       <!-- ==== LED GREEN PALETTE (precomputed derived steps) ==== -->
       <Color x:Key="WbGreenColor">#06C24A</Color>
       <Color x:Key="WbGreenDimColor">#043A14</Color>
@@ -108,18 +91,18 @@
       <SolidColorBrush x:Key="WbGreenAccentPressBrush" Color="#048031"/>
       <SolidColorBrush x:Key="WbGreenDotAccentBrush" Color="{StaticResource WbGreenColor}"/>
 
-      <!-- ==== LIVE ACCENT (mutable — ThemeService overwrites these on toggle) ====
-           Defaults to RED to match the mockup component's default prop. -->
-      <SolidColorBrush x:Key="WbAccentBrush" Color="{StaticResource WbRedColor}"/>
-      <SolidColorBrush x:Key="WbAccentOnBrush" Color="#FFFFFF"/>
-      <SolidColorBrush x:Key="WbAccentBrightBrush" Color="#ED4250"/>
-      <SolidColorBrush x:Key="WbAccentHoverBrush" Color="#ED4250"/>
-      <SolidColorBrush x:Key="WbAccent600Brush" Color="#C60010"/>
-      <SolidColorBrush x:Key="WbAccent700Brush" Color="#98000C"/>
-      <SolidColorBrush x:Key="WbAccentPressBrush" Color="#98000C"/>
-      <SolidColorBrush x:Key="WbAccentDimBrush" Color="#530007"/>
-      <SolidColorBrush x:Key="WbAccentTintBrush" Color="#E60012" Opacity="0.12"/>
-      <SolidColorBrush x:Key="WbDotAccentBrush" Color="{StaticResource WbRedColor}"/>
+      <!-- ==== LIVE ACCENT (ThemeService copies the WbGreen* set into these at startup) ====
+           Seeded with the green values so the very first paint is green before Apply runs. -->
+      <SolidColorBrush x:Key="WbAccentBrush" Color="{StaticResource WbGreenColor}"/>
+      <SolidColorBrush x:Key="WbAccentOnBrush" Color="#04160D"/>
+      <SolidColorBrush x:Key="WbAccentBrightBrush" Color="#47D279"/>
+      <SolidColorBrush x:Key="WbAccentHoverBrush" Color="#47D279"/>
+      <SolidColorBrush x:Key="WbAccent600Brush" Color="#05A740"/>
+      <SolidColorBrush x:Key="WbAccent700Brush" Color="#048031"/>
+      <SolidColorBrush x:Key="WbAccentPressBrush" Color="#048031"/>
+      <SolidColorBrush x:Key="WbAccentDimBrush" Color="#02461B"/>
+      <SolidColorBrush x:Key="WbAccentTintBrush" Color="#06C24A" Opacity="0.12"/>
+      <SolidColorBrush x:Key="WbDotAccentBrush" Color="{StaticResource WbGreenColor}"/>
 
     </ResourceDictionary>
   </Styles.Resources>

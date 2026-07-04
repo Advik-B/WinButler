@@ -46,61 +46,30 @@
                                 <Run Text="{Binding DiskUsedText}"/><Run Text=" used of "/><Run Text="{Binding DiskTotalText}"/>
                             </TextBlock>
                         </Grid>
-                        <!-- Segmented disk-usage bar: System / Apps / Media / Other / Free, from the shared index. -->
+                        <!-- Used / free disk bar (from DriveInfo — always available, no scan). -->
                         <Border Height="30" CornerRadius="7" BorderBrush="{DynamicResource WbBorderBrush}" BorderThickness="1"
                                 Background="{DynamicResource WbInk850Brush}" ClipToBounds="True">
-                            <Panel>
-                                <Grid IsVisible="{Binding HasBreakdown}">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="{Binding SystemStar}"/>
-                                        <ColumnDefinition Width="{Binding AppsStar}"/>
-                                        <ColumnDefinition Width="{Binding MediaStar}"/>
-                                        <ColumnDefinition Width="{Binding OtherStar}"/>
-                                        <ColumnDefinition Width="{Binding FreeStar}"/>
-                                    </Grid.ColumnDefinitions>
-                                    <Border Grid.Column="0" Background="{DynamicResource WbInk200Brush}"/>
-                                    <Border Grid.Column="1" Background="{DynamicResource WbInk400Brush}"/>
-                                    <Border Grid.Column="2" Background="{DynamicResource WbInk300Brush}"/>
-                                    <Border Grid.Column="3" Background="{DynamicResource WbInk600Brush}"/>
-                                    <Border Grid.Column="4" Background="Transparent"/>
-                                </Grid>
-                                <TextBlock IsVisible="{Binding !HasBreakdown}" Text="{Binding DiskStatus}"
-                                           HorizontalAlignment="Center" VerticalAlignment="Center"
-                                           FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
-                                           FontSize="{StaticResource WbText2xs}" LetterSpacing="1"
-                                           Foreground="{DynamicResource WbTextMutedBrush}"/>
-                            </Panel>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="{Binding UsedStar}"/>
+                                    <ColumnDefinition Width="{Binding FreeStar}"/>
+                                </Grid.ColumnDefinitions>
+                                <Border Grid.Column="0" Background="{DynamicResource WbAccentBrush}"/>
+                                <Border Grid.Column="1" Background="Transparent"/>
+                            </Grid>
                         </Border>
-                        <WrapPanel Margin="0,13,0,0" IsVisible="{Binding HasBreakdown}">
+                        <WrapPanel Margin="0,13,0,0">
                             <StackPanel Orientation="Horizontal" Spacing="7" Margin="0,0,18,6">
-                                <Border Width="9" Height="9" CornerRadius="2" Background="{DynamicResource WbInk200Brush}"/>
+                                <Border Width="9" Height="9" CornerRadius="2" Background="{DynamicResource WbAccentBrush}"/>
                                 <TextBlock FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold" FontSize="{StaticResource WbText2xs}" Foreground="{DynamicResource WbTextTertiaryBrush}">
-                                    <Run Text="System"/><Run Text="  "/><Run Text="{Binding SystemText}" FontFamily="{DynamicResource WbFontReadout}" Foreground="{DynamicResource WbTextSecondaryBrush}"/>
-                                </TextBlock>
-                            </StackPanel>
-                            <StackPanel Orientation="Horizontal" Spacing="7" Margin="0,0,18,6">
-                                <Border Width="9" Height="9" CornerRadius="2" Background="{DynamicResource WbInk400Brush}"/>
-                                <TextBlock FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold" FontSize="{StaticResource WbText2xs}" Foreground="{DynamicResource WbTextTertiaryBrush}">
-                                    <Run Text="Apps"/><Run Text="  "/><Run Text="{Binding AppsText}" FontFamily="{DynamicResource WbFontReadout}" Foreground="{DynamicResource WbTextSecondaryBrush}"/>
-                                </TextBlock>
-                            </StackPanel>
-                            <StackPanel Orientation="Horizontal" Spacing="7" Margin="0,0,18,6">
-                                <Border Width="9" Height="9" CornerRadius="2" Background="{DynamicResource WbInk300Brush}"/>
-                                <TextBlock FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold" FontSize="{StaticResource WbText2xs}" Foreground="{DynamicResource WbTextTertiaryBrush}">
-                                    <Run Text="Media"/><Run Text="  "/><Run Text="{Binding MediaText}" FontFamily="{DynamicResource WbFontReadout}" Foreground="{DynamicResource WbTextSecondaryBrush}"/>
-                                </TextBlock>
-                            </StackPanel>
-                            <StackPanel Orientation="Horizontal" Spacing="7" Margin="0,0,18,6">
-                                <Border Width="9" Height="9" CornerRadius="2" Background="{DynamicResource WbInk600Brush}"/>
-                                <TextBlock FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold" FontSize="{StaticResource WbText2xs}" Foreground="{DynamicResource WbTextTertiaryBrush}">
-                                    <Run Text="Other"/><Run Text="  "/><Run Text="{Binding OtherText}" FontFamily="{DynamicResource WbFontReadout}" Foreground="{DynamicResource WbTextSecondaryBrush}"/>
+                                    <Run Text="Used"/><Run Text="  "/><Run Text="{Binding DiskUsedText}" FontFamily="{DynamicResource WbFontReadout}" Foreground="{DynamicResource WbTextSecondaryBrush}"/>
                                 </TextBlock>
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" Spacing="7" Margin="0,0,18,6">
                                 <Border Width="9" Height="9" CornerRadius="2" Background="Transparent"
                                         BorderBrush="{DynamicResource WbBorderStrongBrush}" BorderThickness="1"/>
                                 <TextBlock FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold" FontSize="{StaticResource WbText2xs}" Foreground="{DynamicResource WbTextTertiaryBrush}">
-                                    <Run Text="Free"/><Run Text="  "/><Run Text="{Binding FreeText}" FontFamily="{DynamicResource WbFontReadout}" Foreground="{DynamicResource WbTextSecondaryBrush}"/>
+                                    <Run Text="Free"/><Run Text="  "/><Run Text="{Binding DiskFreeText}" FontFamily="{DynamicResource WbFontReadout}" Foreground="{DynamicResource WbTextSecondaryBrush}"/>
                                 </TextBlock>
                             </StackPanel>
                         </WrapPanel>
@@ -140,62 +109,28 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
 
-            <!-- REDIRECT HIGHLIGHT + ACTIVITY -->
-            <Grid ColumnDefinitions="1.55*,1*" >
-                <Button Grid.Column="0" Classes="secondary" Margin="0,0,12,0" Padding="20"
-                        HorizontalContentAlignment="Stretch" CornerRadius="{StaticResource WbRadiusMd}"
-                        Command="{Binding GoToRedirectCommand}">
-                    <Grid ColumnDefinitions="*,Auto">
-                        <StackPanel Grid.Column="0" MaxWidth="380">
-                            <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,0,0,10">
-                                <Ellipse Width="7" Height="7" Fill="{DynamicResource WbAccentBrush}"/>
-                                <TextBlock Text="SIGNATURE FEATURE" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold" FontSize="{StaticResource WbText2xs}"
-                                           LetterSpacing="1.5" Foreground="{DynamicResource WbAccentBrush}"/>
-                            </StackPanel>
-                            <TextBlock Text="Redirect to another drive" FontFamily="{DynamicResource WbFontDot}" FontWeight="Bold"
-                                       FontSize="{StaticResource WbTextLg}" Foreground="{DynamicResource WbTextBrush}" Margin="0,0,0,6"/>
-                            <TextBlock TextWrapping="Wrap" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold" FontSize="{StaticResource WbTextXs}"
-                                       Foreground="{DynamicResource WbTextSecondaryBrush}"
-                                       Text="Move heavy dev folders via directory junctions. Apps still see them at C:\ — zero broken paths."/>
-                        </StackPanel>
-                        <StackPanel Grid.Column="1" VerticalAlignment="Bottom" HorizontalAlignment="Right">
-                            <TextBlock Text="{Binding RedirectableGb}" FontFamily="{DynamicResource WbFontReadout}" FontWeight="Bold"
-                                       FontSize="{StaticResource WbTextXl}" Foreground="{DynamicResource WbAccentBrush}" HorizontalAlignment="Right"/>
-                            <TextBlock Text="RELOCATABLE" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold" FontSize="{StaticResource WbText2xs}"
-                                       LetterSpacing="1" Foreground="{DynamicResource WbTextTertiaryBrush}" HorizontalAlignment="Right"/>
-                        </StackPanel>
-                    </Grid>
-                </Button>
-
-                <Border Grid.Column="1" BorderBrush="{DynamicResource WbBorderBrush}" BorderThickness="1"
-                        CornerRadius="{StaticResource WbRadiusMd}" Background="{DynamicResource WbSurfaceBrush}"
-                        Padding="18,16">
-                    <StackPanel>
-                        <TextBlock Text="SESSION ACTIVITY" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold" FontSize="{StaticResource WbText2xs}"
-                                   LetterSpacing="1.5" Foreground="{DynamicResource WbTextTertiaryBrush}" Margin="0,0,0,12"/>
-                        <TextBlock IsVisible="{Binding !HasActivity}" Text="NO SIGNAL — NOTHING CLEANED YET"
-                                   FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold" FontSize="{StaticResource WbText2xs}"
-                                   LetterSpacing="1" Foreground="{DynamicResource WbTextMutedBrush}"
-                                   HorizontalAlignment="Center" Margin="0,18,0,18"/>
-                        <ItemsControl ItemsSource="{Binding SessionActivity}" IsVisible="{Binding HasActivity}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="vm:ActivityEntry">
-                                    <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,9">
-                                        <i:Icon Grid.Column="0" Value="{Binding IconKey}" FontSize="13" VerticalAlignment="Center"
-                                                Foreground="{DynamicResource WbTextTertiaryBrush}" Margin="0,0,9,0"/>
-                                        <TextBlock Grid.Column="1" Text="{Binding Text}" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
-                                                   FontSize="{StaticResource WbText2xs}" VerticalAlignment="Center" TextWrapping="Wrap"
-                                                   Foreground="{DynamicResource WbTextSecondaryBrush}"/>
-                                        <TextBlock Grid.Column="2" Text="{Binding TimeText}" FontFamily="{DynamicResource WbFontReadout}"
-                                                   FontSize="{StaticResource WbText2xs}" VerticalAlignment="Center" Margin="10,0,0,0"
-                                                   Foreground="{DynamicResource WbTextMutedBrush}"/>
-                                    </Grid>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+            <!-- REDIRECT HIGHLIGHT (full width; session activity feed removed) -->
+            <Button Classes="secondary" Padding="20"
+                    HorizontalContentAlignment="Stretch" CornerRadius="{StaticResource WbRadiusMd}"
+                    Command="{Binding GoToRedirectCommand}">
+                <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel Grid.Column="0" MaxWidth="560">
+                        <TextBlock Text="SIGNATURE FEATURE" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold" FontSize="{StaticResource WbText2xs}"
+                                   LetterSpacing="1.5" Foreground="{DynamicResource WbAccentBrush}" Margin="0,0,0,10"/>
+                        <TextBlock Text="Redirect to another drive" FontFamily="{DynamicResource WbFontDot}" FontWeight="Bold"
+                                   FontSize="{StaticResource WbTextLg}" Foreground="{DynamicResource WbTextBrush}" Margin="0,0,0,6"/>
+                        <TextBlock TextWrapping="Wrap" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold" FontSize="{StaticResource WbTextXs}"
+                                   Foreground="{DynamicResource WbTextSecondaryBrush}"
+                                   Text="Move heavy dev folders via directory junctions. Apps still see them at C:\ — zero broken paths."/>
                     </StackPanel>
-                </Border>
-            </Grid>
+                    <StackPanel Grid.Column="1" VerticalAlignment="Bottom" HorizontalAlignment="Right">
+                        <TextBlock Text="{Binding RedirectableGb}" FontFamily="{DynamicResource WbFontReadout}" FontWeight="Bold"
+                                   FontSize="{StaticResource WbTextXl}" Foreground="{DynamicResource WbAccentBrush}" HorizontalAlignment="Right"/>
+                        <TextBlock Text="RELOCATABLE" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold" FontSize="{StaticResource WbText2xs}"
+                                   LetterSpacing="1" Foreground="{DynamicResource WbTextTertiaryBrush}" HorizontalAlignment="Right"/>
+                    </StackPanel>
+                </Grid>
+            </Button>
 
         </StackPanel>
     </ScrollViewer>

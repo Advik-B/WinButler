@@ -47,6 +47,21 @@ public abstract class ViewModelBase : ObservableObject
         ConfirmInteraction?.Invoke(request) ?? Task.FromResult(true);
 
     /// <summary>
+    /// Reports long-operation progress to the shell's status-bar bar. Wired by the shell (like
+    /// <see cref="ConfirmInteraction"/>); unset in headless tests, where it's a harmless no-op.
+    /// First arg is the status line (null clears/hides the bar); second is the fraction 0..1
+    /// (null = indeterminate spinner).
+    /// </summary>
+    public Action<string?, double?>? ShellProgress { get; set; }
+
+    /// <summary>Shows the status-bar bar: determinate if <paramref name="fraction"/> is given,
+    /// else indeterminate.</summary>
+    protected void ReportProgress(string text, double? fraction = null) => ShellProgress?.Invoke(text, fraction);
+
+    /// <summary>Hides the status-bar bar.</summary>
+    protected void ClearProgress() => ShellProgress?.Invoke(null, null);
+
+    /// <summary>
     /// Runs an async command body so that no exception ever reaches the UI-thread
     /// SynchronizationContext, where CommunityToolkit's AsyncRelayCommand would rethrow it
     /// and crash the process. Cancellation reads as a normal outcome; anything else is

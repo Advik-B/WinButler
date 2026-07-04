@@ -34,14 +34,13 @@ public partial class App : Application
                 // never touch the real settings file.
                 SettingsStore.Load(vm.Settings);
 
+                // Green is the only accent now, so this runs once at startup and never re-fires.
                 ThemeService.Apply(vm.Settings.Accent);
                 vm.Settings.PropertyChanged += (_, e) =>
                 {
-                    if (e.PropertyName == nameof(AppSettings.Accent))
-                        ThemeService.Apply(vm.Settings.Accent);
-
-                    // Persist the preferences a user expects to survive a restart — never dry-run.
-                    if (e.PropertyName is nameof(AppSettings.Accent) or nameof(AppSettings.TargetDrive))
+                    // Persist the one preference a user expects to survive a restart (never dry-run,
+                    // which resets to ON every launch; accent is fixed).
+                    if (e.PropertyName == nameof(AppSettings.TargetDrive))
                         SettingsStore.Save(vm.Settings);
                 };
 

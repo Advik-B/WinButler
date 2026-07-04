@@ -33,7 +33,6 @@
                 <TextBlock Text="Sort:" VerticalAlignment="Center" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
                            FontSize="{StaticResource WbTextXs}" Foreground="{DynamicResource WbTextTertiaryBrush}"/>
                 <ComboBox ItemsSource="{Binding SortModes}" SelectedItem="{Binding SelectedSort}" MinWidth="100"/>
-                <ProgressBar IsIndeterminate="True" Width="90" VerticalAlignment="Center" IsVisible="{Binding IsBusy}"/>
                 <Button Content="CANCEL" Classes="ghost" Command="{Binding CancelCommand}" IsVisible="{Binding IsBusy}"/>
             </StackPanel>
         </StackPanel>

@@ -22,60 +22,8 @@
     <Panel>
         <DockPanel>
 
-            <!-- MENU STRIP -->
-            <Border DockPanel.Dock="Top" Height="30"
-                    Background="{DynamicResource WbSurface2Brush}"
-                    BorderBrush="{DynamicResource WbBorderFaintBrush}" BorderThickness="0,0,0,1">
-                <DockPanel Margin="4,0">
-                    <TextBlock DockPanel.Dock="Left" Text="WB" VerticalAlignment="Center"
-                               FontFamily="{DynamicResource WbFontDot}" FontWeight="Bold"
-                               FontSize="{StaticResource WbTextSm}" Foreground="{DynamicResource WbAccentBrush}"
-                               Margin="8,0,12,0"/>
-                    <Menu VerticalAlignment="Center">
-                        <MenuItem Header="File">
-                            <MenuItem Header="Re-scan" Command="{Binding RescanAllCommand}"/>
-                            <Separator/>
-                            <MenuItem Header="Exit" Command="{Binding ExitCommand}"/>
-                        </MenuItem>
-                        <MenuItem Header="Scan">
-                            <MenuItem Header="Full scan" Command="{Binding RescanAllCommand}"/>
-                            <MenuItem Header="Electron leftovers" Command="{Binding NavigateCommand}" CommandParameter="electron"/>
-                            <MenuItem Header="Temp files" Command="{Binding NavigateCommand}" CommandParameter="temp"/>
-                            <MenuItem Header="Cache folders" Command="{Binding NavigateCommand}" CommandParameter="cache"/>
-                            <MenuItem Header="Developer junk" Command="{Binding NavigateCommand}" CommandParameter="devjunk"/>
-                        </MenuItem>
-                        <MenuItem Header="Tools">
-                            <MenuItem Header="Redirect to another drive…" Command="{Binding NavigateCommand}" CommandParameter="redirect"/>
-                            <MenuItem Header="Disk explorer (MFT)" Command="{Binding NavigateCommand}" CommandParameter="disk"/>
-                            <Separator/>
-                            <MenuItem Header="Toggle dry-run mode" Command="{Binding ToggleDryRunCommand}"/>
-                        </MenuItem>
-                        <MenuItem Header="View">
-                            <MenuItem Header="LED Red" Command="{Binding SetAccentCommand}" CommandParameter="red"/>
-                            <MenuItem Header="LED Green" Command="{Binding SetAccentCommand}" CommandParameter="green"/>
-                        </MenuItem>
-                        <MenuItem Header="Help">
-                            <MenuItem Header="About WinButler"/>
-                        </MenuItem>
-                    </Menu>
-                </DockPanel>
-            </Border>
-
-            <!-- TOOLBAR -->
-            <Border DockPanel.Dock="Top"
-                    Background="{DynamicResource WbSurfaceBrush}"
-                    BorderBrush="{DynamicResource WbBorderFaintBrush}" BorderThickness="0,0,0,1"
-                    Padding="16,10">
-                <StackPanel Orientation="Horizontal" Spacing="14">
-                    <Button Classes="secondary" Command="{Binding RescanAllCommand}">
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <i:Icon Value="mdi-refresh" FontSize="15" VerticalAlignment="Center"/>
-                            <TextBlock Text="RE-SCAN" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </Button>
-                    <shared:DryRunPillView IsDryRun="{Binding Settings.IsDryRun}"/>
-                </StackPanel>
-            </Border>
+            <!-- Menu strip + toolbar removed: the main actions (RE-SCAN, dry-run) now live in
+                 the status bar below; navigation lives in the sidebar. -->
 
             <!-- DEFINITIONS-ERROR BANNER (fail-closed: cleaning disabled) -->
             <Border DockPanel.Dock="Top" IsVisible="{Binding HasDefinitionsError}"
@@ -89,16 +37,35 @@
                 </StackPanel>
             </Border>
 
-            <!-- STATUS BAR -->
-            <Border DockPanel.Dock="Bottom" Height="28"
+            <!-- STATUS BAR — now the app's action bar: RE-SCAN + dry-run on the left, the shell
+                 progress bar (MFT parse / delete) in the center, version on the right. -->
+            <Border DockPanel.Dock="Bottom" Height="44"
                     Background="{DynamicResource WbSurface2Brush}"
                     BorderBrush="{DynamicResource WbBorderFaintBrush}" BorderThickness="0,1,0,0">
-                <StackPanel Orientation="Horizontal" Spacing="16" Margin="14,0" VerticalAlignment="Center">
-                    <TextBlock Text="{Binding Settings.IsDryRun, StringFormat='DRY RUN {0}'}"
+                <Grid ColumnDefinitions="Auto,*,Auto" Margin="14,0">
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                        <Button Classes="secondary" Command="{Binding RescanAllCommand}">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <i:Icon Value="mdi-refresh" FontSize="15" VerticalAlignment="Center"/>
+                                <TextBlock Text="RE-SCAN" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                        <shared:DryRunPillView IsDryRun="{Binding Settings.IsDryRun}"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10"
+                                HorizontalAlignment="Center" VerticalAlignment="Center"
+                                IsVisible="{Binding IsProgressActive}">
+                        <TextBlock Text="{Binding ProgressText}" VerticalAlignment="Center"
+                                   FontSize="{StaticResource WbText2xs}" Foreground="{DynamicResource WbTextSecondaryBrush}"/>
+                        <ProgressBar Width="180" Height="6" VerticalAlignment="Center"
+                                     Minimum="0" Maximum="1" Value="{Binding ProgressValue}"
+                                     IsIndeterminate="{Binding IsProgressIndeterminate}"/>
+                    </StackPanel>
+
+                    <TextBlock Grid.Column="2" Text="WINBUTLER v0.9" VerticalAlignment="Center"
                                FontSize="{StaticResource WbText2xs}" Foreground="{DynamicResource WbTextMutedBrush}"/>
-                    <TextBlock Text="WINBUTLER v0.9" FontSize="{StaticResource WbText2xs}"
-                               Foreground="{DynamicResource WbTextMutedBrush}" HorizontalAlignment="Right"/>
-                </StackPanel>
+                </Grid>
             </Border>
 
             <!-- BODY: sidebar + content -->

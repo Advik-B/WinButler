@@ -114,4 +114,22 @@ public sealed class CleanPageTests : MessengerIsolatedTest
         Assert.Empty(cleaner.Calls);
         Assert.Equal("Nothing selected.", vm.StatusText);
     }
+
+    [AvaloniaFact]
+    public async Task CleanSelected_scoped_to_a_category_ignores_other_categories()
+    {
+        var cleaner = new FakeCleaner();
+        var vm = NewPage(new AppSettings(), cleaner);
+        // Cache has two pre-selected Safe items (the old cross-category leak source)…
+        vm.CacheCategory!.SetItems(new[] { Fakes.Target("c1", 100), Fakes.Target("c2", 200) });
+        // …while the Temp page shows just one selected item.
+        vm.TempCategory!.SetItems(new[] { Fakes.Target("t1", 50, category: CleanupCategory.Temp) });
+
+        // Cleaning from the Temp page passes its own category → only the 1 Temp item is deleted,
+        // NOT Cache's 2 pre-selected items. (Passing null still cleans everything, for CLEAN ALL.)
+        await vm.CleanSelectedCommand.ExecuteAsync(vm.TempCategory);
+
+        Assert.Single(cleaner.Calls);
+        Assert.Equal(@"C:\fake\t1", cleaner.Calls[0].Target.FullPath);
+    }
 }

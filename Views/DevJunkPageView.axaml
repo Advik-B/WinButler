@@ -26,7 +26,8 @@
             <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Bottom">
                 <TextBlock Text="{Binding SelectedSummary}" VerticalAlignment="Center" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
                            FontSize="{StaticResource WbTextXs}" Foreground="{DynamicResource WbTextTertiaryBrush}"/>
-                <Button Content="SCAN" Classes="secondary" Command="{Binding ScanCommand}"/>
+                <Button Content="SELECT ALL" Classes="ghost" Command="{Binding SelectAllCommand}"/>
+                <Button Content="CLEAR" Classes="ghost" Command="{Binding ClearCommand}"/>
                 <Button Content="CLEAN SELECTED" Classes="primary" Command="{Binding CleanSelectedCommand}"/>
                 <Button Content="CANCEL" Classes="ghost" Command="{Binding CancelCommand}" IsVisible="{Binding IsBusy}"/>
             </StackPanel>
@@ -47,13 +48,10 @@
                            FontSize="{StaticResource WbTextXs}" Foreground="{DynamicResource WbTextTertiaryBrush}"/>
             </StackPanel>
             <StackPanel Spacing="14" IsVisible="{Binding !IsBusy}">
-                <StackPanel Spacing="14" IsVisible="{Binding !HasScanned}">
-                    <TextBlock Text="NO DATA — RUN A SCAN TO SIZE YOUR TOOLCHAINS" HorizontalAlignment="Center" LetterSpacing="2"
-                               FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
-                               FontSize="{StaticResource WbTextXs}" Foreground="{DynamicResource WbTextMutedBrush}"/>
-                    <Button Content="SCAN" Classes="primary" HorizontalAlignment="Center"
-                            Command="{Binding ScanCommand}"/>
-                </StackPanel>
+                <TextBlock Text="PREPARING SCAN…" HorizontalAlignment="Center" LetterSpacing="2"
+                           IsVisible="{Binding !HasScanned}"
+                           FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
+                           FontSize="{StaticResource WbTextXs}" Foreground="{DynamicResource WbTextMutedBrush}"/>
                 <TextBlock Text="NOTHING FOUND — NO DEV JUNK ON THIS MACHINE" HorizontalAlignment="Center" LetterSpacing="2"
                            IsVisible="{Binding HasScanned}"
                            FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
@@ -61,16 +59,18 @@
             </StackPanel>
         </StackPanel>
 
-        <ScrollViewer IsVisible="{Binding HasGroups}">
+        <ScrollViewer IsVisible="{Binding HasGroups}"
+                      HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto"
+                      Padding="0,0,8,0">
             <ItemsControl ItemsSource="{Binding Groups}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <WrapPanel Orientation="Horizontal"/>
+                        <UniformGrid Columns="2"/>
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="vm:DevToolGroupViewModel">
-                        <Border Width="440" Margin="0,0,13,13" Padding="15,14"
+                        <Border Margin="0,0,13,13" Padding="15,14"
                                 BorderBrush="{DynamicResource WbBorderBrush}" BorderThickness="1"
                                 CornerRadius="{StaticResource WbRadiusMd}" Background="{DynamicResource WbSurfaceBrush}">
                             <StackPanel Spacing="12">

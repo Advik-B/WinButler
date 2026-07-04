@@ -25,7 +25,7 @@ public sealed class ReentrancyTests : MessengerIsolatedTest
         var redirect = new RedirectPageViewModel(settings, new FakeRedirectionService(), index);
         var devJunk = new DevJunkPageViewModel(
             new DevJunkAggregator(), settings, new FakeCleaner(), redirect, _ => { }, index);
-        var dash = new DashboardPageViewModel(clean, redirect, devJunk, _ => { }, index);
+        var dash = new DashboardPageViewModel(clean, redirect, devJunk, _ => { });
 
         Assert.True(dash.CleanAllCommand.CanExecute(null));
 

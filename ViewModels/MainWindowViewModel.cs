@@ -58,6 +58,23 @@ public partial class MainWindowViewModel : ViewModelBase
     [NotifyCanExecuteChangedFor(nameof(RescanAllCommand))]
     private bool _isRescanning;
 
+    // ── Status-bar progress (the one shell-wide progress slot: MFT parse, scans, deletes) ──
+    /// <summary>True while a long operation is running; shows the status-bar progress region.</summary>
+    [ObservableProperty]
+    private bool _isProgressActive;
+
+    /// <summary>Indeterminate (spinner) vs. determinate (0..1) — MFT parse/scan spin; deletes fill.</summary>
+    [ObservableProperty]
+    private bool _isProgressIndeterminate;
+
+    /// <summary>Determinate progress fraction, 0..1 (ignored while indeterminate).</summary>
+    [ObservableProperty]
+    private double _progressValue;
+
+    /// <summary>The active operation's status line, shown beside the bar.</summary>
+    [ObservableProperty]
+    private string _progressText = "";
+
     private DispatcherTimer? _toastTimer;
 
     /// <summary>The one shared whole-volume disk index, wired into the sizing chokepoint at
@@ -111,7 +128,7 @@ public partial class MainWindowViewModel : ViewModelBase
         var devJunkAggregator = new DevJunkAggregator(safeCaches);
         DevJunkPage = new DevJunkPageViewModel(devJunkAggregator, Settings, new Cleaner(), RedirectPage, Navigate, _diskIndex);
 
-        DashboardPage = new DashboardPageViewModel(CleanPage, RedirectPage, DevJunkPage, Navigate, _diskIndex);
+        DashboardPage = new DashboardPageViewModel(CleanPage, RedirectPage, DevJunkPage, Navigate);
 
         // Route every page's destructive-confirm through the shell's modal slot. Dashboard
         // CLEAN ALL confirms once itself, so its children skip their own prompt when it drives them.
@@ -119,6 +136,12 @@ public partial class MainWindowViewModel : ViewModelBase
         RedirectPage.ConfirmInteraction = ConfirmViaModalAsync;
         DevJunkPage.ConfirmInteraction = ConfirmViaModalAsync;
         DashboardPage.ConfirmInteraction = ConfirmViaModalAsync;
+
+        // Route every page's long-op progress into the shell's single status-bar progress slot.
+        CleanPage.ShellProgress = SetProgress;
+        RedirectPage.ShellProgress = SetProgress;
+        DevJunkPage.ShellProgress = SetProgress;
+        DiskPage.ShellProgress = SetProgress;
 
         // Surface every completed clean/redirect run as a toast (the Dashboard's activity
         // feed subscribes to the same broadcast).
@@ -161,7 +184,10 @@ public partial class MainWindowViewModel : ViewModelBase
 
     private bool CanRescanAll() => !IsRescanning;
 
-    /// <summary>File/Scan menu + toolbar "RE-SCAN": re-runs every scanner-backed page at once.</summary>
+    /// <summary>Runs every scanner-backed page at once — fired once on launch (MainWindow.Opened,
+    /// the "scan by default" behavior) and by the status-bar RE-SCAN button. Builds the shared
+    /// index up front so the slow MFT parse streams into the status-bar progress bar; the page
+    /// scans then reuse that one build.</summary>
     [RelayCommand(CanExecute = nameof(CanRescanAll))]
     private async Task RescanAllAsync()
     {
@@ -172,42 +198,50 @@ public partial class MainWindowViewModel : ViewModelBase
             // only backstops the orchestration (failures land in the log).
             await RunGuardedAsync(async () =>
             {
-                // Explicit refresh: drop the cached index so the first page scan rebuilds it once from
-                // disk, then the rest reuse that fresh build.
+                SetProgress("Reading disk…", null); // indeterminate while the MFT is parsed
+                // Drop the cached index so this build reads fresh from disk; the page scans reuse it.
                 _diskIndex.Invalidate(DiskIndexService.SystemDrive);
+                // Build the one shared index here (not lazily inside the first page scan) so the
+                // "Parsing MFT — X / Y records" progress lands in the shell's status bar.
+                await _diskIndex.EnsureBuiltAsync(
+                    DiskIndexService.SystemDrive, new Progress<string>(s => ProgressText = s));
+
+                SetProgress("Scanning for reclaimable space…", null);
                 // ExecuteAsync ignores CanExecute, so check it — a page mid-scan is already doing
                 // this work and its collections must not be mutated by a second overlapping run.
                 if (CleanPage.ScanCommand.CanExecute(null))
                     await CleanPage.ScanCommand.ExecuteAsync(null);
                 if (RedirectPage.ScanCommand.CanExecute(null))
                     await RedirectPage.ScanCommand.ExecuteAsync(null);
-                // Index is freshly rebuilt now — re-derive the disk breakdown from it (no extra MFT read).
-                await DashboardPage.RefreshBreakdownAsync();
+                // Dev Junk piggybacks on the redirect candidates, so it must run after Redirect.
+                if (DevJunkPage.ScanCommand.CanExecute(null))
+                    await DevJunkPage.ScanCommand.ExecuteAsync(null);
+
+                DashboardPage.Refresh();
             }, _ => { }, "Rescan All failed");
         }
         finally
         {
+            SetProgress(null, null);
             IsRescanning = false;
         }
     }
 
-    [RelayCommand]
-    private void SetAccent(string? kind)
+    /// <summary>Drives the single status-bar progress slot. <paramref name="text"/> null hides the
+    /// bar; <paramref name="fraction"/> null shows an indeterminate spinner, otherwise a 0..1 bar.
+    /// Wired into every page's <see cref="ViewModelBase.ShellProgress"/>.</summary>
+    public void SetProgress(string? text, double? fraction)
     {
-        Settings.Accent = kind == "green" ? AccentKind.Green : AccentKind.Red;
-    }
-
-    [RelayCommand]
-    private void ToggleDryRun() => Settings.IsDryRun = !Settings.IsDryRun;
-
-    [RelayCommand]
-    private static void Exit()
-    {
-        if (Avalonia.Application.Current?.ApplicationLifetime
-            is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop)
+        if (text is null)
         {
-            desktop.Shutdown();
+            IsProgressActive = false;
+            ProgressText = "";
+            return;
         }
+        IsProgressActive = true;
+        ProgressText = text;
+        IsProgressIndeterminate = fraction is null;
+        ProgressValue = fraction ?? 0;
     }
 
     /// <summary>Shows a toast for ~3.6s, replacing whatever is currently shown (matches the

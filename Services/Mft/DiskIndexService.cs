@@ -174,48 +174,6 @@ public sealed class DriveIndex
     public DiskNode? GetNode(string absolutePath) =>
         _byPath.TryGetValue(Normalize(absolutePath), out var n) ? n : null;
 
-    private static readonly string[] MediaFolders = { "Pictures", "Videos", "Music", "Downloads" };
-
-    /// <summary>
-    /// A coarse System / Apps / Media split of the drive's used space for the dashboard bar, using
-    /// allocated bytes so the buckets reconcile with the volume's free space. Classification is by
-    /// well-known location (cheap O(1) lookups, no extra walk): Windows + ProgramData + the big
-    /// root paging files → System; Program Files (+ per-user Local\Programs) → Apps; the per-user
-    /// media folders → Media. Everything else is left for the caller to bucket as "Other" (used −
-    /// these three), which absorbs caches, user data and metadata drift.
-    /// </summary>
-    public DiskBreakdown ComputeBreakdown()
-    {
-        long Alloc(string path) => GetNode(path)?.AllocBytes ?? 0;
-
-        long system = Alloc($@"{Drive}:\Windows") + Alloc($@"{Drive}:\ProgramData");
-        foreach (var child in Root.Children)
-            if (!child.IsDirectory && IsPagingFile(child.Name))
-                system += child.AllocBytes;
-
-        long apps = Alloc($@"{Drive}:\Program Files") + Alloc($@"{Drive}:\Program Files (x86)");
-
-        long media = 0;
-        var users = GetNode($@"{Drive}:\Users");
-        if (users is not null)
-        {
-            foreach (var user in users.Children)
-            {
-                if (!user.IsDirectory)
-                    continue;
-                apps += Alloc(user.FullPath + @"\AppData\Local\Programs");
-                foreach (var folder in MediaFolders)
-                    media += Alloc(user.FullPath + "\\" + folder);
-            }
-        }
-        return new DiskBreakdown(system, apps, media);
-    }
-
-    private static bool IsPagingFile(string name) =>
-        name.Equals("pagefile.sys", StringComparison.OrdinalIgnoreCase) ||
-        name.Equals("hiberfil.sys", StringComparison.OrdinalIgnoreCase) ||
-        name.Equals("swapfile.sys", StringComparison.OrdinalIgnoreCase);
-
     // NTFS is case-insensitive; upper-case + drop any trailing separator so lookup keys and the
     // paths callers pass (from Environment.GetFolderPath / directory enumeration) always agree.
     private static string Normalize(string p) => p.TrimEnd('\\', '/').ToUpperInvariant();
@@ -241,7 +199,3 @@ public sealed class DriveIndex
         return new DriveIndex(char.ToUpperInvariant(drive), root, dict);
     }
 }
-
-/// <summary>A coarse split of a drive's used space, in allocated bytes. "Other" (caches, user data,
-/// NTFS metadata) is the remainder the caller computes as used − System − Apps − Media.</summary>
-public sealed record DiskBreakdown(long System, long Apps, long Media);

@@ -26,10 +26,12 @@ public static class ThemeService
         if (app is null)
             return;
 
-        var prefix = accent == AccentKind.Green ? "WbGreen" : "WbRed";
+        // Green is the only accent now; the parameter is kept for API stability (and so a stale
+        // persisted AccentKind.Red still resolves to the green palette rather than crashing).
+        const string prefix = "WbGreen";
 
         // Look up on `app` (the IResourceHost), not `app.Resources` — the precomputed
-        // Red/Green palette lives in Tokens.Colors.axaml's Styles-merged dictionary, not the
+        // Green palette lives in Tokens.Colors.axaml's Styles-merged dictionary, not the
         // bare Application.Resources dictionary. Resources.TryGetResource only searches that
         // one dictionary and silently misses everything defined via Styles, which made this a
         // no-op for every accent (Red looked "correct" only because it's also the built-in
@@ -40,7 +42,7 @@ public static class ThemeService
                 app.Resources[$"Wb{key}Brush"] = brush;
         }
 
-        var suffix = accent == AccentKind.Green ? "Green" : "Red";
+        const string suffix = "Green";
         foreach (var shadowKey in new[] { "WbGlowAccentSm", "WbGlowAccent", "WbGlowAccentLg" })
         {
             if (app.TryGetResource($"{shadowKey}{suffix}", null, out var shadow))

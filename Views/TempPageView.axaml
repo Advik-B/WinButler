@@ -30,7 +30,8 @@
                 </TextBlock>
                 <Button Content="SELECT ALL" Classes="ghost" Command="{Binding Clean.TempCategory.SelectAllCommand}"/>
                 <Button Content="CLEAR" Classes="ghost" Command="{Binding Clean.TempCategory.SelectNoneCommand}"/>
-                <Button Content="CLEAN SELECTED" Classes="primary" Command="{Binding Clean.CleanSelectedCommand}"/>
+                <Button Content="CLEAN SELECTED" Classes="primary" Command="{Binding Clean.CleanSelectedCommand}"
+                        CommandParameter="{Binding Clean.TempCategory}"/>
                 <Button Content="CANCEL" Classes="ghost" Command="{Binding Clean.CancelCommand}" IsVisible="{Binding Clean.IsBusy}"/>
             </StackPanel>
         </Grid>

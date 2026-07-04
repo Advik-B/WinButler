@@ -70,6 +70,23 @@ public partial class DevJunkPageViewModel : ViewModelBase
     [RelayCommand(CanExecute = nameof(CanCancel))]
     private void Cancel() => _opCts?.Cancel();
 
+    /// <summary>Header SELECT ALL: tick every selectable (unlocked, reclaimable, not-yet-cleaned) tool.</summary>
+    [RelayCommand]
+    private void SelectAll()
+    {
+        foreach (var g in Groups)
+            if (g.IsSelectable)
+                g.IsSelected = true;
+    }
+
+    /// <summary>Header CLEAR: untick every tool.</summary>
+    [RelayCommand]
+    private void Clear()
+    {
+        foreach (var g in Groups)
+            g.IsSelected = false;
+    }
+
     [RelayCommand(CanExecute = nameof(CanRun))]
     private async Task ScanAsync()
     {
@@ -167,6 +184,7 @@ public partial class DevJunkPageViewModel : ViewModelBase
             {
                 long reclaimed = 0;
                 int ok = 0, failed = 0;
+                int done = 0;
 
                 foreach (var group in selected)
                 {
@@ -175,6 +193,8 @@ public partial class DevJunkPageViewModel : ViewModelBase
                     if (cts.Token.IsCancellationRequested)
                         break;
 
+                    // Determinate status-bar progress across the selected tool groups.
+                    ReportProgress(dryRun ? "Simulating clean…" : "Deleting…", (double)done / selected.Count);
                     bool groupOk = true;
                     foreach (var target in group.Group.ReclaimableTargets)
                     {
@@ -187,6 +207,7 @@ public partial class DevJunkPageViewModel : ViewModelBase
                         group.Cleaned = true;
                         group.IsSelected = false;
                     }
+                    done++;
                 }
 
                 // Real deletions happened — the shared index is stale for these paths now.
@@ -206,6 +227,7 @@ public partial class DevJunkPageViewModel : ViewModelBase
         }
         finally
         {
+            ClearProgress();
             _opCts = null;
             IsBusy = false;
         }

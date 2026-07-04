@@ -117,9 +117,15 @@ public partial class CleanPageViewModel : ViewModelBase
         Categories.SelectMany(c => c.SelectedItems).Select(i => i.Target).ToList();
 
     [RelayCommand(CanExecute = nameof(CanRun))]
-    private async Task CleanSelectedAsync()
+    private async Task CleanSelectedAsync(CategoryViewModel? category)
     {
-        var selected = SelectedTargets;
+        // Per-page CLEAN SELECTED passes its own category, so it deletes ONLY that category's
+        // selection — matching the page's "N selected" label. The Dashboard's CLEAN ALL passes
+        // null to aggregate every category (it confirms the full total itself). Passing null here
+        // was the old cross-category bug: the Temp page deleted Cache's pre-selected Safe items too.
+        var selected = category is null
+            ? SelectedTargets
+            : category.SelectedItems.Select(i => i.Target).ToList();
         if (selected.Count == 0)
         {
             StatusText = "Nothing selected.";
@@ -155,6 +161,7 @@ public partial class CleanPageViewModel : ViewModelBase
             {
                 long reclaimed = 0;
                 int ok = 0, failed = 0;
+                int done = 0;
 
                 foreach (var target in selected)
                 {
@@ -163,6 +170,8 @@ public partial class CleanPageViewModel : ViewModelBase
                     if (cts.Token.IsCancellationRequested)
                         break;
 
+                    // Determinate status-bar progress (i/n) — the "deleting" bar the user asked for.
+                    ReportProgress(dryRun ? "Simulating clean…" : "Deleting…", (double)done / selected.Count);
                     var result = await _cleaner.CleanAsync(target, dryRun);
                     if (result.Succeeded)
                     {
@@ -173,6 +182,7 @@ public partial class CleanPageViewModel : ViewModelBase
                     {
                         failed++;
                     }
+                    done++;
                 }
 
                 if (dryRun)
@@ -188,6 +198,7 @@ public partial class CleanPageViewModel : ViewModelBase
                         (failed > 0 ? $" {failed} skipped (in use / access denied)." : "");
                     // Files were deleted for real — drop the stale index so the rescan reflects it.
                     _diskIndex.Invalidate(DiskIndexService.SystemDrive);
+                    ReportProgress("Rebuilding index…", null);
                     await ScanAsync();
                 }
 
@@ -201,6 +212,7 @@ public partial class CleanPageViewModel : ViewModelBase
         }
         finally
         {
+            ClearProgress();
             _opCts = null;
             IsBusy = false;
         }

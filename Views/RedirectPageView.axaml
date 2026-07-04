@@ -26,8 +26,7 @@
                 <TextBlock Text="Move to drive:" VerticalAlignment="Center" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
                            FontSize="{StaticResource WbTextXs}" Foreground="{DynamicResource WbTextTertiaryBrush}"/>
                 <ComboBox ItemsSource="{Binding Drives}" SelectedItem="{Binding SelectedDrive}" MinWidth="70"/>
-                <Button Content="SCAN" Command="{Binding ScanCommand}" Classes="primary"/>
-                <Button Content="REDIRECT SELECTED" Command="{Binding RedirectSelectedCommand}" Classes="secondary"/>
+                <Button Content="REDIRECT SELECTED" Command="{Binding RedirectSelectedCommand}" Classes="primary"/>
                 <ProgressBar IsIndeterminate="True" Width="90" VerticalAlignment="Center" IsVisible="{Binding IsBusy}"/>
                 <Button Content="CANCEL" Classes="ghost" Command="{Binding CancelCommand}" IsVisible="{Binding IsBusy}"/>
             </StackPanel>
@@ -87,7 +86,7 @@
                                            FontSize="{StaticResource WbTextXs}" Foreground="{DynamicResource WbTextTertiaryBrush}"/>
                             </StackPanel>
                             <StackPanel Spacing="14" VerticalAlignment="Center" IsVisible="{Binding !IsBusy}">
-                                <TextBlock Text="NO DATA — RUN A SCAN TO FIND RELOCATABLE FOLDERS" HorizontalAlignment="Center" LetterSpacing="2"
+                                <TextBlock Text="PREPARING SCAN…" HorizontalAlignment="Center" LetterSpacing="2"
                                            IsVisible="{Binding !HasScanned}" Margin="0,24,0,0"
                                            FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
                                            FontSize="{StaticResource WbTextXs}" Foreground="{DynamicResource WbTextMutedBrush}"/>
@@ -107,7 +106,7 @@
                                                 <Setter Property="Background" Value="{DynamicResource WbSurface2Brush}"/>
                                             </Style>
                                         </Border.Styles>
-                                        <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="14">
+                                        <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto" ColumnSpacing="14">
                                             <CheckBox Grid.Column="0" IsChecked="{Binding IsSelected}"
                                                       IsEnabled="{Binding CanRedirect}" VerticalAlignment="Center"/>
                                             <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
@@ -129,6 +128,11 @@
                                             <TextBlock Grid.Column="3" Text="{Binding SizeText}" FontFamily="{DynamicResource WbFontReadout}"
                                                        VerticalAlignment="Center" Width="70" TextAlignment="Right"
                                                        Foreground="{DynamicResource WbTextBrush}"/>
+                                            <!-- Inline undo for a folder detected as already redirected (junction). -->
+                                            <Button Grid.Column="4" Content="UNDO" Classes="ghost" VerticalAlignment="Center"
+                                                    IsVisible="{Binding IsAlreadyRedirected}"
+                                                    Command="{Binding #Root.((vm:RedirectPageViewModel)DataContext).UndoCandidateCommand}"
+                                                    CommandParameter="{Binding}"/>
                                         </Grid>
                                     </Border>
                                 </DataTemplate>

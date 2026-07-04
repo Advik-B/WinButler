@@ -16,7 +16,7 @@ public sealed class ToastKindConverter : IValueConverter
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture) =>
         value switch
         {
-            ToastKind.Dry => ThemeService.Brush("WbAccentBrush", "#E60012"),
+            ToastKind.Dry => ThemeService.Brush("WbAccentBrush", "#06C24A"),
             ToastKind.Warn => ThemeService.Brush("WbSignalWarnBrush", "#FFB200"),
             ToastKind.Live => ThemeService.Brush("WbSignalLiveBrush", "#E60012"),
             _ => ThemeService.Brush("WbSignalOkBrush", "#06C24A"),
