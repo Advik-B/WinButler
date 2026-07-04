@@ -5,10 +5,38 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:i="https://github.com/projektanker/icons.avalonia"
+             xmlns:wb="using:WinButler.Controls"
              mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="700"
              x:Class="WinButler.Views.DashboardPageView"
              x:DataType="vm:DashboardPageViewModel"
+             wb:Responsive.NarrowUnder="820"
              Background="{DynamicResource WbBgBrush}">
+
+    <UserControl.Styles>
+        <!-- Wide Disk Hero (default): stats dock to the right of the full-width bar. These MUST be
+             style setters, not inline attributes — a local value would outrank the `.narrow`
+             override below and the reflow would never fire. -->
+        <Style Selector="StackPanel.stats">
+            <Setter Property="DockPanel.Dock" Value="Right"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="26,0,0,0"/>
+        </Style>
+        <!-- Narrow Disk Hero: stats reflow below the full-width bar (defined after the base style so
+             it wins when both match). -->
+        <Style Selector="Border.narrow StackPanel.stats">
+            <Setter Property="DockPanel.Dock" Value="Bottom"/>
+            <Setter Property="VerticalAlignment" Value="Top"/>
+            <Setter Property="Margin" Value="0,20,0,0"/>
+        </Style>
+        <!-- Category cards: four across when wide, two when the page gets narrow (keeps the size
+             readouts from clipping near the window's minimum width). -->
+        <Style Selector="UniformGrid.cards">
+            <Setter Property="Columns" Value="4"/>
+        </Style>
+        <Style Selector=":is(UserControl).narrow UniformGrid.cards">
+            <Setter Property="Columns" Value="2"/>
+        </Style>
+    </UserControl.Styles>
 
     <ScrollViewer>
         <StackPanel Margin="28,24" Spacing="18" MaxWidth="1180">
@@ -30,12 +58,31 @@
                 </Button>
             </Grid>
 
-            <!-- DISK HERO -->
-            <Border BorderBrush="{DynamicResource WbBorderBrush}" BorderThickness="1"
+            <!-- DISK HERO — the stats dock right of the full-width bar, and reflow *below* it when
+                 the card gets narrow (a `narrow` class is toggled from code-behind on width). -->
+            <Border x:Name="DiskHero" BorderBrush="{DynamicResource WbBorderBrush}" BorderThickness="1"
                     CornerRadius="{StaticResource WbRadiusLg}" Background="{DynamicResource WbSurfaceBrush}"
                     Padding="22,20">
-                <Grid ColumnDefinitions="*,Auto">
-                    <StackPanel Grid.Column="0" MinWidth="420" Margin="0,0,26,0">
+                <DockPanel>
+                    <!-- Stats first so the disk block (last child) fills the rest and the bar stays
+                         full width. Dock/margin/alignment live in the `StackPanel.stats` styles above
+                         (NOT inline) so the `.narrow` style can re-dock this to Bottom. -->
+                    <StackPanel Classes="stats" Orientation="Horizontal" Spacing="26">
+                        <StackPanel>
+                            <TextBlock Text="{Binding ToReclaimNowText}" FontFamily="{DynamicResource WbFontReadout}"
+                                       FontWeight="Bold" FontSize="{StaticResource WbText2xl}" Foreground="{DynamicResource WbAccentBrush}"/>
+                            <TextBlock Text="TO RECLAIM NOW" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold" FontSize="{StaticResource WbText2xs}"
+                                       LetterSpacing="1.5" Foreground="{DynamicResource WbTextTertiaryBrush}" Margin="0,6,0,0"/>
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock Text="{Binding ToRedirectText}" FontFamily="{DynamicResource WbFontReadout}"
+                                       FontWeight="Bold" FontSize="{StaticResource WbText2xl}" Foreground="{DynamicResource WbTextBrush}"/>
+                            <TextBlock Text="TO REDIRECT" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold" FontSize="{StaticResource WbText2xs}"
+                                       LetterSpacing="1.5" Foreground="{DynamicResource WbTextTertiaryBrush}" Margin="0,6,0,0"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <StackPanel MinWidth="340">
                         <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,11">
                             <TextBlock Grid.Column="0" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold" FontSize="{StaticResource WbTextXs}"
                                        Foreground="{DynamicResource WbTextTertiaryBrush}">
@@ -74,29 +121,14 @@
                             </StackPanel>
                         </WrapPanel>
                     </StackPanel>
-
-                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="26">
-                        <StackPanel>
-                            <TextBlock Text="{Binding ToReclaimNowText}" FontFamily="{DynamicResource WbFontReadout}"
-                                       FontWeight="Bold" FontSize="{StaticResource WbText3xl}" Foreground="{DynamicResource WbAccentBrush}"/>
-                            <TextBlock Text="TO RECLAIM NOW" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold" FontSize="{StaticResource WbText2xs}"
-                                       LetterSpacing="1.5" Foreground="{DynamicResource WbTextTertiaryBrush}" Margin="0,6,0,0"/>
-                        </StackPanel>
-                        <StackPanel>
-                            <TextBlock Text="{Binding ToRedirectText}" FontFamily="{DynamicResource WbFontReadout}"
-                                       FontWeight="Bold" FontSize="{StaticResource WbText3xl}" Foreground="{DynamicResource WbTextBrush}"/>
-                            <TextBlock Text="TO REDIRECT" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold" FontSize="{StaticResource WbText2xs}"
-                                       LetterSpacing="1.5" Foreground="{DynamicResource WbTextTertiaryBrush}" Margin="0,6,0,0"/>
-                        </StackPanel>
-                    </StackPanel>
-                </Grid>
+                </DockPanel>
             </Border>
 
             <!-- CATEGORY CARDS -->
             <ItemsControl ItemsSource="{Binding CategoryCards}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <UniformGrid Columns="4"/>
+                        <UniformGrid Classes="cards"/>
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>

@@ -8,7 +8,7 @@
              x:DataType="vm:ConfirmDialogViewModel">
 
     <Border Background="{DynamicResource WbScrimBrush}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-        <Border Width="430" HorizontalAlignment="Center" VerticalAlignment="Center"
+        <Border MaxWidth="430" Margin="24" HorizontalAlignment="Center" VerticalAlignment="Center"
                 Background="{DynamicResource WbSurfaceBrush}"
                 BorderBrush="{DynamicResource WbSignalLiveBrush}"
                 BorderThickness="1" CornerRadius="{StaticResource WbRadiusLg}">

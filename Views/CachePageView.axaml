@@ -3,25 +3,30 @@
              xmlns:vm="using:WinButler.ViewModels"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:wb="using:WinButler.Controls"
              mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="640"
              x:Class="WinButler.Views.CachePageView"
              x:DataType="vm:CachePageViewModel"
+             wb:Responsive.NarrowUnder="720"
              Background="{DynamicResource WbBgBrush}">
+
+    <UserControl.Styles>
+        <!-- Header action buttons dock right of the title when wide, restack below it when narrow.
+             Dock/margin/alignment MUST be style setters (not inline) so the .narrow rule can win. -->
+        <Style Selector="StackPanel.actions">
+            <Setter Property="(DockPanel.Dock)" Value="Right"/>
+        </Style>
+        <Style Selector=":is(UserControl).narrow StackPanel.actions">
+            <Setter Property="(DockPanel.Dock)" Value="Bottom"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Setter Property="Margin" Value="0,14,0,0"/>
+        </Style>
+    </UserControl.Styles>
 
     <DockPanel Margin="28,24">
 
-        <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="0,0,0,18">
-            <StackPanel Grid.Column="0" MaxWidth="560">
-                <TextBlock Text="CLEANER · CACHE" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
-                           FontSize="{StaticResource WbText2xs}" LetterSpacing="2"
-                           Foreground="{DynamicResource WbAccentBrush}" Margin="0,0,0,6"/>
-                <TextBlock Text="Cache Sweep" FontFamily="{DynamicResource WbFontDot}" FontWeight="Bold"
-                           FontSize="{StaticResource WbTextXl}" Foreground="{DynamicResource WbTextBrush}" Margin="0,0,0,6"/>
-                <TextBlock Text="Any folder matching *cache*. Most are throwaway; a few cost a one-time rebuild. Running apps are locked."
-                           TextWrapping="Wrap" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold" FontSize="{StaticResource WbTextXs}"
-                           Foreground="{DynamicResource WbTextTertiaryBrush}"/>
-            </StackPanel>
-            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Bottom">
+        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,18">
+            <StackPanel Classes="actions" Orientation="Horizontal" Spacing="8" VerticalAlignment="Bottom">
                 <TextBlock VerticalAlignment="Center" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
                            FontSize="{StaticResource WbTextXs}" Foreground="{DynamicResource WbTextTertiaryBrush}">
                     <Run Text="{Binding Clean.CacheCategory.SelectedCount}"/>
@@ -34,7 +39,17 @@
                         CommandParameter="{Binding Clean.CacheCategory}"/>
                 <Button Content="CANCEL" Classes="ghost" Command="{Binding Clean.CancelCommand}" IsVisible="{Binding Clean.IsBusy}"/>
             </StackPanel>
-        </Grid>
+            <StackPanel MaxWidth="560">
+                <TextBlock Text="CLEANER · CACHE" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
+                           FontSize="{StaticResource WbText2xs}" LetterSpacing="2"
+                           Foreground="{DynamicResource WbAccentBrush}" Margin="0,0,0,6"/>
+                <TextBlock Text="Cache Sweep" FontFamily="{DynamicResource WbFontDot}" FontWeight="Bold"
+                           FontSize="{StaticResource WbTextXl}" Foreground="{DynamicResource WbTextBrush}" Margin="0,0,0,6"/>
+                <TextBlock Text="Any folder matching *cache*. Most are throwaway; a few cost a one-time rebuild. Running apps are locked."
+                           TextWrapping="Wrap" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold" FontSize="{StaticResource WbTextXs}"
+                           Foreground="{DynamicResource WbTextTertiaryBrush}"/>
+            </StackPanel>
+        </DockPanel>
 
         <TextBlock DockPanel.Dock="Bottom" Text="{Binding Clean.StatusText}" TextWrapping="Wrap" Margin="0,12,0,0"
                    FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold" FontSize="{StaticResource WbTextXs}"

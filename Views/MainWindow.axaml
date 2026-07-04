@@ -12,6 +12,7 @@
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/avalonia-logo.ico"
         Width="1180" Height="760"
+        MinWidth="840" MinHeight="560"
         Background="{DynamicResource WbBgBrush}"
         Title="WinButler — Disk Cleaner">
 

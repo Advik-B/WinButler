@@ -3,11 +3,14 @@
              xmlns:vm="using:WinButler.ViewModels"
              xmlns:mft="using:WinButler.Services.Mft"
              xmlns:controls="using:WinButler.Controls"
+             xmlns:conv="using:WinButler.Converters"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="960" d:DesignHeight="660"
              x:Class="WinButler.Views.DiskScannerPageView"
+             x:Name="Root"
              x:DataType="vm:DiskScannerPageViewModel"
+             controls:Responsive.NarrowUnder="880"
              Background="{DynamicResource WbBgBrush}">
 
     <DockPanel Margin="24,20">
@@ -19,22 +22,23 @@
             <TextBlock Text="Disk Explorer" FontFamily="{DynamicResource WbFontDot}" FontWeight="Bold"
                        FontSize="{StaticResource WbTextXl}" Foreground="{DynamicResource WbTextBrush}" Margin="0,0,0,12"/>
 
-            <!-- Action bar -->
-            <StackPanel Orientation="Horizontal" Spacing="10">
-                <ComboBox ItemsSource="{Binding Drives}" SelectedItem="{Binding SelectedDrive}" MinWidth="280">
+            <!-- Action bar — WrapPanel so the controls wrap to a second line instead of clipping when
+                 narrow (Avalonia WrapPanel has no Spacing, so gaps come from per-child margins). -->
+            <WrapPanel>
+                <ComboBox ItemsSource="{Binding Drives}" SelectedItem="{Binding SelectedDrive}" MinWidth="220" Margin="0,0,10,10">
                     <ComboBox.ItemTemplate>
                         <DataTemplate x:DataType="mft:ScanDrive">
                             <TextBlock Text="{Binding DisplayName}"/>
                         </DataTemplate>
                     </ComboBox.ItemTemplate>
                 </ComboBox>
-                <Button Content="SCAN" Command="{Binding ScanCommand}" Classes="primary"/>
-                <Button Content="CHOOSE FOLDER…" Click="OnChooseFolder" Classes="secondary"/>
-                <TextBlock Text="Sort:" VerticalAlignment="Center" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
+                <Button Content="SCAN" Command="{Binding ScanCommand}" Classes="primary" Margin="0,0,10,10"/>
+                <Button Content="CHOOSE FOLDER…" Click="OnChooseFolder" Classes="secondary" Margin="0,0,10,10"/>
+                <TextBlock Text="Sort:" VerticalAlignment="Center" Margin="0,0,10,10" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
                            FontSize="{StaticResource WbTextXs}" Foreground="{DynamicResource WbTextTertiaryBrush}"/>
-                <ComboBox ItemsSource="{Binding SortModes}" SelectedItem="{Binding SelectedSort}" MinWidth="100"/>
-                <Button Content="CANCEL" Classes="ghost" Command="{Binding CancelCommand}" IsVisible="{Binding IsBusy}"/>
-            </StackPanel>
+                <ComboBox ItemsSource="{Binding SortModes}" SelectedItem="{Binding SelectedSort}" MinWidth="100" Margin="0,0,10,10"/>
+                <Button Content="CANCEL" Classes="ghost" Command="{Binding CancelCommand}" IsVisible="{Binding IsBusy}" Margin="0,0,10,10"/>
+            </WrapPanel>
         </StackPanel>
 
         <!-- Summary -->
@@ -51,13 +55,18 @@
                 Background="{DynamicResource WbSurface2Brush}"
                 BorderBrush="{DynamicResource WbBorderFaintBrush}" BorderThickness="1,1,1,0"
                 CornerRadius="8,8,0,0">
-            <Grid ColumnDefinitions="*,110,150,110,80,80,150" Height="34">
+            <!-- Cols 3-5 (ALLOCATED/FILES/FOLDERS) are Auto and collapse when narrow: the cells set a
+                 fixed Width (so header + rows stay aligned) and hide together via Responsive.IsNarrow. -->
+            <Grid ColumnDefinitions="*,110,150,Auto,Auto,Auto,150" Height="34">
                 <TextBlock Grid.Column="0" Text="NAME" VerticalAlignment="Center" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold" FontSize="{StaticResource WbText2xs}" LetterSpacing="1" Foreground="{DynamicResource WbTextMutedBrush}"/>
                 <TextBlock Grid.Column="1" Text="SIZE" VerticalAlignment="Center" HorizontalAlignment="Right" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold" FontSize="{StaticResource WbText2xs}" LetterSpacing="1" Foreground="{DynamicResource WbTextMutedBrush}"/>
                 <TextBlock Grid.Column="2" Text="% OF PARENT" VerticalAlignment="Center" HorizontalAlignment="Center" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold" FontSize="{StaticResource WbText2xs}" LetterSpacing="1" Foreground="{DynamicResource WbTextMutedBrush}"/>
-                <TextBlock Grid.Column="3" Text="ALLOCATED" VerticalAlignment="Center" HorizontalAlignment="Right" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold" FontSize="{StaticResource WbText2xs}" LetterSpacing="1" Foreground="{DynamicResource WbTextMutedBrush}"/>
-                <TextBlock Grid.Column="4" Text="FILES" VerticalAlignment="Center" HorizontalAlignment="Right" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold" FontSize="{StaticResource WbText2xs}" LetterSpacing="1" Foreground="{DynamicResource WbTextMutedBrush}"/>
-                <TextBlock Grid.Column="5" Text="FOLDERS" VerticalAlignment="Center" HorizontalAlignment="Right" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold" FontSize="{StaticResource WbText2xs}" LetterSpacing="1" Foreground="{DynamicResource WbTextMutedBrush}"/>
+                <TextBlock Grid.Column="3" Text="ALLOCATED" Width="110" TextAlignment="Right" VerticalAlignment="Center" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold" FontSize="{StaticResource WbText2xs}" LetterSpacing="1" Foreground="{DynamicResource WbTextMutedBrush}"
+                           IsVisible="{Binding #Root.(controls:Responsive.IsNarrow), Converter={x:Static conv:InverseBoolConverter.Instance}}"/>
+                <TextBlock Grid.Column="4" Text="FILES" Width="80" TextAlignment="Right" VerticalAlignment="Center" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold" FontSize="{StaticResource WbText2xs}" LetterSpacing="1" Foreground="{DynamicResource WbTextMutedBrush}"
+                           IsVisible="{Binding #Root.(controls:Responsive.IsNarrow), Converter={x:Static conv:InverseBoolConverter.Instance}}"/>
+                <TextBlock Grid.Column="5" Text="FOLDERS" Width="80" TextAlignment="Right" VerticalAlignment="Center" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold" FontSize="{StaticResource WbText2xs}" LetterSpacing="1" Foreground="{DynamicResource WbTextMutedBrush}"
+                           IsVisible="{Binding #Root.(controls:Responsive.IsNarrow), Converter={x:Static conv:InverseBoolConverter.Instance}}"/>
                 <TextBlock Grid.Column="6" Text="MODIFIED" VerticalAlignment="Center" Margin="8,0,0,0" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold" FontSize="{StaticResource WbText2xs}" LetterSpacing="1" Foreground="{DynamicResource WbTextMutedBrush}"/>
             </Grid>
         </Border>
@@ -79,7 +88,7 @@
                     </ListBox.Styles>
                     <ListBox.ItemTemplate>
                         <DataTemplate x:DataType="vm:DiskRowViewModel">
-                            <Grid ColumnDefinitions="*,110,150,110,80,80,150" Height="26">
+                            <Grid ColumnDefinitions="*,110,150,Auto,Auto,Auto,150" Height="26">
                                 <!-- Name: indent + disclosure triangle + label -->
                                 <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="{Binding Indent}" VerticalAlignment="Center">
                                     <Button Content="{Binding ExpanderGlyph}" Command="{Binding ToggleCommand}"
@@ -101,15 +110,18 @@
                                                Foreground="{DynamicResource WbTextMutedBrush}" Margin="0,-14,0,0"/>
                                 </Grid>
 
-                                <TextBlock Grid.Column="3" Text="{Binding AllocText}" HorizontalAlignment="Right"
+                                <TextBlock Grid.Column="3" Text="{Binding AllocText}" Width="102" TextAlignment="Right"
                                            VerticalAlignment="Center" Margin="0,0,8,0" FontFamily="{DynamicResource WbFontReadout}"
-                                           FontSize="{StaticResource WbText2xs}" Foreground="{DynamicResource WbTextMutedBrush}"/>
-                                <TextBlock Grid.Column="4" Text="{Binding FilesText}" HorizontalAlignment="Right"
+                                           FontSize="{StaticResource WbText2xs}" Foreground="{DynamicResource WbTextMutedBrush}"
+                                           IsVisible="{Binding $parent[UserControl].(controls:Responsive.IsNarrow), Converter={x:Static conv:InverseBoolConverter.Instance}}"/>
+                                <TextBlock Grid.Column="4" Text="{Binding FilesText}" Width="72" TextAlignment="Right"
                                            VerticalAlignment="Center" Margin="0,0,8,0" FontFamily="{DynamicResource WbFontReadout}"
-                                           FontSize="{StaticResource WbText2xs}" Foreground="{DynamicResource WbTextMutedBrush}"/>
-                                <TextBlock Grid.Column="5" Text="{Binding FoldersText}" HorizontalAlignment="Right"
+                                           FontSize="{StaticResource WbText2xs}" Foreground="{DynamicResource WbTextMutedBrush}"
+                                           IsVisible="{Binding $parent[UserControl].(controls:Responsive.IsNarrow), Converter={x:Static conv:InverseBoolConverter.Instance}}"/>
+                                <TextBlock Grid.Column="5" Text="{Binding FoldersText}" Width="72" TextAlignment="Right"
                                            VerticalAlignment="Center" Margin="0,0,8,0" FontFamily="{DynamicResource WbFontReadout}"
-                                           FontSize="{StaticResource WbText2xs}" Foreground="{DynamicResource WbTextMutedBrush}"/>
+                                           FontSize="{StaticResource WbText2xs}" Foreground="{DynamicResource WbTextMutedBrush}"
+                                           IsVisible="{Binding $parent[UserControl].(controls:Responsive.IsNarrow), Converter={x:Static conv:InverseBoolConverter.Instance}}"/>
                                 <TextBlock Grid.Column="6" Text="{Binding ModifiedText}" VerticalAlignment="Center"
                                            Margin="8,0,0,0" FontFamily="{DynamicResource WbFontReadout}"
                                            FontSize="{StaticResource WbText2xs}" Foreground="{DynamicResource WbTextMutedBrush}"/>
