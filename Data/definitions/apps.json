@@ -1,0 +1,23 @@
+{
+  "_comment": "Known-location cleanup entries for desktop apps and dev tools. See README.md. These deliberately AVOID *cache*-named folders under LocalAppData/Roaming — CacheScanner already sweeps those. This catalog targets logs, crash dumps, installer leftovers and non-cache junk it misses.",
+
+  "knownLocations": {
+    "entries": [
+      { "id": "adobe-ccx-welcome",  "path": "%AppData%\\Adobe\\CCX Welcome",            "mode": "children", "risk": "safe",    "displayName": "Adobe CCX Welcome",       "description": "Creative Cloud welcome-screen leftovers", "group": "Apps" },
+      { "id": "adobe-peak-files",   "path": "%AppData%\\Adobe\\Common\\Peak Files",     "mode": "children", "risk": "safe",    "displayName": "Adobe audio peaks",       "description": "Regenerable audio waveform peak files",   "group": "Apps" },
+      { "id": "okular-data",        "path": "%LocalAppData%\\okular",                   "mode": "self",     "risk": "caution", "displayName": "Okular data",             "description": "Okular settings incl. recent-file history", "group": "Apps" },
+      { "id": "mirc-logs",          "path": "%AppData%\\mIRC\\logs",                    "mode": "children", "risk": "caution", "displayName": "mIRC chat logs",          "description": "Saved IRC chat logs (may be wanted)",     "group": "Apps" },
+      { "id": "obs-logs",           "path": "%AppData%\\obs-studio\\logs",              "mode": "children", "risk": "safe",    "displayName": "OBS logs",                "description": "OBS Studio session logs",                 "group": "Apps" },
+      { "id": "obs-crashes",        "path": "%AppData%\\obs-studio\\crashes",           "mode": "children", "risk": "safe",    "displayName": "OBS crash reports",       "description": "OBS Studio crash dumps",                  "group": "Apps" },
+      { "id": "vlc-crashdump",      "path": "%AppData%\\vlc\\crashdump",                "mode": "children", "risk": "safe",    "displayName": "VLC crash dumps",         "description": "VLC crash reports",                       "group": "Apps" },
+      { "id": "vlc-art",            "path": "%AppData%\\vlc\\art",                      "mode": "children", "risk": "safe",    "displayName": "VLC album art",           "description": "Downloaded album-art thumbnails",         "group": "Apps" },
+      { "id": "libreoffice-crash",  "path": "%AppData%\\LibreOffice\\4\\crash",         "mode": "children", "risk": "safe",    "displayName": "LibreOffice crash dumps", "description": "LibreOffice crash reports",               "group": "Apps" },
+      { "id": "virtualbox-dropped", "path": "%LocalAppData%\\VirtualBox Dropped Files", "mode": "children", "risk": "safe",    "displayName": "VirtualBox dropped files","description": "Guest→host drag-and-drop leftovers",     "group": "Apps" },
+      { "id": "virtualbox-vm-logs", "path": "%UserProfile%",                            "mode": "files", "pattern": "*-VirtualBoxVM.exe-*.log", "risk": "safe", "displayName": "VirtualBox VM logs", "description": "Stray VirtualBoxVM logs in the profile root", "group": "Apps" },
+
+      { "id": "vs-webpi-installers","path": "%LocalAppData%\\Microsoft\\Web Platform Installer\\installers", "mode": "children", "risk": "safe", "displayName": "Web Platform Installer downloads", "description": "Downloaded WebPI installers", "group": "Dev tools" },
+      { "id": "vscode-history",     "path": "%AppData%\\Code\\User\\History",           "mode": "self",     "risk": "risky",   "displayName": "VS Code local history",   "description": "Local edit history — recoverable from the Recycle Bin", "group": "Dev tools" },
+      { "id": "nuget-packages",     "path": "%UserProfile%\\.nuget\\packages",          "mode": "self",     "risk": "risky",   "displayName": "NuGet global packages",   "description": "Global package store — re-downloaded on next restore", "group": "Dev tools" }
+    ]
+  }
+}

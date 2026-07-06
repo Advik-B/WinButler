@@ -6,9 +6,10 @@ namespace WinButler.Models;
 
 /// <summary>
 /// The full set of path rules WinButler uses, in a JSON-serializable shape. This is the single
-/// maintainable source of truth: edit <c>Data/definitions.json</c> to add caches or redirect
-/// targets — no code changes required. The same shape is what a future remote source (a JSON
-/// file on GitHub) would provide, so bundled and online definitions merge seamlessly.
+/// maintainable source of truth: edit the per-domain files under <c>Data/definitions/</c> to add
+/// caches, redirect targets, or known-location cleanups — no code changes required. Each file is a
+/// partial of this shape and they are folded together at load; the same shape is what a remote
+/// source (a JSON file on GitHub) would provide, so bundled and online definitions merge seamlessly.
 /// </summary>
 public sealed class WinButlerDefinitions
 {
@@ -17,6 +18,7 @@ public sealed class WinButlerDefinitions
 
     public CacheRuleSet Cache { get; set; } = new();
     public RedirectRuleSet Redirect { get; set; } = new();
+    public KnownLocationRuleSet KnownLocations { get; set; } = new();
 
     /// <summary>
     /// Combines two definition sets. <paramref name="overlay"/> adds to and overrides
@@ -40,6 +42,10 @@ public sealed class WinButlerDefinitions
                 DenyNames = Union(baseDefs.Redirect.DenyNames, overlay.Redirect.DenyNames),
                 Entries = MergeEntries(baseDefs.Redirect.Entries, overlay.Redirect.Entries),
             },
+            KnownLocations = new KnownLocationRuleSet
+            {
+                Entries = MergeKnownLocations(baseDefs.KnownLocations.Entries, overlay.KnownLocations.Entries),
+            },
         };
     }
 
@@ -52,6 +58,15 @@ public sealed class WinButlerDefinitions
         var byKey = new Dictionary<string, RedirectEntry>(StringComparer.OrdinalIgnoreCase);
         foreach (var e in a.Concat(b))
             byKey[e.TargetName] = e;
+        return byKey.Values.ToList();
+    }
+
+    // Known-location entries are keyed by Id; an overlay entry replaces the bundled one.
+    private static List<KnownLocationEntry> MergeKnownLocations(List<KnownLocationEntry> a, List<KnownLocationEntry> b)
+    {
+        var byKey = new Dictionary<string, KnownLocationEntry>(StringComparer.OrdinalIgnoreCase);
+        foreach (var e in a.Concat(b))
+            byKey[e.Id] = e;
         return byKey.Values.ToList();
     }
 }
@@ -97,4 +112,45 @@ public sealed class RedirectEntry
     public string TargetName { get; set; } = "";
 
     public string Category { get; set; } = "Other";
+}
+
+/// <summary>Rules driving <c>KnownLocationsScanner</c> — a catalog of specific app/system junk
+/// locations distilled from community cleanup knowledge (caches, logs, crash dumps).</summary>
+public sealed class KnownLocationRuleSet
+{
+    public List<KnownLocationEntry> Entries { get; set; } = new();
+}
+
+/// <summary>One known cleanup location (the JSON-facing form of a catalog entry). See
+/// <c>Data/definitions/README.md</c> for the field reference.</summary>
+public sealed class KnownLocationEntry
+{
+    /// <summary>Unique id — the merge key. Keep unique across every definitions file.</summary>
+    public string Id { get; set; } = "";
+
+    /// <summary>Path with env tokens (e.g. "%LocalAppData%\\Discord\\Cache"). When
+    /// <see cref="AllDrives"/> is set this is a fragment appended to every fixed-drive root.</summary>
+    public string Path { get; set; } = "";
+
+    /// <summary><c>children</c> (each immediate child is a target, parent kept) | <c>files</c>
+    /// (files matching <see cref="Pattern"/>) | <c>self</c> (the path itself is one target).</summary>
+    public string Mode { get; set; } = "children";
+
+    /// <summary>Wildcard filter for <c>files</c> mode (e.g. "*.dmp"). Ignored otherwise.</summary>
+    public string? Pattern { get; set; }
+
+    /// <summary><c>files</c> mode only: recurse into subdirectories (junctions are not followed).</summary>
+    public bool Recursive { get; set; }
+
+    /// <summary>When true, <see cref="Path"/> is resolved against every fixed drive root.</summary>
+    public bool AllDrives { get; set; }
+
+    /// <summary><c>safe</c> | <c>caution</c> | <c>risky</c> — drives the delete policy.</summary>
+    public string Risk { get; set; } = "caution";
+
+    public string DisplayName { get; set; } = "";
+    public string Description { get; set; } = "";
+
+    /// <summary>UI grouping label (e.g. "Browsers", "Games", "Windows").</summary>
+    public string Group { get; set; } = "Other";
 }

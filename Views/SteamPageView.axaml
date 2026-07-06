@@ -1,0 +1,91 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:WinButler.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:wb="using:WinButler.Controls"
+             mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="640"
+             x:Class="WinButler.Views.SteamPageView"
+             x:DataType="vm:SteamPageViewModel"
+             wb:Responsive.NarrowUnder="720"
+             Background="{DynamicResource WbBgBrush}">
+
+    <UserControl.Styles>
+        <Style Selector="StackPanel.actions">
+            <Setter Property="(DockPanel.Dock)" Value="Right"/>
+        </Style>
+        <Style Selector=":is(UserControl).narrow StackPanel.actions">
+            <Setter Property="(DockPanel.Dock)" Value="Bottom"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Setter Property="Margin" Value="0,14,0,0"/>
+        </Style>
+    </UserControl.Styles>
+
+    <DockPanel Margin="28,24">
+
+        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,18">
+            <StackPanel Classes="actions" Orientation="Horizontal" Spacing="8" VerticalAlignment="Bottom">
+                <TextBlock VerticalAlignment="Center" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
+                           FontSize="{StaticResource WbTextXs}" Foreground="{DynamicResource WbTextTertiaryBrush}">
+                    <Run Text="{Binding Clean.SteamCategory.SelectedCount}"/>
+                    <Run Text="selected ·"/>
+                    <Run Text="{Binding Clean.SteamCategory.SelectedBytesText}"/>
+                </TextBlock>
+                <Button Content="SELECT ALL" Classes="ghost" Command="{Binding Clean.SteamCategory.SelectAllCommand}"/>
+                <Button Content="CLEAR" Classes="ghost" Command="{Binding Clean.SteamCategory.SelectNoneCommand}"/>
+                <Button Content="CLEAN SELECTED" Classes="primary" Command="{Binding Clean.CleanSelectedCommand}"
+                        CommandParameter="{Binding Clean.SteamCategory}"/>
+                <Button Content="CANCEL" Classes="ghost" Command="{Binding Clean.CancelCommand}" IsVisible="{Binding Clean.IsBusy}"/>
+            </StackPanel>
+            <StackPanel MaxWidth="560">
+                <TextBlock Text="CLEANER · STEAM" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
+                           FontSize="{StaticResource WbText2xs}" LetterSpacing="2"
+                           Foreground="{DynamicResource WbAccentBrush}" Margin="0,0,0,6"/>
+                <TextBlock Text="Steam Junk" FontFamily="{DynamicResource WbFontDot}" FontWeight="Bold"
+                           FontSize="{StaticResource WbTextXl}" Foreground="{DynamicResource WbTextBrush}" Margin="0,0,0,6"/>
+                <TextBlock Text="Shader &amp; download caches, dumps and logs across every Steam library, plus the client web caches. Close Steam first — anything it has open is skipped."
+                           TextWrapping="Wrap" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold" FontSize="{StaticResource WbTextXs}"
+                           Foreground="{DynamicResource WbTextTertiaryBrush}"/>
+            </StackPanel>
+        </DockPanel>
+
+        <TextBlock DockPanel.Dock="Bottom" Text="{Binding Clean.StatusText}" TextWrapping="Wrap" Margin="0,12,0,0"
+                   FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold" FontSize="{StaticResource WbTextXs}"
+                   Foreground="{DynamicResource WbTextTertiaryBrush}"/>
+
+        <Border BorderBrush="{DynamicResource WbBorderBrush}" BorderThickness="1"
+                CornerRadius="{StaticResource WbRadiusMd}" Background="{DynamicResource WbSurfaceBrush}"
+                ClipToBounds="True">
+            <Panel>
+                <ScrollViewer IsVisible="{Binding Clean.SteamCategory.HasItems}">
+                    <ItemsControl ItemsSource="{Binding Clean.SteamCategory.Items}"
+                                  ItemTemplate="{StaticResource WbChecklistRowTemplate}"/>
+                </ScrollViewer>
+
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="14"
+                            IsVisible="{Binding !Clean.SteamCategory.HasItems}">
+                    <StackPanel Spacing="14" IsVisible="{Binding Clean.IsBusy}">
+                        <ProgressBar IsIndeterminate="True" Width="180" HorizontalAlignment="Center"/>
+                        <TextBlock Text="SCANNING…" HorizontalAlignment="Center" LetterSpacing="2"
+                                   FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
+                                   FontSize="{StaticResource WbTextXs}" Foreground="{DynamicResource WbTextTertiaryBrush}"/>
+                    </StackPanel>
+                    <StackPanel Spacing="14" IsVisible="{Binding !Clean.IsBusy}">
+                        <StackPanel Spacing="14" IsVisible="{Binding !Clean.HasScanned}">
+                            <TextBlock Text="NO DATA — RUN A SCAN TO FIND STEAM JUNK" HorizontalAlignment="Center" LetterSpacing="2"
+                                       FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
+                                       FontSize="{StaticResource WbTextXs}" Foreground="{DynamicResource WbTextMutedBrush}"/>
+                            <Button Content="SCAN" Classes="primary" HorizontalAlignment="Center"
+                                    Command="{Binding Clean.ScanCommand}"/>
+                        </StackPanel>
+                        <TextBlock Text="NOTHING FOUND — STEAM IS CLEAN (OR NOT INSTALLED)" HorizontalAlignment="Center" LetterSpacing="2"
+                                   IsVisible="{Binding Clean.HasScanned}"
+                                   FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
+                                   FontSize="{StaticResource WbTextXs}" Foreground="{DynamicResource WbTextMutedBrush}"/>
+                    </StackPanel>
+                </StackPanel>
+            </Panel>
+        </Border>
+
+    </DockPanel>
+</UserControl>

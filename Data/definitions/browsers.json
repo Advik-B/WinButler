@@ -1,0 +1,18 @@
+{
+  "_comment": "Known-location cleanup entries for web browsers. Browser *cache2*/*Cache* folders are already handled by CacheScanner (they sit under Profiles/User Data contexts); this file targets crash dumps (*.dmp/*.extra) and non-cache site data CacheScanner misses.",
+
+  "knownLocations": {
+    "entries": [
+      { "id": "firefox-dmp",     "path": "%AppData%\\Mozilla\\Firefox",  "mode": "files", "pattern": "*.dmp",   "recursive": true, "risk": "safe", "displayName": "Firefox crash dumps",   "description": "Minidumps under the Firefox profile",   "group": "Browsers" },
+      { "id": "firefox-extra",   "path": "%AppData%\\Mozilla\\Firefox",  "mode": "files", "pattern": "*.extra", "recursive": true, "risk": "safe", "displayName": "Firefox crash metadata", "description": "Crash .extra metadata files",           "group": "Browsers" },
+      { "id": "waterfox-dmp",    "path": "%AppData%\\Waterfox",          "mode": "files", "pattern": "*.dmp",   "recursive": true, "risk": "safe", "displayName": "Waterfox crash dumps",  "description": "Minidumps under the Waterfox profile",  "group": "Browsers" },
+      { "id": "waterfox-extra",  "path": "%AppData%\\Waterfox",          "mode": "files", "pattern": "*.extra", "recursive": true, "risk": "safe", "displayName": "Waterfox crash metadata","description": "Crash .extra metadata files",           "group": "Browsers" },
+      { "id": "librewolf-dmp",   "path": "%AppData%\\LibreWolf",         "mode": "files", "pattern": "*.dmp",   "recursive": true, "risk": "safe", "displayName": "LibreWolf crash dumps", "description": "Minidumps under the LibreWolf profile", "group": "Browsers" },
+      { "id": "librewolf-extra", "path": "%AppData%\\LibreWolf",         "mode": "files", "pattern": "*.extra", "recursive": true, "risk": "safe", "displayName": "LibreWolf crash metadata","description": "Crash .extra metadata files",          "group": "Browsers" },
+      { "id": "chrome-dmp",      "path": "%LocalAppData%\\Google",       "mode": "files", "pattern": "*.dmp",   "recursive": true, "risk": "safe", "displayName": "Chrome crash dumps",    "description": "Minidumps under Google\\Chrome",         "group": "Browsers" },
+      { "id": "chrome-filesystem","path": "%LocalAppData%\\Google\\Chrome\\User Data\\Default\\File System", "mode": "self", "risk": "caution", "displayName": "Chrome site File System", "description": "Per-site File System storage (site data)", "group": "Browsers" },
+      { "id": "edge-legacy-ac",  "path": "%LocalAppData%\\Packages\\Microsoft.MicrosoftEdge_8wekyb3d8bbwe\\AC", "mode": "children", "risk": "caution", "displayName": "Legacy Edge app-container", "description": "Old Edge (EdgeHTML) app-container data", "group": "Browsers" },
+      { "id": "googleearth-cache","path": "%LocalLow%\\Google\\GoogleEarth\\Cache",     "mode": "children", "risk": "safe", "displayName": "Google Earth cache", "description": "Google Earth imagery cache (LocalLow)", "group": "Browsers" }
+    ]
+  }
+}

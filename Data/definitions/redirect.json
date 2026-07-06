@@ -1,50 +1,5 @@
 {
-  "version": 1,
-  "_comment": "WinButler path rules. Edit this file to add caches or redirect targets — no code changes needed. A future remote source (JSON on GitHub) uses this exact shape and merges on top, keyed by targetName for redirects and unioned for cache rule lists.",
-
-  "cache": {
-    "_comment_alwaysSafeNames": "Bare folder names that are ALWAYS safe to delete (unambiguous transient render/compile artifacts).",
-    "alwaysSafeNames": [
-      "Cache_Data", "Code Cache", "CodeCache", "GPUCache", "GrShaderCache", "ShaderCache",
-      "DawnCache", "DawnGraphiteCache", "DawnWebGPUCache", "GraphiteDawnCache",
-      "component_crx_cache", "extensions_crx_cache", "D3DSCache", "GLCache", "DXCache",
-      "NV_Cache", "NVIDIA_Cache", "ComputeCache", "CefCache", "BrowserCache",
-      "webcache", "webcache2", "htmlcache", "ScriptCache", "CachedData", "CachedExtensionVSIXs",
-      "__pycache__"
-    ],
-
-    "_comment_cautionNames": "Cache-like names that may hold app data → require opt-in.",
-    "cautionNames": [ "CacheStorage", "blob_storage" ],
-
-    "_comment_cautionPathFragments": "Paths forced to Caution even if named Cache (package stores, etc.).",
-    "cautionPathFragments": [ "\\Pub\\Cache" ],
-
-    "_comment_safeContextFragments": "A generic 'cache' folder is safe only when its path contains one of these known app/tool contexts.",
-    "safeContextFragments": [
-      "\\User Data\\",
-      "\\Profiles\\",
-      "\\Spotify\\", "\\Discord\\", "\\discord\\", "\\Slack\\", "\\slack\\", "\\Microsoft\\Teams\\",
-      "\\Code\\", "\\Code - Insiders\\", "\\VSCodium\\", "\\Postman\\", "\\Figma\\", "\\Notion\\",
-      "\\WhatsApp\\", "\\Signal\\", "\\obsidian\\", "\\Obsidian\\", "\\GitHub Desktop\\",
-      "\\Microsoft\\Olk\\", "\\EBWebView\\", "\\electron\\", "\\io.krunker.desktop\\",
-      "\\Steam\\htmlcache", "\\EpicGamesLauncher\\", "\\Epic Games\\", "\\EOSOverlay\\",
-      "\\lunarclient\\", "\\PrismLauncher\\cache", "\\.minecraft\\", "\\Minecraft Bedrock\\",
-      "\\NVIDIA\\", "\\NVIDIA Corporation\\", "\\AMD\\", "\\Intel\\",
-      "\\NuGet\\v3-cache", "\\NuGet\\plugins-cache", "\\npm-cache", "\\pnpm-cache",
-      "\\pip\\cache", "\\pip\\Cache", "\\go-build", "\\Yarn\\", "\\.gradle\\caches",
-      "\\Caches\\",
-      "\\JetBrains\\", "\\Google\\AndroidStudio", "\\Microsoft\\VisualStudio\\",
-      "\\.vscode\\", "\\ms-playwright\\",
-      "\\Microsoft\\Windows\\INetCache", "\\Microsoft\\Windows\\WebCache",
-      "\\Microsoft\\Windows\\Explorer"
-    ],
-
-    "_comment_denyFragments": "Never touched even if the name contains 'cache' — security stores and profile data that is NOT a cache.",
-    "denyFragments": [
-      "\\.ssh", "\\.gnupg", "credential", "secret", "vault", "keyring",
-      "\\IndexedDB", "\\Local Storage", "\\Login Data", "\\Web Data", "\\Bookmarks"
-    ]
-  },
+  "_comment": "Redirect catalog for RedirectionService. One of several files under Data/definitions/ — see README.md. Entries merge by targetName (which must be unique across every file here).",
 
   "redirect": {
     "_comment_denyNames": "Folder names never offered for redirection (security stores).",

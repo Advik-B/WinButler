@@ -51,7 +51,7 @@ one View per ViewModel.
 Assets/Fonts/    Embedded fonts for the custom theme
 Controls/        Custom-drawn controls (TreemapControl for Disk Explorer)
 Converters/      XAML value converters
-Data/            definitions.json — single source of truth for cache/redirect rules
+Data/definitions/ per-domain JSON rule files (cache, redirect, known-locations) — see its README
 Models/          Plain data types
 Services/        Scanners, RedirectionService, the MFT parser (Services/Mft/), ThemeService
 Themes/          "Duly Doted" theme: color/typography/spacing tokens, effects, per-control ControlThemes
@@ -68,9 +68,13 @@ resource keys that screens bind to via `DynamicResource`, so the whole app re-co
 
 ## Conventions & gotchas
 
-- **`Data/definitions.json` is the single source of truth** for cache-classification rules
-  and the redirect catalog. It's an embedded resource (see `WinButler.csproj`) and can be
-  edited without recompiling. Add/adjust rules there — do **not** hardcode paths in code.
+- **`Data/definitions/` is the single source of truth** for cache-classification rules, the
+  redirect catalog, and the known-location cleanup catalog. It's a folder of per-domain JSON files
+  (`cache.json`, `redirect.json`, `apps.json`, `browsers.json`, …), each a *partial*
+  `WinButlerDefinitions` embedded via a glob and folded together at load
+  (`BundledDefinitionSource.Load`). See `Data/definitions/README.md` for the schema. Add/adjust
+  rules there — do **not** hardcode paths in code. **Fail-closed:** any file missing or unparseable
+  aborts the whole load (a lost `cache.json` = a lost deny-list).
 - **Dry-run is the default everywhere** and is a true no-op: `Services/Cleaner.cs` returns
   before any filesystem mutation when dry-run is on. Keep it that way.
 - **Deny-list paths** (SSH/GPG keys, credential stores, browser login data, etc.) are never
@@ -83,9 +87,10 @@ resource keys that screens bind to via `DynamicResource`, so the whole app re-co
 - **Confirm before real deletes:** every dry-run-**off** clean/redirect/undo routes through the
   shell's confirm modal (`ViewModelBase.ConfirmInteraction`, wired in `MainWindowViewModel`);
   dry-run never prompts. An unset delegate auto-confirms, so headless tests drive commands directly.
-- **Fail-closed definitions:** if `Data/definitions.json` won't load, `DefinitionsProvider.LoadFailed`
-  is set, the shell builds **zero** scanners and shows a persistent error banner — never scans
-  against an empty (⇒ empty deny-list) ruleset.
+- **Fail-closed definitions:** if any file under `Data/definitions/` won't load,
+  `DefinitionsProvider.LoadFailed` is set, the shell builds **zero** scanners and shows a persistent
+  error banner — never scans against an empty (⇒ empty deny-list) ruleset. The load is all-or-nothing
+  across the folder (`BundledDefinitionSource.Load` throws if any single file fails to parse).
 - **`Tests/**` is excluded from the app build** (explicit `Remove` items in `WinButler.csproj`).
   `InternalsVisibleTo("WinButler.Tests")` exposes internal MFT helpers (USA fixup, data-run
   decoder) to the test project.

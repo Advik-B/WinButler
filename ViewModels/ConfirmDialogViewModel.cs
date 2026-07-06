@@ -17,6 +17,10 @@ public sealed partial class ConfirmDialogViewModel : ViewModelBase
     public int Count { get; }
     public string BytesText { get; }
 
+    /// <summary>Whether to show the "N item(s), X total" line — true for deletions, false for
+    /// system actions (which have no item count), where only the title and warning make sense.</summary>
+    public bool ShowCounts { get; }
+
     /// <summary>Optional one-line breakdown (e.g. "7 deleted permanently · 3 to Recycle Bin").</summary>
     public string? Detail { get; }
     public bool HasDetail => !string.IsNullOrEmpty(Detail);
@@ -27,6 +31,7 @@ public sealed partial class ConfirmDialogViewModel : ViewModelBase
         Title = title;
         Count = count;
         BytesText = SizeFormatter.Format(bytes);
+        ShowCounts = count > 0 || bytes > 0;
         Detail = detail;
         _onConfirmed = onConfirmed;
         _onCancelled = onCancelled;

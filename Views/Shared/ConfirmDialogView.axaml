@@ -26,6 +26,7 @@
                     <TextBlock Text="{Binding Title}" FontFamily="{DynamicResource WbFontDot}" FontWeight="Bold"
                                FontSize="{StaticResource WbTextMd}" Foreground="{DynamicResource WbTextBrush}"/>
                     <TextBlock TextWrapping="Wrap" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
+                               IsVisible="{Binding ShowCounts}"
                                FontSize="{StaticResource WbTextXs}" Foreground="{DynamicResource WbTextSecondaryBrush}">
                         <Run Text="{Binding Count}" FontFamily="{DynamicResource WbFontReadout}" Foreground="{DynamicResource WbTextBrush}"/>
                         <Run Text="item(s),"/>

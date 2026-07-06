@@ -20,6 +20,16 @@ public class DefinitionsTests
     }
 
     [Fact]
+    public void Bundled_load_folds_every_definitions_file_together()
+    {
+        // cache.json and redirect.json are separate files; a correct fold has BOTH populated.
+        var defs = BundledDefinitionSource.Load();
+
+        Assert.NotEmpty(defs.Cache.DenyFragments);   // from cache.json — the safety-critical list
+        Assert.NotEmpty(defs.Redirect.Entries);      // from redirect.json
+    }
+
+    [Fact]
     public void Redirect_target_names_are_unique()
     {
         var defs = BundledDefinitionSource.Load();
@@ -97,6 +107,61 @@ public class DefinitionsTests
         Assert.Contains("MyNewToolCache", merged.Cache.AlwaysSafeNames);
         Assert.Contains("GPUCache", merged.Cache.AlwaysSafeNames);
         Assert.Equal(1, merged.Cache.AlwaysSafeNames.Count(n => n == "GPUCache"));
+    }
+
+    [Fact]
+    public void Bundled_known_locations_catalog_is_populated_and_well_formed()
+    {
+        var entries = BundledDefinitionSource.Load().KnownLocations.Entries;
+
+        Assert.True(entries.Count >= 40, $"expected a sizeable catalog, got {entries.Count}");
+
+        var validModes = new[] { "children", "files", "self" };
+        var validRisks = new[] { "safe", "caution", "risky" };
+        Assert.All(entries, e =>
+        {
+            Assert.False(string.IsNullOrWhiteSpace(e.Id));
+            Assert.False(string.IsNullOrWhiteSpace(e.Path));
+            Assert.False(string.IsNullOrWhiteSpace(e.DisplayName));
+            Assert.Contains(e.Mode.ToLowerInvariant(), validModes);
+            Assert.Contains(e.Risk.ToLowerInvariant(), validRisks);
+            // "files" mode is meaningless without a pattern.
+            if (e.Mode.Equals("files", System.StringComparison.OrdinalIgnoreCase))
+                Assert.False(string.IsNullOrWhiteSpace(e.Pattern));
+        });
+    }
+
+    [Fact]
+    public void Known_location_ids_are_unique()
+    {
+        var entries = BundledDefinitionSource.Load().KnownLocations.Entries;
+
+        var duplicates = entries
+            .GroupBy(e => e.Id, System.StringComparer.OrdinalIgnoreCase)
+            .Where(g => g.Count() > 1)
+            .Select(g => g.Key)
+            .ToList();
+
+        Assert.Empty(duplicates);
+    }
+
+    [Fact]
+    public void Merge_replaces_known_location_by_id()
+    {
+        var baseDefs = BundledDefinitionSource.Load();
+        var first = baseDefs.KnownLocations.Entries[0];
+        var overlay = new WinButlerDefinitions
+        {
+            KnownLocations = new KnownLocationRuleSet
+            {
+                Entries = { new KnownLocationEntry { Id = first.Id, Path = "%TEMP%\\overridden", DisplayName = "Overridden" } },
+            },
+        };
+
+        var merged = WinButlerDefinitions.Merge(baseDefs, overlay);
+
+        Assert.Equal(baseDefs.KnownLocations.Entries.Count, merged.KnownLocations.Entries.Count); // replaced, not added
+        Assert.Equal("Overridden", merged.KnownLocations.Entries.Single(e => e.Id == first.Id).DisplayName);
     }
 
     [Fact]

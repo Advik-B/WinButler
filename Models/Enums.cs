@@ -23,6 +23,14 @@ public enum CleanupCategory
     Temp,
     Cache,
 
+    /// <summary>Specific app/system junk locations from the known-locations catalog
+    /// (<see cref="Services.KnownLocationsScanner"/>): caches, logs and crash dumps.</summary>
+    Apps,
+
+    /// <summary>Steam client and per-library junk (shader/download caches, dumps, logs) found by
+    /// <see cref="Services.SteamScanner"/> after discovering Steam's install and library folders.</summary>
+    Steam,
+
     /// <summary>Reclaimable subpath found under a dev-tool root by <see cref="Services.DevJunkAggregator"/>.
     /// Not driven by an <see cref="Services.IScanner"/> or shown in <see cref="ViewModels.CleanPageViewModel"/>'s
     /// category list — it's a distinct aggregation surfaced on the Dev Junk screen.</summary>

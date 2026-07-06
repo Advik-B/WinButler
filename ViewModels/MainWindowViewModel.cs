@@ -28,9 +28,12 @@ public partial class MainWindowViewModel : ViewModelBase
     public ElectronPageViewModel ElectronPage { get; }
     public TempPageViewModel TempPage { get; }
     public CachePageViewModel CachePage { get; }
+    public AppsPageViewModel AppsPage { get; }
+    public SteamPageViewModel SteamPage { get; }
 
     public DashboardPageViewModel DashboardPage { get; }
     public DevJunkPageViewModel DevJunkPage { get; }
+    public SystemToolsPageViewModel SystemToolsPage { get; }
 
     [ObservableProperty]
     private ViewModelBase _currentPage;
@@ -116,6 +119,8 @@ public partial class MainWindowViewModel : ViewModelBase
                 new ElectronLeftoverScanner(safeCaches),
                 new TempScanner(safeCaches),
                 new CacheScanner(safeCaches),
+                new KnownLocationsScanner(safeCaches, defs.KnownLocations),
+                new SteamScanner(safeCaches, new Services.Steam.SteamLocator()),
             };
         CleanPage = new CleanPageViewModel(Settings, scanners, new Cleaner(), _diskIndex);
         RedirectPage = new RedirectPageViewModel(Settings, new RedirectionService(defs.Redirect), _diskIndex);
@@ -124,9 +129,13 @@ public partial class MainWindowViewModel : ViewModelBase
         ElectronPage = new ElectronPageViewModel(CleanPage);
         TempPage = new TempPageViewModel(CleanPage);
         CachePage = new CachePageViewModel(CleanPage);
+        AppsPage = new AppsPageViewModel(CleanPage);
+        SteamPage = new SteamPageViewModel(CleanPage);
 
         var devJunkAggregator = new DevJunkAggregator(safeCaches);
         DevJunkPage = new DevJunkPageViewModel(devJunkAggregator, Settings, new Cleaner(), RedirectPage, Navigate, _diskIndex);
+
+        SystemToolsPage = new SystemToolsPageViewModel(Settings, new SystemActionRunner(), new PrivacyCleaner());
 
         DashboardPage = new DashboardPageViewModel(CleanPage, RedirectPage, DevJunkPage, Navigate);
 
@@ -136,12 +145,14 @@ public partial class MainWindowViewModel : ViewModelBase
         RedirectPage.ConfirmInteraction = ConfirmViaModalAsync;
         DevJunkPage.ConfirmInteraction = ConfirmViaModalAsync;
         DashboardPage.ConfirmInteraction = ConfirmViaModalAsync;
+        SystemToolsPage.ConfirmInteraction = ConfirmViaModalAsync;
 
         // Route every page's long-op progress into the shell's single status-bar progress slot.
         CleanPage.ShellProgress = SetProgress;
         RedirectPage.ShellProgress = SetProgress;
         DevJunkPage.ShellProgress = SetProgress;
         DiskPage.ShellProgress = SetProgress;
+        SystemToolsPage.ShellProgress = SetProgress;
 
         // Surface every completed clean/redirect run as a toast (the Dashboard's activity
         // feed subscribes to the same broadcast).
@@ -175,9 +186,12 @@ public partial class MainWindowViewModel : ViewModelBase
             "electron" => ElectronPage,
             "temp" => TempPage,
             "cache" => CachePage,
+            "apps" => AppsPage,
+            "steam" => SteamPage,
             "devjunk" => DevJunkPage,
             "redirect" => RedirectPage,
             "disk" => DiskPage,
+            "system" => SystemToolsPage,
             _ => DashboardPage,
         };
     }

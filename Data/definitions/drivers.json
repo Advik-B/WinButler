@@ -1,0 +1,13 @@
+{
+  "_comment": "Known-location cleanup entries for GPU/hardware drivers. The NVIDIA shader caches under LocalAppData/Roaming (NV_Cache, DXCache, GLCache, ComputeCache, D3DSCache) are already swept by CacheScanner; this file targets the installer/download/crash leftovers outside those roots (ProgramFiles, ProgramData, LocalLow).",
+
+  "knownLocations": {
+    "entries": [
+      { "id": "nvidia-installer2",  "path": "%ProgramFiles%\\NVIDIA Corporation\\Installer2",        "mode": "children", "risk": "safe", "displayName": "NVIDIA installer leftovers", "description": "Leftover driver installer packages", "group": "Drivers" },
+      { "id": "nvidia-crashdumps",  "path": "%ProgramData%\\NVIDIA Corporation\\CrashDumps",         "mode": "children", "risk": "safe", "displayName": "NVIDIA crash dumps",         "description": "Driver crash dumps",                 "group": "Drivers" },
+      { "id": "nvidia-downloader",  "path": "%ProgramData%\\NVIDIA Corporation\\Downloader",         "mode": "children", "risk": "safe", "displayName": "NVIDIA driver downloads",    "description": "Downloaded driver packages (often GBs)", "group": "Drivers" },
+      { "id": "nvidia-pd-nvcache",  "path": "%ProgramData%\\NVIDIA Corporation\\NV_Cache",           "mode": "children", "risk": "safe", "displayName": "NVIDIA shader cache (system)","description": "System-wide NV_Cache shader store",  "group": "Drivers" },
+      { "id": "nvidia-locallow-dx", "path": "%LocalLow%\\NVIDIA\\PerDriverVersion\\DXCache",         "mode": "children", "risk": "safe", "displayName": "NVIDIA DX shader cache (LocalLow)","description": "Per-driver DirectX shader cache",   "group": "Drivers" }
+    ]
+  }
+}

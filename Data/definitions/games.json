@@ -1,0 +1,28 @@
+{
+  "_comment": "Known-location cleanup entries for game user-data (crash dumps, logs, analytics). Paths live under Documents, LocalLow and LocalAppData\\<Game>\\Saved — outside CacheScanner's reach. Save games and configs are deliberately never targeted.",
+
+  "knownLocations": {
+    "entries": [
+      { "id": "bsg-launcher-logs",  "path": "%LocalAppData%\\Battlestate Games\\BsgLauncher\\Logs",     "mode": "children", "risk": "safe", "displayName": "Tarkov launcher logs",  "description": "BSG launcher logs",                "group": "Games" },
+      { "id": "bsg-analytics",      "path": "%LocalLow%\\Battlestate Games",                            "mode": "children", "risk": "safe", "displayName": "Tarkov analytics",       "description": "BSG analytics folder",             "group": "Games" },
+      { "id": "pubg-crashes",       "path": "%LocalAppData%\\TslGame\\Saved\\Crashes",                  "mode": "children", "risk": "safe", "displayName": "PUBG crash reports",     "description": "PUBG crash dumps",                 "group": "Games" },
+      { "id": "pubg-logs",          "path": "%LocalAppData%\\TslGame\\Saved\\Logs",                     "mode": "children", "risk": "safe", "displayName": "PUBG logs",              "description": "PUBG logs",                        "group": "Games" },
+      { "id": "scum-crashes",       "path": "%LocalAppData%\\SCUM\\Saved\\Crashes",                     "mode": "children", "risk": "safe", "displayName": "SCUM crash reports",     "description": "SCUM crash dumps",                 "group": "Games" },
+      { "id": "scum-logs",          "path": "%LocalAppData%\\SCUM\\Saved\\Logs",                        "mode": "children", "risk": "safe", "displayName": "SCUM logs",              "description": "SCUM logs",                        "group": "Games" },
+      { "id": "squad-crashes",      "path": "%LocalAppData%\\SquadGame\\Saved\\Crashes",                "mode": "children", "risk": "safe", "displayName": "Squad crash reports",    "description": "Squad crash dumps",                "group": "Games" },
+      { "id": "squad-logs",         "path": "%LocalAppData%\\SquadGame\\Saved\\Logs",                   "mode": "children", "risk": "safe", "displayName": "Squad logs",             "description": "Squad logs",                       "group": "Games" },
+      { "id": "vrchat-data",        "path": "%LocalLow%\\VRChat\\VRChat",                               "mode": "files", "pattern": "output_log_*.txt", "recursive": false, "risk": "safe", "displayName": "VRChat logs", "description": "VRChat output logs", "group": "Games" },
+      { "id": "aimlab-backtrace",   "path": "%LocalLow%\\Statespace\\aimlab_tb\\backtrace",             "mode": "children", "risk": "safe", "displayName": "Aim Lab crash reports",  "description": "Aim Lab backtrace crash reports",  "group": "Games" },
+      { "id": "arma3-reports",      "path": "%LocalAppData%\\Arma 3",                                   "mode": "files", "pattern": "*.rpt",   "recursive": false, "risk": "safe", "displayName": "Arma 3 report logs", "description": "Arma 3 .rpt session logs", "group": "Games" },
+      { "id": "arma3-dumps",        "path": "%LocalAppData%\\Arma 3",                                   "mode": "files", "pattern": "*.mdmp",  "recursive": false, "risk": "safe", "displayName": "Arma 3 crash dumps", "description": "Arma 3 minidumps",         "group": "Games" },
+      { "id": "cod-mw-archive",     "path": "%Documents%\\Call of Duty Modern Warfare\\archive",        "mode": "children", "risk": "safe", "displayName": "CoD MW crash archive",   "description": "Call of Duty crash archives",      "group": "Games" },
+      { "id": "activision-crashes", "path": "%LocalAppData%\\Activision",                               "mode": "children", "risk": "safe", "displayName": "Activision crash reports","description": "Activision crash-report folders",  "group": "Games" },
+      { "id": "bf2042-crashdumps",  "path": "%Documents%\\Battlefield 2042\\CrashDumps",                "mode": "children", "risk": "safe", "displayName": "Battlefield 2042 crash dumps","description": "BF2042 crash dumps",          "group": "Games" },
+      { "id": "bf6-crashdumps",     "path": "%Documents%\\Battlefield 6\\CrashDumps",                   "mode": "children", "risk": "safe", "displayName": "Battlefield 6 crash dumps","description": "BF6 crash dumps",                "group": "Games" },
+      { "id": "bf4-twinkle",        "path": "%Documents%\\Battlefield 4\\twinkle",                      "mode": "children", "risk": "safe", "displayName": "Battlefield 4 web assets","description": "In-game browser assets (~200 MB)", "group": "Games" },
+      { "id": "ns2-dumps",          "path": "%AppData%\\Natural Selection 2\\dumps",                    "mode": "children", "risk": "safe", "displayName": "Natural Selection 2 dumps","description": "NS2 crash dumps",                "group": "Games" },
+      { "id": "xdefiant-shadercache","path": "%Documents%\\My Games\\XDefiant\\ShaderCache",            "mode": "children", "risk": "safe", "displayName": "XDefiant shader cache",  "description": "XDefiant shader cache (Documents)","group": "Games" },
+      { "id": "xdefiant-imagecache","path": "%Documents%\\My Games\\XDefiant\\imagecache",              "mode": "children", "risk": "safe", "displayName": "XDefiant image cache",   "description": "XDefiant image cache (Documents)", "group": "Games" }
+    ]
+  }
+}

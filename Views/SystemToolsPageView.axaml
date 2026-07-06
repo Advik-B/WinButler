@@ -1,0 +1,123 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:WinButler.ViewModels"
+             xmlns:m="using:WinButler.Models"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:wb="using:WinButler.Controls"
+             mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="640"
+             x:Class="WinButler.Views.SystemToolsPageView"
+             x:DataType="vm:SystemToolsPageViewModel"
+             Background="{DynamicResource WbBgBrush}">
+
+    <UserControl.Resources>
+        <!-- One action row: title + description on the left, RUN on the right. -->
+        <DataTemplate x:Key="WbSystemActionTemplate" DataType="m:SystemAction">
+            <Border Background="{DynamicResource WbSurfaceInsetBrush}" CornerRadius="{StaticResource WbRadiusSm}"
+                    Padding="14,11" Margin="0,0,0,8">
+                <DockPanel>
+                    <Button DockPanel.Dock="Right" Content="RUN" Classes="primary" VerticalAlignment="Center"
+                            Command="{Binding $parent[ItemsControl].((vm:SystemToolsPageViewModel)DataContext).RunActionCommand}"
+                            CommandParameter="{Binding}"/>
+                    <StackPanel Spacing="3" Margin="0,0,12,0">
+                        <TextBlock Text="{Binding Name}" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
+                                   FontSize="{StaticResource WbTextSm}" Foreground="{DynamicResource WbTextBrush}"/>
+                        <TextBlock Text="{Binding Description}" TextWrapping="Wrap"
+                                   FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
+                                   FontSize="{StaticResource WbText2xs}" Foreground="{DynamicResource WbTextTertiaryBrush}"/>
+                    </StackPanel>
+                </DockPanel>
+            </Border>
+        </DataTemplate>
+
+        <!-- One privacy row — same shape, but bound to RunPrivacyCommand. -->
+        <DataTemplate x:Key="WbPrivacyOpTemplate" DataType="m:PrivacyOp">
+            <Border Background="{DynamicResource WbSurfaceInsetBrush}" CornerRadius="{StaticResource WbRadiusSm}"
+                    Padding="14,11" Margin="0,0,0,8">
+                <DockPanel>
+                    <Button DockPanel.Dock="Right" Content="CLEAR" Classes="primary" VerticalAlignment="Center"
+                            Command="{Binding $parent[ItemsControl].((vm:SystemToolsPageViewModel)DataContext).RunPrivacyCommand}"
+                            CommandParameter="{Binding}"/>
+                    <StackPanel Spacing="3" Margin="0,0,12,0">
+                        <TextBlock Text="{Binding Name}" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
+                                   FontSize="{StaticResource WbTextSm}" Foreground="{DynamicResource WbTextBrush}"/>
+                        <TextBlock Text="{Binding Description}" TextWrapping="Wrap"
+                                   FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
+                                   FontSize="{StaticResource WbText2xs}" Foreground="{DynamicResource WbTextTertiaryBrush}"/>
+                    </StackPanel>
+                </DockPanel>
+            </Border>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <DockPanel Margin="28,24">
+
+        <StackPanel DockPanel.Dock="Top" MaxWidth="620" Margin="0,0,0,18">
+            <TextBlock Text="SYSTEM · MAINTENANCE" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
+                       FontSize="{StaticResource WbText2xs}" LetterSpacing="2"
+                       Foreground="{DynamicResource WbAccentBrush}" Margin="0,0,0,6"/>
+            <TextBlock Text="System Tools" FontFamily="{DynamicResource WbFontDot}" FontWeight="Bold"
+                       FontSize="{StaticResource WbTextXl}" Foreground="{DynamicResource WbTextBrush}" Margin="0,0,0,6"/>
+            <TextBlock Text="One-click Windows maintenance. These run Windows' own tools (DISM, SFC, wevtutil) — with Dry run on, they print what they would do without running it."
+                       TextWrapping="Wrap" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold" FontSize="{StaticResource WbTextXs}"
+                       Foreground="{DynamicResource WbTextTertiaryBrush}"/>
+        </StackPanel>
+
+        <TextBlock DockPanel.Dock="Bottom" Text="{Binding StatusText}" TextWrapping="Wrap" Margin="0,12,0,0"
+                   FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold" FontSize="{StaticResource WbTextXs}"
+                   Foreground="{DynamicResource WbTextTertiaryBrush}"/>
+
+        <Grid ColumnDefinitions="*,16,*">
+
+            <!-- Left: the action catalog -->
+            <ScrollViewer Grid.Column="0">
+                <StackPanel>
+                    <ItemsControl ItemsSource="{Binding Actions}" ItemTemplate="{StaticResource WbSystemActionTemplate}"/>
+
+                    <Border Margin="0,10,0,10" Padding="11,9" CornerRadius="{StaticResource WbRadiusSm}"
+                            Background="{DynamicResource WbSurfaceInsetBrush}"
+                            BorderBrush="{DynamicResource WbSignalLiveBrush}" BorderThickness="1">
+                        <TextBlock Text="ADVANCED — CAN BREAK THINGS. USE ONLY IF YOU KNOW YOU NEED IT."
+                                   FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold" LetterSpacing="1"
+                                   FontSize="{StaticResource WbText2xs}" Foreground="{DynamicResource WbSignalLiveBrush}"/>
+                    </Border>
+
+                    <ItemsControl ItemsSource="{Binding AdvancedActions}" ItemTemplate="{StaticResource WbSystemActionTemplate}"/>
+
+                    <TextBlock Text="PRIVACY" Margin="2,10,0,8" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
+                               LetterSpacing="1.5" FontSize="{StaticResource WbText2xs}"
+                               Foreground="{DynamicResource WbTextMutedBrush}"/>
+                    <ItemsControl ItemsSource="{Binding PrivacyOps}" ItemTemplate="{StaticResource WbPrivacyOpTemplate}"/>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- Right: streamed command output -->
+            <Border Grid.Column="2" BorderBrush="{DynamicResource WbBorderBrush}" BorderThickness="1"
+                    CornerRadius="{StaticResource WbRadiusMd}" Background="{DynamicResource WbSurfaceBrush}"
+                    ClipToBounds="True">
+                <DockPanel Margin="14,12">
+                    <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+                        <Button DockPanel.Dock="Right" Content="CANCEL" Classes="ghost"
+                                Command="{Binding CancelCommand}" IsVisible="{Binding IsBusy}"/>
+                        <TextBlock Text="OUTPUT" VerticalAlignment="Center" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
+                                   LetterSpacing="1.5" FontSize="{StaticResource WbText2xs}"
+                                   Foreground="{DynamicResource WbTextMutedBrush}"/>
+                    </DockPanel>
+                    <ScrollViewer>
+                        <ItemsControl ItemsSource="{Binding Output}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="x:String">
+                                    <TextBlock Text="{Binding}" TextWrapping="Wrap" Margin="0,0,0,1"
+                                               FontFamily="{DynamicResource WbFontReadout}"
+                                               FontSize="{StaticResource WbText2xs}"
+                                               Foreground="{DynamicResource WbTextSecondaryBrush}"/>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </DockPanel>
+            </Border>
+        </Grid>
+
+    </DockPanel>
+</UserControl>

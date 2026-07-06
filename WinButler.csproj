@@ -17,8 +17,10 @@
     <Folder Include="Models\" />
     <Folder Include="Services\" />
     <AvaloniaResource Include="Assets\**" />
-    <!-- Path rules shipped with the app; the single maintainable source of truth. -->
-    <EmbeddedResource Include="Data\definitions.json" />
+    <!-- Path rules shipped with the app; the single maintainable source of truth. Split into
+         per-domain files under Data\definitions\ (see that folder's README) — all are embedded
+         and folded together at load. The README itself is docs, not a rule file, so exclude it. -->
+    <EmbeddedResource Include="Data\definitions\*.json" />
   </ItemGroup>
 
   <!-- The test project lives under Tests\ but is a separate project; keep its files out of the app. -->

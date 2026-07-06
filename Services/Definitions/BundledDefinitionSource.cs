@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -10,20 +11,49 @@ using WinButler.Models;
 namespace WinButler.Services.Definitions;
 
 /// <summary>
-/// Loads the definitions JSON embedded in the assembly (Data/definitions.json). This is the
-/// always-available baseline; it loads synchronously and never needs the network.
+/// Loads the path-rule definitions embedded in the assembly. The rules live as several per-domain
+/// JSON files under <c>Data/definitions/</c> (cache, redirect, known-location catalogs); this source
+/// folds them all into one <see cref="WinButlerDefinitions"/>. It is the always-available baseline —
+/// it loads synchronously and never needs the network.
 /// </summary>
 public sealed class BundledDefinitionSource : IDefinitionSource
 {
+    /// <summary>Marker that identifies our definition resources among all embedded resources.
+    /// The folder <c>Data\definitions\</c> becomes <c>.definitions.</c> in the manifest name.</summary>
+    private const string ResourceMarker = ".definitions.";
+
     public string Name => "bundled";
 
     public Task<WinButlerDefinitions?> LoadAsync(CancellationToken ct = default)
         => Task.FromResult<WinButlerDefinitions?>(Load());
 
-    /// <summary>Synchronous load — used at startup since the resource is local and tiny.
-    /// Throws on a missing or unparseable resource (see <see cref="TryLoad"/> for the
+    /// <summary>Synchronous load — used at startup since the resources are local and tiny. Folds
+    /// every embedded definitions file together (merge order is by resource name, so results are
+    /// deterministic). Throws if no files are found or ANY file is unparseable — a partial load
+    /// could drop the deny-list, so it is all-or-nothing (see <see cref="TryLoad"/> for the
     /// fail-closed variant the startup provider uses).</summary>
-    public static WinButlerDefinitions Load() => Parse(ReadEmbeddedJson());
+    public static WinButlerDefinitions Load()
+    {
+        WinButlerDefinitions? merged = null;
+        foreach (var (shortName, json) in ReadEmbeddedJsonFiles())
+        {
+            WinButlerDefinitions parsed;
+            try
+            {
+                parsed = Parse(json);
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException(
+                    $"Embedded definitions file '{shortName}' failed to parse.", ex);
+            }
+
+            merged = merged is null ? parsed : WinButlerDefinitions.Merge(merged, parsed);
+        }
+
+        // ReadEmbeddedJsonFiles throws when there are zero files, so merged is never null here.
+        return merged!;
+    }
 
     /// <summary>Fail-soft load for startup: returns null (logged) instead of throwing, so a bad
     /// bundled edit can be handled gracefully rather than crashing the app.</summary>
@@ -35,25 +65,44 @@ public sealed class BundledDefinitionSource : IDefinitionSource
         }
         catch (Exception ex)
         {
-            Log.Error("definitions", "Bundled definitions.json failed to load.", ex);
+            Log.Error("definitions", "Bundled definitions failed to load.", ex);
             return null;
         }
     }
 
-    /// <summary>Parses definitions JSON (test seam for the malformed-input path).</summary>
+    /// <summary>Parses one definitions file's JSON (test seam for the malformed-input path).</summary>
     internal static WinButlerDefinitions Parse(string json) =>
         JsonSerializer.Deserialize<WinButlerDefinitions>(json, DefinitionsJson.Options)
-            ?? throw new InvalidOperationException("Embedded definitions.json failed to parse.");
+            ?? throw new InvalidOperationException("Embedded definitions JSON failed to parse.");
 
-    private static string ReadEmbeddedJson()
+    /// <summary>Reads every embedded definitions file, ordered by resource name for a deterministic
+    /// merge. Yields the short file name (for error messages) and its raw JSON.</summary>
+    private static IEnumerable<(string ShortName, string Json)> ReadEmbeddedJsonFiles()
     {
         var asm = Assembly.GetExecutingAssembly();
-        var resourceName = asm.GetManifestResourceNames()
-            .FirstOrDefault(n => n.EndsWith("definitions.json", StringComparison.OrdinalIgnoreCase))
-            ?? throw new InvalidOperationException("Embedded definitions.json not found in assembly.");
+        var names = asm.GetManifestResourceNames()
+            .Where(n => n.IndexOf(ResourceMarker, StringComparison.OrdinalIgnoreCase) >= 0
+                        && n.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+            .OrderBy(n => n, StringComparer.OrdinalIgnoreCase)
+            .ToList();
 
-        using var stream = asm.GetManifestResourceStream(resourceName)!;
-        using var reader = new StreamReader(stream);
-        return reader.ReadToEnd();
+        if (names.Count == 0)
+            throw new InvalidOperationException("No embedded definitions files found in assembly.");
+
+        foreach (var name in names)
+        {
+            using var stream = asm.GetManifestResourceStream(name)!;
+            using var reader = new StreamReader(stream);
+            yield return (ShortName(name), reader.ReadToEnd());
+        }
+    }
+
+    /// <summary>Trims a full manifest resource name down to the file name for error messages,
+    /// e.g. <c>WinButler.Data.definitions.cache.json</c> → <c>cache.json</c>.</summary>
+    private static string ShortName(string resourceName)
+    {
+        var markerEnd = resourceName.IndexOf(ResourceMarker, StringComparison.OrdinalIgnoreCase)
+                        + ResourceMarker.Length;
+        return markerEnd < resourceName.Length ? resourceName[markerEnd..] : resourceName;
     }
 }

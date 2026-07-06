@@ -61,6 +61,8 @@ public partial class CleanPageViewModel : ViewModelBase
     public CategoryViewModel? ElectronCategory => Categories.FirstOrDefault(c => c.Category == CleanupCategory.ElectronLeftover);
     public CategoryViewModel? TempCategory => Categories.FirstOrDefault(c => c.Category == CleanupCategory.Temp);
     public CategoryViewModel? CacheCategory => Categories.FirstOrDefault(c => c.Category == CleanupCategory.Cache);
+    public CategoryViewModel? AppsCategory => Categories.FirstOrDefault(c => c.Category == CleanupCategory.Apps);
+    public CategoryViewModel? SteamCategory => Categories.FirstOrDefault(c => c.Category == CleanupCategory.Steam);
 
     public bool IsDryRun => _settings.IsDryRun;
 

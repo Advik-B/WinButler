@@ -16,9 +16,12 @@ public sealed class ShellTests : MessengerIsolatedTest
     [InlineData("electron")]
     [InlineData("temp")]
     [InlineData("cache")]
+    [InlineData("apps")]
+    [InlineData("steam")]
     [InlineData("devjunk")]
     [InlineData("redirect")]
     [InlineData("disk")]
+    [InlineData("system")]
     [InlineData("dashboard")]
     public void Navigate_selects_the_matching_page_and_sets_the_tag(string tag)
     {
@@ -31,9 +34,12 @@ public sealed class ShellTests : MessengerIsolatedTest
             "electron" => shell.ElectronPage,
             "temp" => shell.TempPage,
             "cache" => shell.CachePage,
+            "apps" => shell.AppsPage,
+            "steam" => shell.SteamPage,
             "devjunk" => shell.DevJunkPage,
             "redirect" => shell.RedirectPage,
             "disk" => shell.DiskPage,
+            "system" => shell.SystemToolsPage,
             _ => shell.DashboardPage,
         };
         Assert.Same(expected, shell.CurrentPage);

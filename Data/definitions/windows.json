@@ -1,0 +1,21 @@
+{
+  "_comment": "Known-location cleanup entries for Windows itself — logs, crash dumps and error reports. Uses 'children' for system folders so a single locked file skips instead of failing the whole target. Windows\\Temp is left to TempScanner, INetCache/WebCache to CacheScanner, and the Windows Update download cache to the System tools page (it needs services stopped first).",
+
+  "knownLocations": {
+    "entries": [
+      { "id": "windows-logs",        "path": "%WinDir%\\Logs",                          "mode": "children", "risk": "safe",    "displayName": "Windows logs",          "description": "Component/servicing logs under Windows\\Logs", "group": "Windows" },
+      { "id": "windows-debug",       "path": "%WinDir%\\Debug",                         "mode": "children", "risk": "safe",    "displayName": "Windows debug logs",    "description": "Windows\\Debug logs",                 "group": "Windows" },
+      { "id": "windows-minidump",    "path": "%WinDir%\\Minidump",                      "mode": "children", "risk": "safe",    "displayName": "Kernel minidumps",      "description": "Blue-screen kernel minidumps",        "group": "Windows" },
+      { "id": "windows-prefetch",    "path": "%WinDir%\\Prefetch",                      "mode": "children", "risk": "caution", "displayName": "Prefetch",              "description": "App-launch prefetch — Windows rebuilds it; first launches get slower", "group": "Windows" },
+      { "id": "windows-panther-log", "path": "%WinDir%\\Panther",                       "mode": "files", "pattern": "*.log", "recursive": false, "risk": "safe", "displayName": "Windows setup logs", "description": "Setup logs in Windows\\Panther", "group": "Windows" },
+      { "id": "windows-root-log",    "path": "%WinDir%",                                "mode": "files", "pattern": "*.log", "recursive": false, "risk": "safe", "displayName": "Windows root logs", "description": "Stray *.log files in the Windows root", "group": "Windows" },
+      { "id": "windows-root-bak",    "path": "%WinDir%",                                "mode": "files", "pattern": "*.bak", "recursive": false, "risk": "safe", "displayName": "Windows root backups", "description": "Stray *.bak files in the Windows root", "group": "Windows" },
+      { "id": "programdata-wer",     "path": "%ProgramData%\\Microsoft\\Windows\\WER",  "mode": "children", "risk": "safe",    "displayName": "Error reports (system)","description": "Windows Error Reporting queue/archive", "group": "Windows" },
+      { "id": "usoshared-logs",      "path": "%ProgramData%\\USOShared\\Logs",          "mode": "children", "risk": "safe",    "displayName": "Update Orchestrator logs","description": "Windows Update USOShared logs",     "group": "Windows" },
+      { "id": "local-crashdumps",    "path": "%LocalAppData%\\CrashDumps",              "mode": "children", "risk": "safe",    "displayName": "App crash dumps",       "description": "User app crash dumps",                "group": "Windows" },
+      { "id": "local-wer",           "path": "%LocalAppData%\\Microsoft\\Windows\\WER", "mode": "children", "risk": "safe",    "displayName": "Error reports (user)",  "description": "Windows Error Reporting (per-user)",  "group": "Windows" },
+      { "id": "chkdsk-bootsqm",      "path": "bootsqm.dat", "allDrives": true,          "mode": "self",     "risk": "safe",    "displayName": "Chkdsk leftover (bootsqm.dat)", "description": "Boot-time chkdsk artifact at a drive root", "group": "Windows" },
+      { "id": "chkdsk-boottel",      "path": "bootTel.dat", "allDrives": true,          "mode": "self",     "risk": "safe",    "displayName": "Chkdsk leftover (bootTel.dat)", "description": "Boot-time chkdsk artifact at a drive root", "group": "Windows" }
+    ]
+  }
+}

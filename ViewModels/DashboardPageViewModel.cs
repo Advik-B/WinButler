@@ -144,6 +144,8 @@ public partial class DashboardPageViewModel : ViewModelBase
             _cleanPage.ElectronCategory?.TotalBytes ?? 0,
             _cleanPage.TempCategory?.TotalBytes ?? 0,
             _cleanPage.CacheCategory?.TotalBytes ?? 0,
+            _cleanPage.AppsCategory?.TotalBytes ?? 0,
+            _cleanPage.SteamCategory?.TotalBytes ?? 0,
             _devJunkPage.Groups.Sum(g => g.Group.ReclaimableBytes),
         }.DefaultIfEmpty(0).Max();
         if (maxReclaim == 0) maxReclaim = 1;
@@ -154,6 +156,10 @@ public partial class DashboardPageViewModel : ViewModelBase
             $"{_cleanPage.TempCategory?.Items.Count ?? 0} locations", maxReclaim, "temp");
         AddCard("mdi-cached", "Cache Sweep", _cleanPage.CacheCategory?.TotalBytes ?? 0,
             $"{_cleanPage.CacheCategory?.Items.Count ?? 0} cache dirs", maxReclaim, "cache");
+        AddCard("mdi-application-cog-outline", "App & Game Leftovers", _cleanPage.AppsCategory?.TotalBytes ?? 0,
+            $"{_cleanPage.AppsCategory?.Items.Count ?? 0} locations", maxReclaim, "apps");
+        AddCard("mdi-steam", "Steam Junk", _cleanPage.SteamCategory?.TotalBytes ?? 0,
+            $"{_cleanPage.SteamCategory?.Items.Count ?? 0} locations", maxReclaim, "steam");
         AddCard("mdi-code-braces", "Dev Junk", _devJunkPage.Groups.Sum(g => g.Group.ReclaimableBytes),
             $"{_devJunkPage.Groups.Count} toolchains", maxReclaim, "devjunk");
     }

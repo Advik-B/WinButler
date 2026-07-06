@@ -1,0 +1,14 @@
+{
+  "_comment": "Known-location cleanup entries for game launchers/stores. Steam is handled by its own scanner. LocalAppData *Cache* folders are left to CacheScanner; this file targets ProgramData caches, log files and old-client leftovers it misses.",
+
+  "knownLocations": {
+    "entries": [
+      { "id": "battlenet-pd-cache",  "path": "%ProgramData%\\Blizzard Entertainment\\Battle.net\\Cache", "mode": "children", "risk": "safe", "displayName": "Battle.net cache (system)", "description": "Blizzard Battle.net shared cache", "group": "Launchers" },
+      { "id": "battlenet-agent-cache","path": "%ProgramData%\\Battle.net\\Agent\\data\\cache",           "mode": "children", "risk": "safe", "displayName": "Battle.net agent cache",    "description": "Battle.net update-agent cache",     "group": "Launchers" },
+      { "id": "battlenet-pd-logs",   "path": "%ProgramData%\\Battle.net",                                "mode": "files", "pattern": "*.log", "recursive": true, "risk": "safe", "displayName": "Battle.net logs (system)", "description": "Battle.net log files", "group": "Launchers" },
+      { "id": "battlenet-local-logs","path": "%LocalAppData%\\Battle.net",                               "mode": "files", "pattern": "*.log", "recursive": true, "risk": "safe", "displayName": "Battle.net logs (user)",   "description": "Battle.net log files", "group": "Launchers" },
+      { "id": "ea-outdated-desktop", "path": "%ProgramFiles%\\Electronic Arts\\EA Desktop\\outdatedEADesktop", "mode": "self", "risk": "safe", "displayName": "EA app (outdated client)", "description": "Superseded EA Desktop client", "group": "Launchers" },
+      { "id": "ea-staged-desktop",   "path": "%ProgramFiles%\\Electronic Arts\\EA Desktop\\StagedEADesktop",   "mode": "self", "risk": "safe", "displayName": "EA app (staged client)",   "description": "Staged EA Desktop update",     "group": "Launchers" }
+    ]
+  }
+}

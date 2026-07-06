@@ -47,6 +47,12 @@
                              Content="Cache Sweep" IsChecked="{Binding ActiveNavTag, Converter={x:Static conv:ObjectConverters.Equal}, ConverterParameter=cache}"
                              Command="{Binding NavigateCommand}" CommandParameter="cache"/>
                 <RadioButton Theme="{StaticResource WbNavButtonTheme}" GroupName="Nav"
+                             Content="App &amp; Game Leftovers" IsChecked="{Binding ActiveNavTag, Converter={x:Static conv:ObjectConverters.Equal}, ConverterParameter=apps}"
+                             Command="{Binding NavigateCommand}" CommandParameter="apps"/>
+                <RadioButton Theme="{StaticResource WbNavButtonTheme}" GroupName="Nav"
+                             Content="Steam Junk" IsChecked="{Binding ActiveNavTag, Converter={x:Static conv:ObjectConverters.Equal}, ConverterParameter=steam}"
+                             Command="{Binding NavigateCommand}" CommandParameter="steam"/>
+                <RadioButton Theme="{StaticResource WbNavButtonTheme}" GroupName="Nav"
                              Content="Dev Junk" IsChecked="{Binding ActiveNavTag, Converter={x:Static conv:ObjectConverters.Equal}, ConverterParameter=devjunk}"
                              Command="{Binding NavigateCommand}" CommandParameter="devjunk"/>
 
@@ -59,6 +65,13 @@
                 <RadioButton Theme="{StaticResource WbNavButtonTheme}" GroupName="Nav"
                              Content="Disk Explorer" IsChecked="{Binding ActiveNavTag, Converter={x:Static conv:ObjectConverters.Equal}, ConverterParameter=disk}"
                              Command="{Binding NavigateCommand}" CommandParameter="disk"/>
+
+                <TextBlock Text="SYSTEM" Margin="10,14,6,5" FontSize="{StaticResource WbText2xs}"
+                           LetterSpacing="1.5" Foreground="{DynamicResource WbTextMutedBrush}"/>
+
+                <RadioButton Theme="{StaticResource WbNavButtonTheme}" GroupName="Nav"
+                             Content="System Tools" IsChecked="{Binding ActiveNavTag, Converter={x:Static conv:ObjectConverters.Equal}, ConverterParameter=system}"
+                             Command="{Binding NavigateCommand}" CommandParameter="system"/>
             </StackPanel>
         </DockPanel>
     </Border>
