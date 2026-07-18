@@ -41,9 +41,25 @@ Releases are tag-driven and packaged with [Velopack](https://velopack.io):
 1. Bump `<Version>` in `WinButler.csproj` and add a `CHANGELOG.md` entry.
 2. Commit on master, then `git tag vX.Y.Z && git push origin master vX.Y.Z`.
 3. [`release.yml`](../.github/workflows/release.yml) verifies the tag is on master, publishes
-   a self-contained win-x64 build, packs it with `vpk`, and creates the GitHub Release with
-   `WinButler-win-Setup.exe`, full + delta `.nupkg` packages, and `releases.win.json` — the
-   feed `Services/UpdateService.cs` reads at app launch.
+   a self-contained win-x64 build, packs it with `vpk` (pinned 1.2.0), and creates the GitHub
+   Release with `WinButler-win.msi`, `WinButler-win-Portable.zip`, full + delta `.nupkg`
+   packages, and `releases.win.json` — the feed `Services/UpdateService.cs` reads at app launch.
+
+Installer specifics (all consequences of WinButler requiring admin):
+
+- The installer is a **per-machine MSI** (`--msi true --instLocation PerMachine`) targeting
+  `C:\Program Files\WinButler`. Velopack's per-user `Setup.exe` is deliberately **deleted from
+  the release assets**: it installs without elevating and then can't launch the
+  `requireAdministrator` app it just installed (`ERROR_ELEVATION_REQUIRED`, "Install Partially
+  Succeeded").
+- vpk 1.2.0's WiX template anchors the MSI install dir at `ROOTDRIVE` (the drive with the most
+  free space), so the workflow runs
+  [`tools/release/patch-msi-installdir.vbs`](../tools/release/patch-msi-installdir.vbs) after
+  `vpk pack` to re-parent it under `ProgramFiles64Folder`. Re-verify that patch if the vpk pin
+  ever moves. Power users can still override with
+  `msiexec /i WinButler-win.msi VELOPACK_INSTALLDIR=<dir>`.
+- Updates in Program Files work because the app always runs elevated, so the `Update.exe` it
+  spawns inherits that token.
 
 Installed copies check that feed once per launch (`MainWindowViewModel.CheckForUpdatesAsync`),
 download in the background, and surface a "restart to update" button in the status bar; dev

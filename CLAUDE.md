@@ -27,10 +27,13 @@ dotnet test Tests/WinButler.Tests.csproj
   `MftReaderTests`, `PerfProbeTests`, `ScannerOverlapTests`, `RedirectionServiceTests` (real
   machine I/O). Keep new machine-dependent tests out of the CI filter the same way.
 - **Releases are tag-driven** (`.github/workflows/release.yml`): push a `v*` tag cut from
-  master → self-contained win-x64 publish → `vpk pack` → GitHub Release with the Velopack
-  installer + update feed. The in-app updater (`Services/UpdateService.cs`, checked once per
-  launch from `MainWindow.Opened`) reads that feed; it no-ops on non-Velopack launches
-  (dev runs, tests). `VelopackApp.Build().Run()` must stay the first statement in `Main`.
+  master → self-contained win-x64 publish → `vpk pack` (pinned 1.2.0) → GitHub Release with a
+  **per-machine MSI** (patched to install to Program Files via
+  `tools/release/patch-msi-installdir.vbs`) + update feed. Velopack's per-user Setup.exe is
+  deleted from the assets — it can't launch a `requireAdministrator` app after installing
+  (see docs/DEVELOPMENT.md "Releasing"). The in-app updater (`Services/UpdateService.cs`,
+  checked once per launch from `MainWindow.Opened`) reads that feed; it no-ops on non-Velopack
+  launches (dev runs, tests). `VelopackApp.Build().Run()` must stay the first statement in `Main`.
 
 ## UI verification
 

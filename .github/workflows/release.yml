@@ -44,8 +44,10 @@ jobs:
           dotnet publish WinButler.csproj -c Release -r win-x64 --self-contained
           -o publish -p:Version=${{ steps.ver.outputs.version }}
 
+      # Pinned: the MSI patch step below edits the Directory table of the MSI that this
+      # exact vpk version's WiX template produces.
       - name: Install vpk
-        run: dotnet tool install -g vpk
+        run: dotnet tool install -g vpk --version 1.2.0
 
       # Pull the previous release so vpk can emit a delta package. Fails when no release
       # exists yet (the very first tag) — that's fine, vpk then packs a full release only.
@@ -55,14 +57,34 @@ jobs:
           vpk download github --repoUrl https://github.com/Advik-B/WinButler
           --token ${{ secrets.GITHUB_TOKEN }}
 
+      # --msi/PerMachine: WinButler requires admin, so the per-user Setup.exe path is a
+      # dead end (it can't launch the app it just installed); the MSI installs machine-wide
+      # with a proper UAC prompt.
       - name: Pack
         run: >
           vpk pack --packId WinButler --packVersion ${{ steps.ver.outputs.version }}
           --packDir publish --mainExe WinButler.exe
           --packTitle WinButler --packAuthors Advik-B --icon Assets/winbutler.ico
+          --msi true --instLocation PerMachine
+
+      # vpk's WiX template anchors the install dir at ROOTDRIVE (the emptiest drive);
+      # re-anchor it under Program Files. See the script header for details.
+      - name: Patch MSI install location to Program Files
+        run: cscript //nologo tools\release\patch-msi-installdir.vbs Releases\WinButler-win.msi
 
       - name: Create GitHub Release and upload artifacts
         run: >
           vpk upload github --repoUrl https://github.com/Advik-B/WinButler --publish
           --releaseName "WinButler v${{ steps.ver.outputs.version }}"
           --tag ${{ github.ref_name }} --token ${{ secrets.GITHUB_TOKEN }}
+
+      # The MSI is the supported installer; make sure it's on the release. The per-user
+      # Setup.exe is removed: WinButler requires admin, so Setup.exe always ends in an
+      # "elevation required" error for anyone who double-clicks it. The update feed
+      # (releases.win.json) only references the .nupkg packages, so this is safe.
+      - name: Fix up release assets (add MSI, drop Setup.exe)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload ${{ github.ref_name }} Releases\WinButler-win.msi --clobber
+          gh release delete-asset ${{ github.ref_name }} WinButler-win-Setup.exe --yes

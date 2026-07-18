@@ -83,11 +83,13 @@ Cleaning tools earn trust by what they *refuse* to do:
 
 ## Install
 
-Grab **`WinButler-win-Setup.exe`** from the
+Grab **`WinButler-win.msi`** from the
 [latest release](https://github.com/Advik-B/WinButler/releases/latest) and run it — no
-.NET runtime required. Installed copies keep themselves current: WinButler checks for
-updates on launch, downloads them in the background, and offers a one-click
-"restart to update" (it never restarts on its own).
+.NET runtime required. It installs to `C:\Program Files\WinButler` (expect one UAC
+prompt). Installed copies keep themselves current: WinButler checks for updates on
+launch, downloads them in the background, and offers a one-click "restart to update"
+(it never restarts on its own). Prefer no install? `WinButler-win-Portable.zip` runs
+from anywhere (no auto-updates).
 
 Windows 10/11 only. The app self-elevates via UAC on launch — it needs all-user temp
 locations and NTFS junction privileges.

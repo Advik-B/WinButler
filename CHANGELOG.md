@@ -1,6 +1,17 @@
 # Changelog
 
-Notable changes to WinButler, by internal milestone. The current shipping version is **1.0.0**.
+Notable changes to WinButler, by internal milestone. The current shipping version is **1.0.1**.
+
+## v1.0.1 — 2026-07-18 · Program Files installer
+
+- **The installer is now a per-machine MSI** (`WinButler-win.msi`) that installs to
+  `C:\Program Files\WinButler` with a proper UAC prompt. The v1.0.0 `Setup.exe` was per-user
+  (`%LocalAppData%`) and could never launch the app it had just installed — WinButler requires
+  administrator rights, so non-elevated Setup ended in "the requested operation requires
+  elevation" and a partially-completed install. `Setup.exe` is no longer shipped; the portable
+  zip remains for no-install use.
+- Auto-updates work unchanged in Program Files: the app always runs elevated, so the updater
+  it spawns can write there.
 
 ## v1.0.0 — 2026-07-18 · First public release
 
