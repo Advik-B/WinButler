@@ -5,7 +5,8 @@ is the full developer guide. This file is the condensed agent quick reference.
 
 WinButler is a Windows disk-cleaner + space-reclaim toolkit: an MFT-based disk scanner,
 rule-driven cleaners (Electron leftovers, temp, caches, dev junk), and a directory-junction
-"redirect" feature. Avalonia 12 on .NET 10 (`net10.0`), MVVM via CommunityToolkit.Mvvm.
+"redirect" feature. Avalonia 12 on .NET 10 (`net10.0-windows` — Windows 10/11 only, enforced
+at build time), MVVM via CommunityToolkit.Mvvm.
 
 ## Build / run / test
 
@@ -25,6 +26,11 @@ dotnet test Tests/WinButler.Tests.csproj
 - CI (`.github/workflows/build.yml`) runs build + the sandboxed test subset only — it excludes
   `MftReaderTests`, `PerfProbeTests`, `ScannerOverlapTests`, `RedirectionServiceTests` (real
   machine I/O). Keep new machine-dependent tests out of the CI filter the same way.
+- **Releases are tag-driven** (`.github/workflows/release.yml`): push a `v*` tag cut from
+  master → self-contained win-x64 publish → `vpk pack` → GitHub Release with the Velopack
+  installer + update feed. The in-app updater (`Services/UpdateService.cs`, checked once per
+  launch from `MainWindow.Opened`) reads that feed; it no-ops on non-Velopack launches
+  (dev runs, tests). `VelopackApp.Build().Run()` must stay the first statement in `Main`.
 
 ## UI verification
 

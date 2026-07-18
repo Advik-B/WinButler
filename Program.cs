@@ -3,6 +3,7 @@ using System;
 using System.Threading.Tasks;
 using Optris.Icons.Avalonia;
 using Optris.Icons.Avalonia.MaterialDesign;
+using Velopack;
 using WinButler.Services;
 
 namespace WinButler;
@@ -14,6 +15,10 @@ sealed class Program
     [STAThread]
     public static void Main(string[] args)
     {
+        // Must run before anything else: on Velopack's install/update/uninstall hook launches
+        // it does its work and exits the process; on a normal launch it's a no-op.
+        VelopackApp.Build().Run();
+
         // Last-resort backstops: RunGuardedAsync in the ViewModels is the primary defense;
         // these only exist so a crash still leaves a diagnosable trace in the log.
         AppDomain.CurrentDomain.UnhandledException += (_, e) =>

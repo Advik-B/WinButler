@@ -65,9 +65,21 @@
                                      IsIndeterminate="{Binding IsProgressIndeterminate}"/>
                     </StackPanel>
 
-                    <!-- Version lives in the sidebar wordmark; the status bar keeps just the name. -->
-                    <TextBlock Grid.Column="2" Text="WINBUTLER" VerticalAlignment="Center"
-                               FontSize="{StaticResource WbText2xs}" Foreground="{DynamicResource WbTextMutedBrush}"/>
+                    <!-- Version lives in the sidebar wordmark; the status bar keeps just the name,
+                         plus the restart-to-update offer once a Velopack update is staged. -->
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                        <Button Classes="secondary" IsVisible="{Binding HasUpdateReady}"
+                                Command="{Binding RestartToUpdateCommand}"
+                                ToolTip.Tip="{Binding UpdateReadyVersion, StringFormat='Update {0} is downloaded — restart WinButler to apply it'}">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <i:Icon Value="mdi-update" FontSize="15" VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding UpdateReadyVersion, StringFormat='UPDATE {0} — RESTART'}"
+                                           VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                        <TextBlock Text="WINBUTLER" VerticalAlignment="Center"
+                                   FontSize="{StaticResource WbText2xs}" Foreground="{DynamicResource WbTextMutedBrush}"/>
+                    </StackPanel>
                 </Grid>
             </Border>
 

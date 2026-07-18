@@ -81,18 +81,26 @@ Cleaning tools earn trust by what they *refuse* to do:
 - **Confirm + log.** Every real destructive action shows a confirmation dialog stating
   exactly what will happen, and is written to `%APPDATA%\WinButler\logs`.
 
-## Getting started
+## Install
 
-**Prerequisites:** Windows 10+ and the [.NET 10 SDK](https://dotnet.microsoft.com/download).
+Grab **`WinButler-win-Setup.exe`** from the
+[latest release](https://github.com/Advik-B/WinButler/releases/latest) and run it — no
+.NET runtime required. Installed copies keep themselves current: WinButler checks for
+updates on launch, downloads them in the background, and offers a one-click
+"restart to update" (it never restarts on its own).
+
+Windows 10/11 only. The app self-elevates via UAC on launch — it needs all-user temp
+locations and NTFS junction privileges.
+
+## Run from source
+
+**Prerequisites:** Windows 10/11 and the [.NET 10 SDK](https://dotnet.microsoft.com/download).
 
 ```bash
 git clone https://github.com/Advik-B/WinButler.git
 cd WinButler
 dotnet run --project WinButler.csproj
 ```
-
-The app self-elevates via UAC on launch — it needs all-user temp locations and NTFS
-junction privileges.
 
 ## Configuration
 

@@ -52,6 +52,14 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty]
     private ToastViewModel? _currentToast;
 
+    /// <summary>Non-null (e.g. "v1.1.0") once a Velopack update is downloaded and staged; shows
+    /// the status bar's restart-to-update button. Toasts expire, so the offer lives here.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasUpdateReady))]
+    private string? _updateReadyVersion;
+
+    public bool HasUpdateReady => UpdateReadyVersion is not null;
+
     /// <summary>The single destructive-action confirm modal slot; null when no confirm is pending.</summary>
     [ObservableProperty]
     private ConfirmDialogViewModel? _pendingConfirm;
@@ -86,6 +94,8 @@ public partial class MainWindowViewModel : ViewModelBase
 
     /// <summary>Path-rule definitions (bundled now; can be refreshed from online sources later).</summary>
     public DefinitionsProvider Definitions { get; }
+
+    private readonly UpdateService _updates = new();
 
     public MainWindowViewModel() : this(new DefinitionsProvider()) { }
 
@@ -240,6 +250,32 @@ public partial class MainWindowViewModel : ViewModelBase
             IsRescanning = false;
         }
     }
+
+    /// <summary>Once-per-launch update check, fired from MainWindow.Opened (like the initial
+    /// rescan, so headless VM tests never hit the network). Downloads in the background when a
+    /// newer release exists, then offers a restart — never applies silently. Failures are
+    /// logged and swallowed: an update check must never degrade the app.</summary>
+    public async Task CheckForUpdatesAsync()
+    {
+        if (!_updates.IsSupported)
+        {
+            Log.Info("update", "Not a Velopack install; skipping update check.");
+            return;
+        }
+        await RunGuardedAsync(async () =>
+        {
+            var version = await _updates.CheckAndDownloadAsync();
+            if (version is null)
+                return;
+            UpdateReadyVersion = $"v{version}";
+            ShowToast($"Update v{version} ready — restart to apply", ToastKind.Ok);
+        }, _ => { }, "Update check failed");
+    }
+
+    /// <summary>Applies the staged update and restarts. Bound to the status bar's update button,
+    /// which is only visible once <see cref="UpdateReadyVersion"/> is set.</summary>
+    [RelayCommand]
+    private void RestartToUpdate() => _updates.ApplyAndRestart();
 
     /// <summary>Drives the single status-bar progress slot. <paramref name="text"/> null hides the
     /// bar; <paramref name="fraction"/> null shows an indeterminate spinner, otherwise a 0..1 bar.

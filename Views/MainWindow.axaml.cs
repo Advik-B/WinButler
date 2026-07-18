@@ -35,6 +35,10 @@ public partial class MainWindow : Window
 
         if (!vm.HasDefinitionsError && vm.RescanAllCommand.CanExecute(null))
             vm.RescanAllCommand.Execute(null);
+
+        // Once-per-launch update check; guarded inside (logs + swallows failures, no-ops on
+        // non-Velopack launches), so fire-and-forget is safe here.
+        _ = vm.CheckForUpdatesAsync();
     }
 
     /// <summary>Mirror the shell's four progress properties onto the Windows taskbar button so

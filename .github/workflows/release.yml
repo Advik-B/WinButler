@@ -1,0 +1,68 @@
+name: Release
+
+# Pushing a v* tag cut from master publishes a GitHub Release carrying the Velopack
+# artifacts the in-app updater consumes: WinButler-win-Setup.exe, the full (and, after the
+# first release, delta) .nupkg packages, and releases.win.json (the feed manifest).
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # full history so the master-ancestry guard below can check the tag
+
+      - name: Ensure the tag is on master
+        run: |
+          git fetch origin master
+          git merge-base --is-ancestor ${{ github.sha }} origin/master
+          if ($LASTEXITCODE -ne 0) {
+            Write-Error "Tag ${{ github.ref_name }} is not on master; refusing to release."
+            exit 1
+          }
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Derive version from tag
+        id: ver
+        run: |
+          $ver = "${{ github.ref_name }}".TrimStart('v')
+          "version=$ver" >> $env:GITHUB_OUTPUT
+
+      # Self-contained so users don't need the .NET runtime; -p:Version keeps the assembly
+      # (and the sidebar version it drives) in lockstep with the tag.
+      - name: Publish
+        run: >
+          dotnet publish WinButler.csproj -c Release -r win-x64 --self-contained
+          -o publish -p:Version=${{ steps.ver.outputs.version }}
+
+      - name: Install vpk
+        run: dotnet tool install -g vpk
+
+      # Pull the previous release so vpk can emit a delta package. Fails when no release
+      # exists yet (the very first tag) — that's fine, vpk then packs a full release only.
+      - name: Download previous release (for deltas)
+        continue-on-error: true
+        run: >
+          vpk download github --repo https://github.com/Advik-B/WinButler
+          --token ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Pack
+        run: >
+          vpk pack --packId WinButler --packVersion ${{ steps.ver.outputs.version }}
+          --packDir publish --mainExe WinButler.exe
+          --packTitle WinButler --packAuthors Advik-B --icon Assets/winbutler.ico
+
+      - name: Create GitHub Release and upload artifacts
+        run: >
+          vpk upload github --repo https://github.com/Advik-B/WinButler --publish
+          --releaseName "WinButler v${{ steps.ver.outputs.version }}"
+          --tag ${{ github.ref_name }} --token ${{ secrets.GITHUB_TOKEN }}

@@ -1,6 +1,19 @@
 # Changelog
 
-Notable changes to WinButler, by internal milestone. The current shipping version is **0.9.0**.
+Notable changes to WinButler, by internal milestone. The current shipping version is **1.0.0**.
+
+## v1.0.0 — 2026-07-18 · First public release
+
+- **Auto-updates via Velopack**: releases ship as a `WinButler-win-Setup.exe` installer on
+  [GitHub Releases](https://github.com/Advik-B/WinButler/releases); installed copies check for
+  updates on launch, download them in the background (delta updates after the first release),
+  and offer a one-click "restart to update" — never a silent forced restart. Dev runs
+  (`dotnet run`) skip all of this.
+- **Windows 10/11 only, now enforced at build time**: the project targets `net10.0-windows`
+  (building on non-Windows hosts fails with a clear error), and the manifest declares only the
+  Windows 10/11 compatibility GUID.
+- New tag-driven release pipeline: pushing a `v*` tag cut from master packs and publishes the
+  installer + update feed automatically.
 
 ## v7 — 2026-07-18 · UI bugfix & polish pass
 

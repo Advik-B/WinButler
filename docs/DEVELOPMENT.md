@@ -30,6 +30,27 @@ Two things to know before your first run:
 
 The test project is **xunit v3** (`xunit.v3`), required by `Avalonia.Headless.XUnit` 12.x.
 
+The project targets **`net10.0-windows`** on purpose — junctions, the `$MFT` reader, and
+UAC self-elevation are Windows-only, and the build fails fast (with a clear error) on any
+non-Windows host. Windows 10/11 are the only supported OSes.
+
+## Releasing
+
+Releases are tag-driven and packaged with [Velopack](https://velopack.io):
+
+1. Bump `<Version>` in `WinButler.csproj` and add a `CHANGELOG.md` entry.
+2. Commit on master, then `git tag vX.Y.Z && git push origin master vX.Y.Z`.
+3. [`release.yml`](../.github/workflows/release.yml) verifies the tag is on master, publishes
+   a self-contained win-x64 build, packs it with `vpk`, and creates the GitHub Release with
+   `WinButler-win-Setup.exe`, full + delta `.nupkg` packages, and `releases.win.json` — the
+   feed `Services/UpdateService.cs` reads at app launch.
+
+Installed copies check that feed once per launch (`MainWindowViewModel.CheckForUpdatesAsync`),
+download in the background, and surface a "restart to update" button in the status bar; dev
+runs aren't Velopack installs, so the whole path no-ops (`update` log lines say why). To
+exercise the updater without publishing anything, set `WINBUTLER_UPDATE_URL` to a local
+folder of `vpk pack` output and install from there.
+
 ## Project layout
 
 ```
