@@ -6,6 +6,12 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>Assets\winbutler.ico</ApplicationIcon>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <Version>0.9.0</Version>
+    <Authors>Advik-B</Authors>
+    <Product>WinButler</Product>
+    <Description>Disk cleaner and space-reclaim toolkit for Windows: MFT-based disk scanning, rule-driven junk cleaners, and junction-based folder redirection.</Description>
+    <Copyright>Copyright (c) 2026 Advik-B</Copyright>
+    <RepositoryUrl>https://github.com/Advik-B/WinButler</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>

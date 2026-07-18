@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:WinButler.ViewModels"
+             xmlns:svc="using:WinButler.Services"
              xmlns:conv="using:Avalonia.Data.Converters"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -17,7 +18,7 @@
                         Margin="6,0,6,14" VerticalAlignment="Bottom">
                 <TextBlock Text="WinButler" FontFamily="{DynamicResource WbFontDot}" FontWeight="Bold"
                            FontSize="{StaticResource WbTextLg}" Foreground="{DynamicResource WbTextBrush}"/>
-                <TextBlock Text="v0.9" FontFamily="{DynamicResource WbFontReadout}"
+                <TextBlock Text="{x:Static svc:AppInfo.ShortVersion}" FontFamily="{DynamicResource WbFontReadout}"
                            FontSize="{StaticResource WbText2xs}" Foreground="{DynamicResource WbTextMutedBrush}"
                            VerticalAlignment="Bottom" Margin="0,0,0,2"/>
             </StackPanel>
