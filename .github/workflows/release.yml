@@ -52,7 +52,7 @@ jobs:
       - name: Download previous release (for deltas)
         continue-on-error: true
         run: >
-          vpk download github --repo https://github.com/Advik-B/WinButler
+          vpk download github --repoUrl https://github.com/Advik-B/WinButler
           --token ${{ secrets.GITHUB_TOKEN }}
 
       - name: Pack
@@ -63,6 +63,6 @@ jobs:
 
       - name: Create GitHub Release and upload artifacts
         run: >
-          vpk upload github --repo https://github.com/Advik-B/WinButler --publish
+          vpk upload github --repoUrl https://github.com/Advik-B/WinButler --publish
           --releaseName "WinButler v${{ steps.ver.outputs.version }}"
           --tag ${{ github.ref_name }} --token ${{ secrets.GITHUB_TOKEN }}
