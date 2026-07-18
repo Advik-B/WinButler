@@ -109,7 +109,7 @@ public partial class RedirectPageViewModel : ViewModelBase
                 var orphans = await Task.Run(() => _service.FindOrphanedRedirects());
                 if (orphans.Count > 0)
                 {
-                    StatusText += $"  ⚠ {orphans.Count} orphaned folder(s) found in _redirected " +
+                    StatusText += $"  Warning: {orphans.Count} orphaned folder(s) found in _redirected " +
                                   "with no ledger record — data preserved, see the log.";
                 }
             }, s => StatusText = s, "Scan failed");

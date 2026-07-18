@@ -9,9 +9,8 @@ namespace WinButler;
 
 sealed class Program
 {
-    // Initialization code. Don't use any Avalonia, third-party APIs or any
-    // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
-    // yet and stuff might break.
+    // Avalonia is not initialized until StartWithClassicDesktopLifetime runs — nothing before
+    // that call may touch Avalonia APIs or rely on a SynchronizationContext.
     [STAThread]
     public static void Main(string[] args)
     {
@@ -39,10 +38,10 @@ sealed class Program
         }
     }
 
-    // Avalonia configuration, don't remove; also used by visual designer.
+    // Also invoked by the visual designer/previewer — keep it public and parameterless.
     public static AppBuilder BuildAvaloniaApp()
     {
-        // Material Design vector icons (mdi-*), rendered via <i:Icon/> — replaces the old emoji glyphs.
+        // Material Design vector icons (mdi-*), rendered in XAML via <i:Icon/>.
         IconProvider.Current.Register<MaterialDesignIconProvider>();
         return AppBuilder.Configure<App>()
             .UsePlatformDetect()

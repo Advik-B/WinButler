@@ -1,11 +1,8 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Data.Core;
-using Avalonia.Data.Core.Plugins;
 using Avalonia.Media;
 using System;
-using System.Linq;
 using System.ComponentModel;
 using Avalonia.Markup.Xaml;
 using WinButler.Services;
@@ -29,15 +26,13 @@ public partial class App : Application
             {
                 var vm = new MainWindowViewModel();
 
-                // Restore the saved target drive (never dry-run — that resets to ON every
-                // launch). Only reached under the classic-desktop lifetime, so headless tests
-                // never touch the real settings file.
+                // Restore the saved target drive and persist it on change (never dry-run — that
+                // resets to ON every launch). Only reached under the classic-desktop lifetime,
+                // so headless tests never touch the real settings file.
                 SettingsStore.Load(vm.Settings);
 
                 vm.Settings.PropertyChanged += (_, e) =>
                 {
-                    // Persist the one preference a user expects to survive a restart (never dry-run,
-                    // which resets to ON every launch).
                     if (e.PropertyName == nameof(AppSettings.TargetDrive))
                         SettingsStore.Save(vm.Settings);
                 };
