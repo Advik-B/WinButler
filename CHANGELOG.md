@@ -1,0 +1,51 @@
+# Changelog
+
+Notable changes to WinButler, by internal milestone. The current shipping version is **0.9.0**.
+
+## v7 — 2026-07-18 · UI bugfix & polish pass
+
+- Fixed the indeterminate ProgressBar: busy spinners now animate (the template previously rendered a static empty track).
+- Fixed the ScrollBar twice over: vertical thumb-drag direction was inverted, and the track outside the thumb was a dead zone — page up/down now works like a native scrollbar. Thumbs also keep a usable minimum size on huge lists.
+- Raised muted-text contrast to meet WCAG AA at small sizes; restored the red danger-button hover.
+- Disk Explorer: header/row column alignment, first-visit empty state, treemap tooltips that actually appear, luminance-aware treemap labels.
+- Unified page conventions: consistent empty states with a SCAN button, hover states across cards/rows, combo-box placeholders, text trimming on clip-prone labels, first tooltips/automation names.
+- Confirm dialog gained a severity model: destructive actions stay red; safe operations (redirect move/undo) get an accent variant.
+- Removed the vestigial red/green accent-swap machinery and its duplicated color tokens — the theme now has a single green LED accent.
+
+## v6 — 2026-07-06 · Four new cleaning surfaces
+
+- Split the rule catalog into per-domain files under `Data/definitions/` (cache, redirect, apps, browsers, drivers, launchers, games, windows), merged fail-closed at load.
+- **App & Game Leftovers**: a curated known-locations catalog (~55 entries) for logs, dumps, and installer leftovers outside the cache scanners' territory, with a real-I/O test pinning the two scanners' disjointness.
+- **Steam-aware cleaning**: locates every Steam library via `libraryfolders.vdf` and offers shader/download/temp caches, dumps, and logs per library.
+- **System Tools**: one-click DISM, SFC, and Windows Update cache flush with live streamed output; dry-run prints the exact command sequence without launching anything.
+- **Privacy sweep**: clears Explorer Recent/MRU history and 7-Zip file-manager history, with registry access behind a testable seam.
+
+## v5 — 2026-07-03 · Production hardening
+
+- Crash protection everywhere: guarded async commands, structured logging to `%APPDATA%\WinButler\logs`, AppDomain/TaskScheduler backstops, a startup error window.
+- MFT parser hardened against malformed volumes (bounds-checked fixups, overflow-safe attribute walks, per-record recovery, fuzz tests).
+- Cancellation support across every long operation, with CANCEL buttons on each page.
+- Confirm dialog wired into every real destructive action; dry-run never prompts.
+- Redirect safety: reparse-point guards on delete paths, atomic undo-ledger writes, orphaned-redirect reconciliation.
+- Roughly 3× lighter MFT tree build and ~4× faster directory walks.
+
+## v4 — 2026-07-01 · "Duly Doted" redesign, Dev Junk, Dashboard
+
+- Full custom theme: true-black canvas, embedded fonts, LED accent, custom control themes throughout.
+- **Dev Junk**: per-tool cards (JetBrains, Android SDK, npm, Cargo, …) showing on-disk vs. reclaimable size; live git checkouts are auto-locked out of bulk cleaning.
+- **Dashboard**: whole-app overview with per-category cards and Clean All.
+- Headless UI test suite (`Avalonia.Headless`) plus the `tools/ui-harness/` capture/automation scripts.
+
+## v3 — 2026-06-30 · Disk Explorer
+
+- Real NTFS `$MFT` parser (WizTree-style) with a virtualized list and a squarified treemap; recursive-walk fallback for non-NTFS volumes.
+
+## v2 — 2026-06-30 · Redirect to Drive
+
+- Directory-junction redirection: copy → verify → delete → junction, with an undo ledger.
+- Rule-driven cache classification (`SafeCaches`) and the externalized JSON definitions catalog.
+
+## v1 — 2026-06-30 · Core cleaner
+
+- Electron leftover, temp-file, and cache scanners with risk classification.
+- Dry-run on by default as a true no-op; hybrid delete (Safe → permanent, Caution/Risky → Recycle Bin); credential/key deny-list.

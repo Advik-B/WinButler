@@ -1,88 +1,114 @@
+<div align="center">
+
+<img src="Assets/winbutler-icon.svg" alt="WinButler" width="96"/>
+
 # WinButler
 
-A disk cleaner and space-reclaim toolkit for Windows, built for machines with a chronically full system drive. It combines a real MFT-based disk scanner (WizTree-like — parses `$MFT` directly instead of walking the filesystem), a set of rule-driven cleaners for common junk (Electron app leftovers, temp files, caches, dev-tool bloat), and a directory-junction "redirect" feature that relocates heavy folders to another drive without breaking any app that expects them at their original path.
+**Reclaim your system drive.**
 
-Dry-run is on by default everywhere. Nothing gets deleted or moved until you explicitly turn it off.
+An MFT-fast disk scanner, rule-driven junk cleaners, and junction-based folder
+redirection — built for Windows machines whose C: drive is chronically full.
+
+[![Build](https://github.com/Advik-B/WinButler/actions/workflows/build.yml/badge.svg)](https://github.com/Advik-B/WinButler/actions/workflows/build.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+![.NET 10](https://img.shields.io/badge/.NET-10-512BD4)
+![Windows](https://img.shields.io/badge/platform-Windows%2010%2B-0078D6)
+
+</div>
+
+---
+
+WinButler does three things most cleaners don't:
+
+1. **It reads the NTFS `$MFT` directly** (like WizTree) instead of crawling the
+   filesystem, so a full-drive scan of a million-file volume takes seconds, and every
+   feature — cleaners, redirect sizing, the treemap — shares that one index.
+2. **It moves heavy folders instead of just deleting them.** *Redirect to Drive*
+   relocates a folder (an SDK, a package cache, a game) to another drive and leaves a
+   real NTFS directory junction behind, so every app still finds it at its original
+   path — with verification before anything is removed, and an undo ledger after.
+3. **It is paranoid by design.** Dry-run is on by default and is a true no-op. A
+   deny-list keeps SSH/GPG keys, credential stores, and browser login data from ever
+   being *offered*, let alone touched. Risky items go to the Recycle Bin, not into the
+   void. Every real deletion asks first and is logged.
 
 ## Screenshots
 
-| Dashboard | Dev Junk | Redirect to Drive |
-|---|---|---|
-| ![Dashboard](docs/screenshots/dashboard.png) | ![Dev Junk](docs/screenshots/dev-junk.png) | ![Redirect to Drive](docs/screenshots/redirect-green.png) |
-
-The accent color (red or green LED) is swappable at runtime from the View menu — the Dashboard and Dev Junk screenshots above are in the default red, Redirect to Drive is in green.
+| Dashboard | Disk Explorer |
+|---|---|
+| ![Dashboard](docs/screenshots/dashboard.png) | ![Disk Explorer](docs/screenshots/disk-explorer.png) |
+| **Dev Junk** | **Redirect to Drive** |
+| ![Dev Junk](docs/screenshots/dev-junk.png) | ![Redirect to Drive](docs/screenshots/redirect.png) |
 
 ## Features
 
-- **Dashboard** — a system overview: total reclaimable space, total redirectable space, a disk-usage summary for the system drive, and per-category cards (Electron Leftovers / Temp Files / Cache Sweep / Dev Junk) that jump straight to that screen. "Clean All" runs every cleaner's selected items in one action.
-- **Electron Leftovers** — detects old `app-x.y.z` build folders that Electron auto-updaters leave behind (VS Code, Discord, Slack, GitHub Desktop, etc.), keeps the newest version, and groups everything else by app for review.
-- **Temp Files** and **Cache Sweep** — scan well-known temp and cache locations, classify every folder found via the rule engine described below, and let you select/clean by risk level.
-- **Dev Junk** — per-tool cards (JetBrains, Android SDK, npm/yarn/pnpm, Cargo, Bun, vcpkg, and more) showing on-disk size vs. safely reclaimable size. Folders that look like a live git checkout (a `.git` subfolder) are automatically flagged 🔒 **Protected** and excluded from bulk cleaning. Each card also offers a one-click shortcut into the Redirect flow for tools too large to just delete from.
-- **Redirect to Drive** — moves a folder to another drive and replaces it with a real NTFS directory junction, so every application still finds it at its original path. The flow is copy → verify (file count + byte count) → delete original → create junction, with a ledger recorded so any redirect can be undone later.
-- **Disk Explorer** — a full drive breakdown (sortable list + treemap) built from a real NTFS `$MFT` parse, not a recursive directory walk — this is what makes it fast on drives with a very large number of files.
+- **Dashboard** — total reclaimable and redirectable space at a glance, a disk-usage
+  summary for the system drive, per-category cards that jump straight to each screen,
+  and one-click *Clean All*.
+- **Electron Leftovers** — finds the stale `app-x.y.z` build folders that Electron
+  auto-updaters leave behind (VS Code, Discord, Slack, GitHub Desktop, …), keeps the
+  newest version, and groups the rest by app for review.
+- **Temp Files & Cache Sweep** — scan well-known temp and cache locations, classify
+  every folder by risk through the JSON rule engine, and clean by risk level.
+- **App & Game Leftovers** — a curated catalog of known junk locations *outside* the
+  cache folders: crash dumps, installer leftovers, log piles, and drive-root debris.
+- **Dev Junk** — per-tool cards (JetBrains, Android SDK, npm/yarn/pnpm, Cargo, Bun,
+  vcpkg, …) showing on-disk size vs. safely reclaimable size. Anything that looks like
+  a live git checkout is auto-locked out of bulk cleaning. Tools too big to clean get a
+  one-click shortcut into the Redirect flow.
+- **Steam** — finds every Steam library via `libraryfolders.vdf` and offers shader
+  caches, download caches, dumps, and logs per library.
+- **Redirect to Drive** — copy → verify (file count + byte count) → delete original →
+  create junction, recorded in a ledger so any redirect can be undone later.
+- **Disk Explorer** — a sortable full-drive breakdown plus a squarified treemap, built
+  from the `$MFT` parse.
+- **System Tools** — one-click DISM component cleanup, SFC, and Windows Update cache
+  flush with live command output, plus an Explorer/MRU privacy sweep.
 
-## Safety model
+## The safety model
 
-- **Dry-run is the default everywhere** and is a true no-op: the cleaner (`Services/Cleaner.cs`) returns before any filesystem mutation happens when dry-run is on.
-- **Hybrid delete**: items classified `Safe` are deleted permanently (they're things like well-known GPU/shader caches); anything classified `Caution` or `Risky` goes to the Recycle Bin instead, so it's still recoverable.
-- **Deny-list**: a fixed set of path fragments (SSH keys, GPG, credential stores, browser login/cookie data, etc.) is never touched, never even offered as a suggestion, regardless of what else matches.
-- **Elevation**: the app requests `requireAdministrator` (see `app.manifest`) because it needs to reach all-user locations like `C:\Windows\Temp` and because creating/removing NTFS junctions requires elevated privileges. Expect a UAC prompt on launch.
+Cleaning tools earn trust by what they *refuse* to do:
 
-## Architecture
-
-Avalonia 12 (.NET 10, `net10.0`, Windows desktop) with MVVM via [CommunityToolkit.Mvvm](https://github.com/CommunityToolkit/dotnet). Views are resolved from ViewModels by name convention (`FooPageViewModel` → `Views/FooPageView.axaml`) via `ViewLocator.cs`.
-
-```
-Assets/Fonts/    Embedded fonts for the custom theme (see Fonts section below)
-Controls/        Custom-drawn controls (e.g. TreemapControl for Disk Explorer)
-Converters/      XAML value converters (risk color/label, toast kind, etc.)
-Data/            definitions.json — the single source of truth for cache/redirect rules
-Models/          Plain data types (CleanupTarget, RedirectCandidate, DevToolGroup, ...)
-Services/        Scanners, the redirect service, the MFT parser, ThemeService, etc.
-Themes/          The "Duly Doted" custom theme: color/typography/spacing tokens,
-                 glow/dot-field effects, and one ControlTheme per control type
-ViewModels/      One ViewModel per screen/component
-Views/           One View (.axaml) per ViewModel, plus Views/Shared and Views/Shell
-Tests/           xUnit test project (WinButler.Tests.csproj), excluded from the main build
-```
-
-The UI itself is a fully custom theme ("Duly Doted") rather than a stock control library: true-black canvas, six embedded fonts, and a single swappable LED accent color. `Services/ThemeService.cs` copies a precomputed Red or Green brush palette into a set of mutable resource keys that every screen binds to via `DynamicResource`, so the whole app re-colors live when you switch accents from the View menu — no restart needed.
-
-## Configuration
-
-`Data/definitions.json` is the single source of truth for both the cache-classification rules and the redirect catalog. It's embedded into the app as a resource and can be edited without recompiling (a `DefinitionsProvider` also supports layering in a remote source later, though that's off by default today). As of this writing it contains:
-
-- **Cache rules**: 27 always-safe folder names, 53 safe-context path fragments, 2 caution names, 1 caution path fragment, and 11 deny fragments.
-- **Redirect catalog**: 57 entries across 10 categories — Build tools, Node.js, Toolchains, IDEs, Python, ML caches, Web tooling, Games, Apps, and Misc dev.
+- **Dry-run by default, every launch.** The dry-run switch resets to ON at startup —
+  a real-delete session never carries over. In dry-run, the cleaner returns before any
+  filesystem mutation happens.
+- **Deny-list first.** Paths matching credential material (SSH, GPG, credential
+  stores, browser login/cookie data, …) are excluded on every scan path.
+- **Hybrid delete.** Only items classified *Safe* (well-known GPU/shader caches and
+  the like) are deleted permanently; *Caution* and *Risky* items go to the Recycle Bin.
+- **Junction-aware.** Delete paths never follow a reparse point into its target — a
+  junction is unlinked, never traversed.
+- **Confirm + log.** Every real destructive action shows a confirmation dialog stating
+  exactly what will happen, and is written to `%APPDATA%\WinButler\logs`.
 
 ## Getting started
 
-**Prerequisites**: Windows 10+, [.NET 10 SDK](https://dotnet.microsoft.com/download), and admin rights (the app self-elevates via UAC on launch).
+**Prerequisites:** Windows 10+ and the [.NET 10 SDK](https://dotnet.microsoft.com/download).
 
 ```bash
-git clone <this-repo>
+git clone https://github.com/Advik-B/WinButler.git
 cd WinButler
-dotnet build
 dotnet run --project WinButler.csproj
 ```
 
-## Testing
+The app self-elevates via UAC on launch — it needs all-user temp locations and NTFS
+junction privileges.
 
-```bash
-dotnet test Tests/WinButler.Tests.csproj
-```
+## Configuration
 
-50 tests across 7 files (`CleanerTests`, `DefinitionsTests`, `DevJunkAggregatorTests`, `JunctionTests`, `MftReaderTests`, `RedirectionServiceTests`, `SafeCachesTests`). Expect this to take roughly a minute and a half — several tests exercise real filesystem scanning (the redirect candidate scan sizes real dev-tool folders, and the MFT tests read the real `$MFT` on `C:`), not mocked I/O.
+All cleaning rules, the redirect catalog, and the known-locations catalog live in JSON
+under [`Data/definitions/`](Data/definitions/) — no rules are hardcoded. The format is
+documented in [`Data/definitions/README.md`](Data/definitions/README.md); adding a new
+cache rule or redirect target is a JSON edit, not a code change. The load is
+fail-closed: if any definitions file is missing or unparseable, WinButler refuses to
+scan at all rather than run with a partial deny-list.
 
-## Fonts
+## For developers
 
-The custom theme embeds six typefaces (Google Fonts and JetBrains, all under the SIL Open Font License): Aldrich, Doto, Geo, JetBrains Mono, Pixelify Sans, and Press Start 2P.
-
-## Known limitations
-
-- Geo, Pixelify Sans, and Press Start 2P are embedded but not yet used anywhere in the current UI (Aldrich, Doto, and JetBrains Mono are the ones actually in use).
-- The Dashboard's System / Apps / Media split is classified by well-known location (Windows/ProgramData, Program Files, per-user media folders); everything else is bucketed as "Other". It reads from the shared whole-volume index that also backs Clean/Redirect/Dev Junk/Disk Explorer, so it costs one MFT read (a few seconds on first load), not a per-feature walk.
-- UI testing is split in two: a headless ViewModel suite (`Tests/Headless/`, via `Avalonia.Headless.XUnit`) covers interaction/logic — selection, command gating, dry-run clean, dashboard aggregation, navigation, toast/confirm — while *visual* design fidelity and the real elevated end-to-end run are still verified manually (build, run, screenshot, compare against the design) with the `tools/ui-harness/` scripts. Headless rendering is a different renderer than the on-screen compositor, so it can't stand in for the visual check.
+Architecture, build/test instructions, the testing strategy, and contributor gotchas
+live in **[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)**. Want to contribute? Start with
+**[CONTRIBUTING.md](CONTRIBUTING.md)** — the easiest PRs are new cleaning rules, and
+they're pure JSON.
 
 ## License
 

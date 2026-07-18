@@ -1,7 +1,7 @@
 # CLAUDE.md
 
-Guidance for working in this repo. See `README.md` for the full feature/user-facing tour;
-this file is the developer/agent quick reference.
+Guidance for working in this repo. `README.md` is the user-facing tour; `docs/DEVELOPMENT.md`
+is the full developer guide. This file is the condensed agent quick reference.
 
 WinButler is a Windows disk-cleaner + space-reclaim toolkit: an MFT-based disk scanner,
 rule-driven cleaners (Electron leftovers, temp, caches, dev junk), and a directory-junction
@@ -22,6 +22,9 @@ dotnet test Tests/WinButler.Tests.csproj
   dev-tool folders; MFT tests read the real `$MFT` on `C:`), not mocked filesystems. The
   headless tests touch no disk and need no admin.
 - The test project is **xunit v3** (`xunit.v3`), required by `Avalonia.Headless.XUnit` 12.x.
+- CI (`.github/workflows/build.yml`) runs build + the sandboxed test subset only — it excludes
+  `MftReaderTests`, `PerfProbeTests`, `ScannerOverlapTests`, `RedirectionServiceTests` (real
+  machine I/O). Keep new machine-dependent tests out of the CI filter the same way.
 
 ## UI verification
 
@@ -53,7 +56,8 @@ Controls/        Custom-drawn controls (TreemapControl for Disk Explorer)
 Converters/      XAML value converters
 Data/definitions/ per-domain JSON rule files (cache, redirect, known-locations) — see its README
 Models/          Plain data types
-Services/        Scanners, RedirectionService, the MFT parser (Services/Mft/), ThemeService
+Services/        Scanners (incl. KnownLocationsScanner), RedirectionService, the MFT parser
+                 (Services/Mft/), Steam (Services/Steam/), Privacy, SystemActionRunner, ThemeService
 Themes/          "Duly Doted" theme: color/typography/spacing tokens, effects, per-control ControlThemes
 ViewModels/      One per screen/component
 Views/           One .axaml per ViewModel, plus Views/Shared and Views/Shell
@@ -61,10 +65,10 @@ Tests/           xUnit project (WinButler.Tests.csproj) — separate project, ex
 tools/ui-harness/ PowerShell UI capture/automation scripts
 ```
 
-**Theming:** the UI is a fully custom theme ("Duly Doted"), not a stock control library.
-`Services/ThemeService.cs` swaps a precomputed Red or Green brush palette into mutable
-resource keys that screens bind to via `DynamicResource`, so the whole app re-colors live
-(View menu) with no restart.
+**Theming:** the UI is a fully custom theme ("Duly Doted"), not a stock control library —
+per-control `ControlTheme`s in `Themes/` over base Avalonia `FluentTheme` primitives, with a
+single green LED accent. Screens bind color tokens via `DynamicResource`; C# call sites resolve
+them through `ThemeService.Brush` (see the resource-lookup gotcha below).
 
 ## Conventions & gotchas
 
@@ -101,7 +105,7 @@ resource keys that screens bind to via `DynamicResource`, so the whole app re-co
 - **Diagnostics & state on disk** (all under `%APPDATA%\WinButler\`): `logs\winbutler.log`
   (`Services/Log.cs` — append-only, rotates once per session at 2 MB, never throws; logs every
   destructive action); `redirects.json` (undo ledger, atomic write); `settings.json`
-  (`Services/SettingsStore.cs`). **`settings.json` persists accent + target drive only — never
+  (`Services/SettingsStore.cs`). **`settings.json` persists the target drive only — never
   `IsDryRun`**, so every launch starts dry-run ON (a past dry-run-off session must not carry over).
 - **Crash-protection:** async command bodies run through `ViewModelBase.RunGuardedAsync`
   (catch → log + `StatusText`, `OperationCanceledException` → "Cancelled."); without it,
