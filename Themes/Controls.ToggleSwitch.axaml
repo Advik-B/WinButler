@@ -15,6 +15,7 @@
       <ControlTemplate>
         <StackPanel Orientation="Horizontal" Spacing="10">
           <Panel Name="PART_MovingKnobs" Width="40" Height="22">
+            <!-- CornerRadius 11 = track height / 2 (intrinsic capsule geometry, not a token). -->
             <Border Name="PART_SwitchTrack" CornerRadius="11"
                     Background="{DynamicResource WbSurfaceInsetBrush}"
                     BorderThickness="1" BorderBrush="{DynamicResource WbBorderBrush}">

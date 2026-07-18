@@ -29,17 +29,15 @@ public partial class App : Application
             {
                 var vm = new MainWindowViewModel();
 
-                // Restore saved accent + target drive (never dry-run — that resets to ON every
+                // Restore the saved target drive (never dry-run — that resets to ON every
                 // launch). Only reached under the classic-desktop lifetime, so headless tests
                 // never touch the real settings file.
                 SettingsStore.Load(vm.Settings);
 
-                // Green is the only accent now, so this runs once at startup and never re-fires.
-                ThemeService.Apply(vm.Settings.Accent);
                 vm.Settings.PropertyChanged += (_, e) =>
                 {
                     // Persist the one preference a user expects to survive a restart (never dry-run,
-                    // which resets to ON every launch; accent is fixed).
+                    // which resets to ON every launch).
                     if (e.PropertyName == nameof(AppSettings.TargetDrive))
                         SettingsStore.Save(vm.Settings);
                 };

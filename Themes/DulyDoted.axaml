@@ -21,7 +21,6 @@
         <ResourceInclude Source="avares://WinButler/Themes/Controls.ComboBox.axaml"/>
         <ResourceInclude Source="avares://WinButler/Themes/Controls.ListBoxItem.axaml"/>
         <ResourceInclude Source="avares://WinButler/Themes/Controls.ProgressBar.axaml"/>
-        <ResourceInclude Source="avares://WinButler/Themes/Controls.Menu.axaml"/>
         <ResourceInclude Source="avares://WinButler/Themes/Controls.ScrollBar.axaml"/>
         <ResourceInclude Source="avares://WinButler/Themes/Controls.NavButton.axaml"/>
       </ResourceDictionary.MergedDictionaries>

@@ -47,13 +47,6 @@ public enum DeleteMode
     RecycleBin,
 }
 
-/// <summary>The app's single chromatic accent — the "Duly Doted" theme's one configurable knob.</summary>
-public enum AccentKind
-{
-    Red,
-    Green,
-}
-
 /// <summary>Toast severity — drives which signal color the toast's dot uses.</summary>
 public enum ToastKind
 {

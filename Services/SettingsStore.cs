@@ -1,16 +1,15 @@
 using System;
 using System.IO;
 using System.Text.Json;
-using WinButler.Models;
 
 namespace WinButler.Services;
 
 /// <summary>
 /// Persists the user's UI preferences to %APPDATA%\WinButler\settings.json across launches.
-/// Deliberately stores ONLY the accent and target drive — <see cref="AppSettings.IsDryRun"/>
+/// Deliberately stores ONLY the target drive — <see cref="AppSettings.IsDryRun"/>
 /// is never persisted, so every launch starts dry-run ON (the safety default; a past
 /// dry-run-off session must never silently carry over). Corrupt/missing file → defaults,
-/// never a throw.
+/// never a throw. A stale "Accent" key from older versions is ignored on load.
 /// </summary>
 public static class SettingsStore
 {
@@ -22,8 +21,10 @@ public static class SettingsStore
 
     private static string FilePath => Path.Combine(Dir, "settings.json");
 
-    /// <summary>The persisted subset — note the absence of any dry-run field, by design.</summary>
-    private sealed record Dto(string? Accent, string? TargetDrive);
+    /// <summary>The persisted subset — note the absence of any dry-run field, by design.
+    /// (JsonSerializer ignores unknown properties, so pre-green-only files with an "Accent"
+    /// key still load fine.)</summary>
+    private sealed record Dto(string? TargetDrive);
 
     /// <summary>Applies saved preferences onto <paramref name="settings"/>. Never throws.</summary>
     public static void Load(AppSettings settings)
@@ -35,8 +36,6 @@ public static class SettingsStore
             var dto = JsonSerializer.Deserialize<Dto>(File.ReadAllText(FilePath));
             if (dto is null)
                 return;
-            if (Enum.TryParse<AccentKind>(dto.Accent, ignoreCase: true, out var accent))
-                settings.Accent = accent;
             if (!string.IsNullOrWhiteSpace(dto.TargetDrive))
                 settings.TargetDrive = dto.TargetDrive;
         }
@@ -53,7 +52,7 @@ public static class SettingsStore
         try
         {
             Directory.CreateDirectory(Dir);
-            var dto = new Dto(settings.Accent.ToString(), settings.TargetDrive);
+            var dto = new Dto(settings.TargetDrive);
             var tmp = FilePath + ".tmp";
             File.WriteAllText(tmp, JsonSerializer.Serialize(dto, new JsonSerializerOptions { WriteIndented = true }));
             File.Move(tmp, FilePath, overwrite: true);

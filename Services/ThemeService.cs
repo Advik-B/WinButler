@@ -1,55 +1,15 @@
 using Avalonia;
 using Avalonia.Media;
-using WinButler.Models;
 
 namespace WinButler.Services;
 
 /// <summary>
-/// Pushes the chosen <see cref="AccentKind"/>'s precomputed brush/glow set (see
-/// Themes/Tokens.Colors.axaml and Themes/Effects.axaml) into the live, mutable
-/// "Wb*" resource keys every screen binds to via DynamicResource. Call
-/// <see cref="Apply"/> once at startup and again whenever <see cref="AppSettings.Accent"/>
-/// changes — it does not subscribe itself, since the app-wide accent change is rare and
-/// the call site (menu command / startup) is a clearer place to see the wiring.
+/// C#-side access to the "Duly Doted" theme tokens (Themes/Tokens.*.axaml). The old
+/// red/green accent-swap machinery (Apply) was removed when the app went green-only —
+/// the WbAccent* keys now hold the green values directly in XAML.
 /// </summary>
 public static class ThemeService
 {
-    private static readonly string[] BrushKeys =
-    {
-        "Accent", "AccentOn", "AccentBright", "AccentHover", "Accent600", "Accent700",
-        "AccentPress", "AccentDim", "AccentTint", "DotAccent",
-    };
-
-    public static void Apply(AccentKind accent)
-    {
-        var app = Application.Current;
-        if (app is null)
-            return;
-
-        // Green is the only accent now; the parameter is kept for API stability (and so a stale
-        // persisted AccentKind.Red still resolves to the green palette rather than crashing).
-        const string prefix = "WbGreen";
-
-        // Look up on `app` (the IResourceHost), not `app.Resources` — the precomputed
-        // Green palette lives in Tokens.Colors.axaml's Styles-merged dictionary, not the
-        // bare Application.Resources dictionary. Resources.TryGetResource only searches that
-        // one dictionary and silently misses everything defined via Styles, which made this a
-        // no-op for every accent (Red looked "correct" only because it's also the built-in
-        // XAML default that Styles resolution already falls back to).
-        foreach (var key in BrushKeys)
-        {
-            if (app.TryGetResource($"{prefix}{key}Brush", null, out var brush) && brush is IBrush)
-                app.Resources[$"Wb{key}Brush"] = brush;
-        }
-
-        const string suffix = "Green";
-        foreach (var shadowKey in new[] { "WbGlowAccentSm", "WbGlowAccent", "WbGlowAccentLg" })
-        {
-            if (app.TryGetResource($"{shadowKey}{suffix}", null, out var shadow))
-                app.Resources[$"{shadowKey}Brush"] = shadow!;
-        }
-    }
-
     /// <summary>
     /// Resolves a theme brush for C# call sites (converters, custom-drawn controls) from
     /// <see cref="Application.Current"/> — which, unlike Application.Resources.TryGetResource,

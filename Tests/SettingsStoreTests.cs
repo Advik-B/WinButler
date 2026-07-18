@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using WinButler.Models;
 using WinButler.Services;
 using Xunit;
 
@@ -17,14 +16,13 @@ public sealed class SettingsStoreTests : IDisposable
     }
 
     [Fact]
-    public void Round_trips_accent_and_target_drive()
+    public void Round_trips_target_drive()
     {
-        SettingsStore.Save(new AppSettings { Accent = AccentKind.Green, TargetDrive = "D" });
+        SettingsStore.Save(new AppSettings { TargetDrive = "D" });
 
         var loaded = new AppSettings(); // fresh defaults
         SettingsStore.Load(loaded);
 
-        Assert.Equal(AccentKind.Green, loaded.Accent);
         Assert.Equal("D", loaded.TargetDrive);
     }
 
@@ -32,7 +30,7 @@ public sealed class SettingsStoreTests : IDisposable
     public void Dry_run_is_never_persisted()
     {
         // Even saved from a dry-run-OFF session…
-        SettingsStore.Save(new AppSettings { IsDryRun = false, Accent = AccentKind.Green });
+        SettingsStore.Save(new AppSettings { IsDryRun = false });
 
         // …the file contains no dry-run key…
         var json = File.ReadAllText(Path.Combine(_dir, "settings.json"));
@@ -50,7 +48,6 @@ public sealed class SettingsStoreTests : IDisposable
         var settings = new AppSettings();
         SettingsStore.Load(settings); // nothing saved yet
 
-        Assert.Equal(AccentKind.Green, settings.Accent);
         Assert.Null(settings.TargetDrive);
         Assert.True(settings.IsDryRun);
     }
@@ -61,10 +58,24 @@ public sealed class SettingsStoreTests : IDisposable
         Directory.CreateDirectory(_dir);
         File.WriteAllText(Path.Combine(_dir, "settings.json"), "{ not valid json ");
 
-        var settings = new AppSettings { Accent = AccentKind.Green };
+        var settings = new AppSettings { TargetDrive = "S" };
         SettingsStore.Load(settings); // must not throw
 
-        Assert.Equal(AccentKind.Green, settings.Accent); // unchanged from before the load
+        Assert.Equal("S", settings.TargetDrive); // unchanged from before the load
+    }
+
+    [Fact]
+    public void Stale_accent_key_from_older_versions_is_ignored()
+    {
+        // Pre-green-only versions persisted an Accent field; loading such a file must work.
+        Directory.CreateDirectory(_dir);
+        File.WriteAllText(Path.Combine(_dir, "settings.json"),
+            "{ \"Accent\": \"Red\", \"TargetDrive\": \"S\" }");
+
+        var settings = new AppSettings();
+        SettingsStore.Load(settings);
+
+        Assert.Equal("S", settings.TargetDrive);
     }
 
     public void Dispose()

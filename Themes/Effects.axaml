@@ -1,6 +1,5 @@
 <!--
-  Duly Doted effect tokens: elevation shadows, LED glow (BoxShadows, precomputed per accent —
-  see Tokens.Colors.axaml note on why these aren't computed at runtime), and the dot-field
+  Duly Doted effect tokens: elevation shadows, LED glow BoxShadows, and the dot-field
   texture brush. Motion/easing is applied directly in each ControlTheme rather than as shared
   resources, since Avalonia has no convenient resource type for Transitions/Duration.
 -->
@@ -14,16 +13,9 @@
       <BoxShadows x:Key="WbShadowMd">0 6 20 0 #80000000</BoxShadows>
       <BoxShadows x:Key="WbShadowLg">0 18 50 0 #99000000</BoxShadows>
 
-      <!-- ==== LED GLOW · GREEN ==== -->
-      <BoxShadows x:Key="WbGlowAccentSmGreen">0 0 10 0 #7306C24A</BoxShadows>
-      <BoxShadows x:Key="WbGlowAccentGreen">0 0 0 1 #5906C24A, 0 0 18 0 #7A06C24A</BoxShadows>
-      <BoxShadows x:Key="WbGlowAccentLgGreen">0 0 40 0 #8C06C24A, 0 0 4 0 #D906C24A</BoxShadows>
-
-      <!-- ==== LED GLOW · LIVE (ThemeService copies the green set into these at startup) ====
-           Seeded green so the first paint's glow matches WbAccentBrush. -->
+      <!-- ==== LED GLOW · ACCENT (green-only; the old per-accent copy set was removed) ==== -->
       <BoxShadows x:Key="WbGlowAccentSmBrush">0 0 10 0 #7306C24A</BoxShadows>
       <BoxShadows x:Key="WbGlowAccentBrush">0 0 0 1 #5906C24A, 0 0 18 0 #7A06C24A</BoxShadows>
-      <BoxShadows x:Key="WbGlowAccentLgBrush">0 0 40 0 #8C06C24A, 0 0 4 0 #D906C24A</BoxShadows>
 
       <!-- ==== FUNCTIONAL SIGNAL GLOWS (accent-independent) ==== -->
       <BoxShadows x:Key="WbGlowOkSm">0 0 7 0 #7306C24A</BoxShadows>
