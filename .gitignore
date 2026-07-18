@@ -1,2 +1,12 @@
+# Build output
 bin/
 obj/
+publish/
+
+# IDE / tooling
+.vs/
+*.user
+.idea/
+
+# Claude Code local (per-machine) settings; .claude/memory/ stays tracked
+.claude/settings.local.json

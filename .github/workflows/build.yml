@@ -1,0 +1,27 @@
+name: Build
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Build
+        run: dotnet build --configuration Release
+
+      # The excluded suites read the real $MFT on C: or size this machine's dev-tool
+      # folders — meaningful locally (see docs/DEVELOPMENT.md), not on a hosted runner.
+      - name: Test (headless + sandboxed unit tests)
+        run: >
+          dotnet test Tests/WinButler.Tests.csproj --configuration Release
+          --filter "FullyQualifiedName!~MftReaderTests&FullyQualifiedName!~PerfProbeTests&FullyQualifiedName!~ScannerOverlapTests&FullyQualifiedName!~RedirectionServiceTests"
