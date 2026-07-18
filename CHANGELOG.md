@@ -14,6 +14,10 @@ Notable changes to WinButler, by internal milestone. The current shipping versio
 
 ## v6 — 2026-07-06 · Four new cleaning surfaces
 
+This milestone absorbed [FocusedWolf](https://www.reddit.com/user/FocusedWolf/)'s Windows
+cleanup batch script into WinButler's native rule engine — credit to them for the original
+catalog of cleanup locations.
+
 - Split the rule catalog into per-domain files under `Data/definitions/` (cache, redirect, apps, browsers, drivers, launchers, games, windows), merged fail-closed at load.
 - **App & Game Leftovers**: a curated known-locations catalog (~55 entries) for logs, dumps, and installer leftovers outside the cache scanners' territory, with a real-I/O test pinning the two scanners' disjointness.
 - **Steam-aware cleaning**: locates every Steam library via `libraryfolders.vdf` and offers shader/download/temp caches, dumps, and logs per library.

@@ -110,6 +110,13 @@ live in **[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)**. Want to contribute? Star
 **[CONTRIBUTING.md](CONTRIBUTING.md)** — the easiest PRs are new cleaning rules, and
 they're pure JSON.
 
+## Acknowledgements
+
+The App & Game Leftovers catalog, the Steam-aware cleaning, and the System Tools page
+began life as a study of [FocusedWolf](https://www.reddit.com/user/FocusedWolf/)'s
+comprehensive Windows cleanup batch script, which WinButler absorbed into its native,
+rule-driven (and dry-run-guarded) form. Thank you!
+
 ## License
 
 MIT — see [LICENSE](LICENSE).
