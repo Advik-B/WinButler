@@ -9,16 +9,50 @@
     <Setter Property="CornerRadius" Value="{StaticResource WbRadiusPill}"/>
     <Setter Property="Template">
       <ControlTemplate>
-        <Grid>
+        <Grid ClipToBounds="True">
           <Border Name="PART_Track" Background="{TemplateBinding Background}"
                   CornerRadius="{TemplateBinding CornerRadius}"/>
           <Border Name="PART_Indicator" Background="{TemplateBinding Foreground}"
                   CornerRadius="{TemplateBinding CornerRadius}"
                   HorizontalAlignment="Left"
                   BoxShadow="{DynamicResource WbGlowAccentSmBrush}"/>
+          <!-- Separate border for the indeterminate sweep: the control writes
+               PART_Indicator.Width as a local value in determinate mode, which would
+               outrank style setters after an indeterminate<->determinate toggle. -->
+          <Border Name="IndeterminateIndicator"
+                  Background="{TemplateBinding Foreground}"
+                  CornerRadius="{TemplateBinding CornerRadius}"
+                  HorizontalAlignment="Left" IsVisible="False"
+                  BoxShadow="{DynamicResource WbGlowAccentSmBrush}"/>
         </Grid>
       </ControlTemplate>
     </Setter>
+
+    <Style Selector="^:indeterminate /template/ Border#PART_Indicator">
+      <Setter Property="IsVisible" Value="False"/>
+    </Style>
+    <!-- $parent[ProgressBar] bindings: TemplateBinding is not available inside
+         ControlTheme style animations. Timings mirror Avalonia's Fluent theme. -->
+    <Style Selector="^:horizontal:indeterminate /template/ Border#IndeterminateIndicator">
+      <Setter Property="IsVisible" Value="True"/>
+      <Setter Property="Width" Value="{Binding $parent[ProgressBar].TemplateSettings.ContainerWidth}"/>
+      <Style.Animations>
+        <Animation IterationCount="Infinite" Duration="0:0:2">
+          <KeyFrame KeySpline="0.4,0,0.6,1" KeyTime="0:0:0">
+            <Setter Property="TranslateTransform.X"
+                    Value="{Binding $parent[ProgressBar].TemplateSettings.ContainerAnimationStartPosition}"/>
+          </KeyFrame>
+          <KeyFrame KeySpline="0.4,0,0.6,1" KeyTime="0:0:1.5">
+            <Setter Property="TranslateTransform.X"
+                    Value="{Binding $parent[ProgressBar].TemplateSettings.ContainerAnimationEndPosition}"/>
+          </KeyFrame>
+          <KeyFrame KeySpline="0.4,0,0.6,1" KeyTime="0:0:2">
+            <Setter Property="TranslateTransform.X"
+                    Value="{Binding $parent[ProgressBar].TemplateSettings.ContainerAnimationEndPosition}"/>
+          </KeyFrame>
+        </Animation>
+      </Style.Animations>
+    </Style>
   </ControlTheme>
 
 </ResourceDictionary>
