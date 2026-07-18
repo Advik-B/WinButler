@@ -291,7 +291,8 @@ public partial class MainWindowViewModel : ViewModelBase
             request.Title, request.Count, request.Bytes,
             onConfirmed: () => { PendingConfirm = null; tcs.TrySetResult(true); },
             onCancelled: () => { PendingConfirm = null; tcs.TrySetResult(false); },
-            detail: request.Detail);
+            detail: request.Detail,
+            isDestructive: request.IsDestructive);
         return tcs.Task;
     }
 }

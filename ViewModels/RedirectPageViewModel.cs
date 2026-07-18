@@ -144,7 +144,8 @@ public partial class RedirectPageViewModel : ViewModelBase
             long total = selected.Sum(c => c.SizeBytes);
             var request = new ConfirmRequest(
                 $"Redirect {selected.Count} folder(s) to {drive}:?", selected.Count, total,
-                $"Moved behind a junction — apps still find them at their original path.");
+                $"Moved behind a junction — apps still find them at their original path.",
+                IsDestructive: false);
             if (!await ConfirmAsync(request))
             {
                 StatusText = "Cancelled — nothing was moved.";
@@ -226,7 +227,8 @@ public partial class RedirectPageViewModel : ViewModelBase
         {
             var request = new ConfirmRequest(
                 $"Undo redirect of {System.IO.Path.GetFileName(record.SourcePath)}?", 1, record.SizeBytes,
-                $"Removes the junction and moves the data back to {record.SourcePath}.");
+                $"Removes the junction and moves the data back to {record.SourcePath}.",
+                IsDestructive: false);
             if (!await ConfirmAsync(request))
             {
                 StatusText = "Cancelled — the redirect is unchanged.";

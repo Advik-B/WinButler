@@ -10,10 +10,18 @@
              x:DataType="vm:SystemToolsPageViewModel"
              Background="{DynamicResource WbBgBrush}">
 
+    <UserControl.Styles>
+        <Style Selector="Border.toolrow:pointerover">
+            <Setter Property="Background" Value="{DynamicResource WbSurface2Brush}"/>
+        </Style>
+    </UserControl.Styles>
+
     <UserControl.Resources>
-        <!-- One action row: title + description on the left, RUN on the right. -->
+        <!-- One action row: title + description on the left, RUN on the right.
+             NOTE: keep in sync with WbPrivacyOpTemplate below — same layout, different
+             button label + command (not worth parameterizing across two model types). -->
         <DataTemplate x:Key="WbSystemActionTemplate" DataType="m:SystemAction">
-            <Border Background="{DynamicResource WbSurfaceInsetBrush}" CornerRadius="{StaticResource WbRadiusSm}"
+            <Border Classes="toolrow" Background="{DynamicResource WbSurfaceInsetBrush}" CornerRadius="{StaticResource WbRadiusSm}"
                     Padding="14,11" Margin="0,0,0,8">
                 <DockPanel>
                     <Button DockPanel.Dock="Right" Content="RUN" Classes="primary" VerticalAlignment="Center"
@@ -30,9 +38,10 @@
             </Border>
         </DataTemplate>
 
-        <!-- One privacy row — same shape, but bound to RunPrivacyCommand. -->
+        <!-- One privacy row — same shape, but bound to RunPrivacyCommand.
+             NOTE: keep in sync with WbSystemActionTemplate above. -->
         <DataTemplate x:Key="WbPrivacyOpTemplate" DataType="m:PrivacyOp">
-            <Border Background="{DynamicResource WbSurfaceInsetBrush}" CornerRadius="{StaticResource WbRadiusSm}"
+            <Border Classes="toolrow" Background="{DynamicResource WbSurfaceInsetBrush}" CornerRadius="{StaticResource WbRadiusSm}"
                     Padding="14,11" Margin="0,0,0,8">
                 <DockPanel>
                     <Button DockPanel.Dock="Right" Content="CLEAR" Classes="primary" VerticalAlignment="Center"
@@ -103,18 +112,24 @@
                                    LetterSpacing="1.5" FontSize="{StaticResource WbText2xs}"
                                    Foreground="{DynamicResource WbTextMutedBrush}"/>
                     </DockPanel>
-                    <ScrollViewer>
-                        <ItemsControl ItemsSource="{Binding Output}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="x:String">
-                                    <TextBlock Text="{Binding}" TextWrapping="Wrap" Margin="0,0,0,1"
-                                               FontFamily="{DynamicResource WbFontReadout}"
-                                               FontSize="{StaticResource WbText2xs}"
-                                               Foreground="{DynamicResource WbTextSecondaryBrush}"/>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </ScrollViewer>
+                    <Panel>
+                        <TextBlock Text="OUTPUT WILL APPEAR HERE — RUN A TOOL" HorizontalAlignment="Center"
+                                   VerticalAlignment="Center" LetterSpacing="2" IsVisible="{Binding !Output.Count}"
+                                   FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
+                                   FontSize="{StaticResource WbText2xs}" Foreground="{DynamicResource WbTextMutedBrush}"/>
+                        <ScrollViewer>
+                            <ItemsControl ItemsSource="{Binding Output}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="x:String">
+                                        <TextBlock Text="{Binding}" TextWrapping="Wrap" Margin="0,0,0,1"
+                                                   FontFamily="{DynamicResource WbFontReadout}"
+                                                   FontSize="{StaticResource WbText2xs}"
+                                                   Foreground="{DynamicResource WbTextSecondaryBrush}"/>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </Panel>
                 </DockPanel>
             </Border>
         </Grid>

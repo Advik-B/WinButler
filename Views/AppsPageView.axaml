@@ -58,7 +58,8 @@
                 CornerRadius="{StaticResource WbRadiusMd}" Background="{DynamicResource WbSurfaceBrush}"
                 ClipToBounds="True">
             <Panel>
-                <ScrollViewer IsVisible="{Binding Clean.AppsCategory.HasItems}">
+                <!-- Right padding keeps the size column clear of the overlay scrollbar. -->
+                <ScrollViewer IsVisible="{Binding Clean.AppsCategory.HasItems}" Padding="0,0,10,0">
                     <ItemsControl ItemsSource="{Binding Clean.AppsCategory.Items}"
                                   ItemTemplate="{StaticResource WbChecklistRowTemplate}"/>
                 </ScrollViewer>

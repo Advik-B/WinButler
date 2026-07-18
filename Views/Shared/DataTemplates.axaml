@@ -24,8 +24,10 @@
                      FontSize="{StaticResource WbText2xs}" Foreground="{DynamicResource WbTextMutedBrush}"/>
         </StackPanel>
         <shared:RiskBadgeView Grid.Column="2" Risk="{Binding Risk}" VerticalAlignment="Center"/>
+        <!-- MinWidth (not Width): a fixed width makes long values ("139.04 MB") overflow
+             past the grid's right edge under the scrollbar. -->
         <TextBlock Grid.Column="3" Text="{Binding SizeText}" FontFamily="{DynamicResource WbFontReadout}"
-                   VerticalAlignment="Center" Width="70" TextAlignment="Right"
+                   VerticalAlignment="Center" MinWidth="70" TextAlignment="Right"
                    Foreground="{DynamicResource WbTextBrush}"/>
       </Grid>
     </Border>

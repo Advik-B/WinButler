@@ -20,7 +20,8 @@
             </Grid>
             <StackPanel Spacing="3">
                 <TextBlock Text="{Binding Title, ElementName=Root}" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
-                           FontSize="{StaticResource WbTextXs}" Foreground="{DynamicResource WbTextSecondaryBrush}"/>
+                           FontSize="{StaticResource WbTextXs}" Foreground="{DynamicResource WbTextSecondaryBrush}"
+                           TextTrimming="CharacterEllipsis"/>
                 <TextBlock Text="{Binding SizeText, ElementName=Root}" FontFamily="{DynamicResource WbFontReadout}"
                            FontWeight="Bold" FontSize="{StaticResource WbTextLg}" Foreground="{DynamicResource WbTextBrush}"/>
                 <TextBlock Text="{Binding CountText, ElementName=Root}" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"

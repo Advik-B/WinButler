@@ -14,7 +14,7 @@
     <Setter Property="Template">
       <ControlTemplate>
         <StackPanel Orientation="Horizontal" Spacing="10">
-          <Border Name="PART_Box" Width="18" Height="18" CornerRadius="4"
+          <Border Name="PART_Box" Width="18" Height="18" CornerRadius="{StaticResource WbRadiusXs}"
                   BorderThickness="1.5"
                   BorderBrush="{DynamicResource WbBorderStrongBrush}"
                   Background="Transparent">
@@ -24,10 +24,17 @@
                 <BrushTransition Property="BorderBrush" Duration="0:0:0.12"/>
               </Transitions>
             </Border.Transitions>
-            <Ellipse Name="PART_Dot" Width="8" Height="8"
-                     Fill="{DynamicResource WbAccentBrush}"
-                     IsVisible="False"
-                     HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            <Panel>
+              <Ellipse Name="PART_Dot" Width="8" Height="8"
+                       Fill="{DynamicResource WbAccentBrush}"
+                       IsVisible="False"
+                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+              <!-- Tri-state (indeterminate) mark: a dash instead of the dot. -->
+              <Rectangle Name="PART_Dash" Width="8" Height="2" RadiusX="1" RadiusY="1"
+                         Fill="{DynamicResource WbAccentBrush}"
+                         IsVisible="False"
+                         HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Panel>
           </Border>
           <ContentPresenter Name="PART_ContentPresenter"
                              Content="{TemplateBinding Content}"
@@ -43,8 +50,18 @@
     <Style Selector="^:checked /template/ Ellipse#PART_Dot">
       <Setter Property="IsVisible" Value="True"/>
     </Style>
+    <Style Selector="^:indeterminate /template/ Border#PART_Box">
+      <Setter Property="BorderBrush" Value="{DynamicResource WbAccentBrush}"/>
+      <Setter Property="Background" Value="{DynamicResource WbAccentTintBrush}"/>
+    </Style>
+    <Style Selector="^:indeterminate /template/ Rectangle#PART_Dash">
+      <Setter Property="IsVisible" Value="True"/>
+    </Style>
     <Style Selector="^:pointerover /template/ Border#PART_Box">
       <Setter Property="BorderBrush" Value="{DynamicResource WbAccentBrush}"/>
+    </Style>
+    <Style Selector="^:pressed /template/ Border#PART_Box">
+      <Setter Property="Background" Value="{DynamicResource WbAccentTintBrush}"/>
     </Style>
     <Style Selector="^:disabled">
       <Setter Property="Opacity" Value="0.4"/>

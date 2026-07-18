@@ -33,9 +33,9 @@
             <StackPanel Classes="actions" Orientation="Horizontal" Spacing="10" VerticalAlignment="Bottom">
                 <TextBlock Text="Move to drive:" VerticalAlignment="Center" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
                            FontSize="{StaticResource WbTextXs}" Foreground="{DynamicResource WbTextTertiaryBrush}"/>
-                <ComboBox ItemsSource="{Binding Drives}" SelectedItem="{Binding SelectedDrive}" MinWidth="70"/>
+                <ComboBox ItemsSource="{Binding Drives}" SelectedItem="{Binding SelectedDrive}"
+                          PlaceholderText="DRIVE" MinWidth="70"/>
                 <Button Content="REDIRECT SELECTED" Command="{Binding RedirectSelectedCommand}" Classes="primary"/>
-                <ProgressBar IsIndeterminate="True" Width="90" VerticalAlignment="Center" IsVisible="{Binding IsBusy}"/>
                 <Button Content="CANCEL" Classes="ghost" Command="{Binding CancelCommand}" IsVisible="{Binding IsBusy}"/>
             </StackPanel>
             <StackPanel>
@@ -101,12 +101,15 @@
                                            FontSize="{StaticResource WbTextXs}" Foreground="{DynamicResource WbTextTertiaryBrush}"/>
                             </StackPanel>
                             <StackPanel Spacing="14" VerticalAlignment="Center" IsVisible="{Binding !IsBusy}">
-                                <TextBlock Text="PREPARING SCAN…" HorizontalAlignment="Center" LetterSpacing="2"
-                                           IsVisible="{Binding !HasScanned}" Margin="0,24,0,0"
-                                           FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
-                                           FontSize="{StaticResource WbTextXs}" Foreground="{DynamicResource WbTextMutedBrush}"/>
+                                <StackPanel Spacing="14" IsVisible="{Binding !HasScanned}">
+                                    <TextBlock Text="NO DATA — RUN A SCAN TO FIND RELOCATABLE FOLDERS" HorizontalAlignment="Center" LetterSpacing="2"
+                                               FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
+                                               FontSize="{StaticResource WbTextXs}" Foreground="{DynamicResource WbTextMutedBrush}"/>
+                                    <Button Content="SCAN" Classes="primary" HorizontalAlignment="Center"
+                                            Command="{Binding ScanCommand}"/>
+                                </StackPanel>
                                 <TextBlock Text="NOTHING FOUND — NO KNOWN FOLDERS TO RELOCATE" HorizontalAlignment="Center" LetterSpacing="2"
-                                           IsVisible="{Binding HasScanned}" Margin="0,24,0,0"
+                                           IsVisible="{Binding HasScanned}"
                                            FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
                                            FontSize="{StaticResource WbTextXs}" Foreground="{DynamicResource WbTextMutedBrush}"/>
                             </StackPanel>
@@ -127,7 +130,8 @@
                                             <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
                                                 <StackPanel Orientation="Horizontal" Spacing="9">
                                                     <TextBlock Text="{Binding DisplayName}" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
-                                                               FontSize="{StaticResource WbTextSm}" Foreground="{DynamicResource WbTextBrush}"/>
+                                                               FontSize="{StaticResource WbTextSm}" Foreground="{DynamicResource WbTextBrush}"
+                                                               TextTrimming="CharacterEllipsis"/>
                                                     <TextBlock Text="{Binding SourcePath}" FontFamily="{DynamicResource WbFontReadout}"
                                                                FontSize="{StaticResource WbText2xs}" Foreground="{DynamicResource WbTextMutedBrush}"
                                                                TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
@@ -141,7 +145,7 @@
                                                            FontSize="{StaticResource WbText2xs}" Foreground="{DynamicResource WbTextTertiaryBrush}"/>
                                             </Border>
                                             <TextBlock Grid.Column="3" Text="{Binding SizeText}" FontFamily="{DynamicResource WbFontReadout}"
-                                                       VerticalAlignment="Center" Width="70" TextAlignment="Right"
+                                                       VerticalAlignment="Center" MinWidth="70" TextAlignment="Right"
                                                        Foreground="{DynamicResource WbTextBrush}"/>
                                             <!-- Inline undo for a folder detected as already redirected (junction). -->
                                             <Button Grid.Column="4" Content="UNDO" Classes="ghost" VerticalAlignment="Center"
@@ -168,6 +172,11 @@
                                 <Border BorderBrush="{DynamicResource WbAccentTintBrush}" BorderThickness="1"
                                         Background="{DynamicResource WbAccentTintBrush}"
                                         CornerRadius="{StaticResource WbRadiusSm}" Padding="14,10" Margin="0,0,0,8">
+                                    <Border.Styles>
+                                        <Style Selector="Border:pointerover">
+                                            <Setter Property="BorderBrush" Value="{DynamicResource WbAccentBrush}"/>
+                                        </Style>
+                                    </Border.Styles>
                                     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
                                         <StackPanel Grid.Column="0" VerticalAlignment="Center">
                                             <TextBlock Text="{Binding SourcePath}" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"

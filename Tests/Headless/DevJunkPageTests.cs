@@ -36,6 +36,17 @@ public sealed class DevJunkPageTests : MessengerIsolatedTest
         });
 
     [AvaloniaFact]
+    public void First_visit_scan_button_is_enabled()
+    {
+        // The first-visit empty state shows a SCAN button bound to ScanCommand — it must be
+        // invokable before any scan has run.
+        var vm = NewPage();
+
+        Assert.False(vm.HasScanned);
+        Assert.True(vm.ScanCommand.CanExecute(null));
+    }
+
+    [AvaloniaFact]
     public void SelectAll_ticks_only_selectable_groups_and_Clear_unticks_all()
     {
         var vm = NewPage();

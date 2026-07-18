@@ -7,6 +7,8 @@ public partial class DashboardPageView : UserControl
     // Below this Disk Hero card width, the two stat callouts reflow *beneath* the disk bar rather
     // than docking to its right (see the `Border.narrow` style in the .axaml). Tuned so side-by-side
     // is the default at the 1180px window and stacks only once the window is dragged narrow.
+    // Deliberately distinct from the page-wide Responsive.NarrowUnder="820" in the .axaml: that
+    // one gates the card grid on PAGE width, this one gates the hero on the CARD's own width.
     private const double NarrowThreshold = 790;
 
     public DashboardPageView()

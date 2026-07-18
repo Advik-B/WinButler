@@ -70,10 +70,13 @@
                            FontSize="{StaticResource WbTextXs}" Foreground="{DynamicResource WbTextTertiaryBrush}"/>
             </StackPanel>
             <StackPanel Spacing="14" IsVisible="{Binding !IsBusy}">
-                <TextBlock Text="PREPARING SCAN…" HorizontalAlignment="Center" LetterSpacing="2"
-                           IsVisible="{Binding !HasScanned}"
-                           FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
-                           FontSize="{StaticResource WbTextXs}" Foreground="{DynamicResource WbTextMutedBrush}"/>
+                <StackPanel Spacing="14" IsVisible="{Binding !HasScanned}">
+                    <TextBlock Text="NO DATA — RUN A SCAN TO FIND DEV JUNK" HorizontalAlignment="Center" LetterSpacing="2"
+                               FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
+                               FontSize="{StaticResource WbTextXs}" Foreground="{DynamicResource WbTextMutedBrush}"/>
+                    <Button Content="SCAN" Classes="primary" HorizontalAlignment="Center"
+                            Command="{Binding ScanCommand}"/>
+                </StackPanel>
                 <TextBlock Text="NOTHING FOUND — NO DEV JUNK ON THIS MACHINE" HorizontalAlignment="Center" LetterSpacing="2"
                            IsVisible="{Binding HasScanned}"
                            FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
@@ -92,9 +95,14 @@
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="vm:DevToolGroupViewModel">
-                        <Border Margin="0,0,13,13" Padding="15,14"
+                        <Border Classes="card" Margin="0,0,13,13" Padding="15,14"
                                 BorderBrush="{DynamicResource WbBorderBrush}" BorderThickness="1"
                                 CornerRadius="{StaticResource WbRadiusMd}" Background="{DynamicResource WbSurfaceBrush}">
+                            <Border.Styles>
+                                <Style Selector="Border.card:pointerover">
+                                    <Setter Property="BorderBrush" Value="{DynamicResource WbBorderStrongBrush}"/>
+                                </Style>
+                            </Border.Styles>
                             <StackPanel Spacing="12">
                                 <Grid ColumnDefinitions="Auto,*,Auto">
                                     <Border Grid.Column="0" Width="34" Height="34" CornerRadius="{StaticResource WbRadiusSm}"
@@ -106,7 +114,8 @@
                                     </Border>
                                     <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
                                         <TextBlock Text="{Binding DisplayName}" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
-                                                   FontSize="{StaticResource WbTextSm}" Foreground="{DynamicResource WbTextBrush}"/>
+                                                   FontSize="{StaticResource WbTextSm}" Foreground="{DynamicResource WbTextBrush}"
+                                                   TextTrimming="CharacterEllipsis"/>
                                         <TextBlock Text="{Binding SourcePath}" FontFamily="{DynamicResource WbFontReadout}"
                                                    FontSize="{StaticResource WbText2xs}" Foreground="{DynamicResource WbTextMutedBrush}"
                                                    TextTrimming="CharacterEllipsis"/>
@@ -153,7 +162,7 @@
                                             <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
                                                 <i:Icon Value="mdi-lock" FontSize="11" VerticalAlignment="Center"
                                                         Foreground="{DynamicResource WbSignalLiveBrush}"/>
-                                                <TextBlock Text="PROTECTED" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
+                                                <TextBlock Text="LOCKED" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
                                                            FontSize="{StaticResource WbText2xs}" VerticalAlignment="Center"
                                                            Foreground="{DynamicResource WbSignalLiveBrush}"/>
                                             </StackPanel>

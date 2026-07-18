@@ -23,13 +23,23 @@ public sealed class TreemapControl : Control
     private const double LabelMinWidth = 46;
     private const double LabelMinHeight = 16;
 
+    // Cell separator: a translucent black hairline over whatever hue the cell got.
+    // No alpha-scrim token exists for this one call site; keep it local.
+    private static readonly Color CellOutlineColor = Color.FromArgb(0x55, 0, 0, 0);
+
     /// <summary>Leaf rectangles actually drawn this frame, smallest-last for hit testing.</summary>
     private readonly List<(DiskNode node, Rect rect)> _hitRects = new();
 
     // Theme brushes, resolved once per render pass from this control's position in the
     // visual tree (which cascades into the Styles-merged token dictionaries).
     private IBrush _labelBrush = Brushes.White;
+    private IBrush _labelInverseBrush = Brushes.Black;
+    private Pen _nestedOutlinePen = new(Brushes.Black, 1);
     private Typeface _labelTypeface = Typeface.Default;
+
+    /// <summary>Node the tooltip currently describes; avoids re-setting the tip every pointer
+    /// move (each SetTip restarts the hover-delay timer, so the tip would never appear).</summary>
+    private DiskNode? _lastTipNode;
 
     public static readonly StyledProperty<DiskNode?> RootProperty =
         AvaloniaProperty.Register<TreemapControl, DiskNode?>(nameof(Root));
@@ -63,6 +73,8 @@ public sealed class TreemapControl : Control
         _hitRects.Clear();
 
         _labelBrush = ResolveBrush("WbTextBrush", Brushes.White);
+        _labelInverseBrush = ResolveBrush("WbTextInverseBrush", Brushes.Black);
+        _nestedOutlinePen = new Pen(ResolveBrush("WbBlackBrush", Brushes.Black), 1);
         _labelTypeface = this.TryFindResource("WbFontUi", out var font) && font is FontFamily family
             ? new Typeface(family, weight: FontWeight.Bold)
             : Typeface.Default;
@@ -112,11 +124,12 @@ public sealed class TreemapControl : Control
             var inner = new Rect(rect.X + 2, rect.Y + LabelMinHeight, rect.Width - 4, rect.Height - LabelMinHeight - 2);
             if (inner.Width > 6 && inner.Height > 6)
             {
-                ctx.FillRectangle(new SolidColorBrush(HsvToColor(hue, 0.45, 0.30)), rect);
+                var fill = HsvToColor(hue, 0.45, 0.30);
+                ctx.FillRectangle(new SolidColorBrush(fill), rect);
                 foreach (var (child, crect) in Squarify(node.Children, inner))
                     DrawNode(ctx, child, crect, depth + 1);
-                DrawLabel(ctx, node, new Rect(rect.X, rect.Y, rect.Width, LabelMinHeight));
-                ctx.DrawRectangle(null, new Pen(Brushes.Black, 1), rect);
+                DrawLabel(ctx, node, new Rect(rect.X, rect.Y, rect.Width, LabelMinHeight), fill);
+                ctx.DrawRectangle(null, _nestedOutlinePen, rect);
                 nested = true;
             }
         }
@@ -128,20 +141,26 @@ public sealed class TreemapControl : Control
     private void DrawCell(DrawingContext ctx, DiskNode node, Rect rect, int depth, double hue)
     {
         double value = Math.Clamp(0.55 + depth * 0.05, 0.45, 0.9);
-        ctx.FillRectangle(new SolidColorBrush(HsvToColor(hue, node.IsDirectory ? 0.35 : 0.6, value)), rect);
-        ctx.DrawRectangle(null, new Pen(new SolidColorBrush(Color.FromArgb(0x55, 0, 0, 0)), 1), rect);
+        var fill = HsvToColor(hue, node.IsDirectory ? 0.35 : 0.6, value);
+        ctx.FillRectangle(new SolidColorBrush(fill), rect);
+        ctx.DrawRectangle(null, new Pen(new SolidColorBrush(CellOutlineColor), 1), rect);
 
-        DrawLabel(ctx, node, rect);
+        DrawLabel(ctx, node, rect, fill);
         _hitRects.Add((node, rect));
     }
 
     private IBrush ResolveBrush(string key, IBrush fallback) =>
         this.TryFindResource(key, out var value) && value is IBrush brush ? brush : fallback;
 
-    private void DrawLabel(DrawingContext ctx, DiskNode node, Rect rect)
+    private void DrawLabel(DrawingContext ctx, DiskNode node, Rect rect, Color cellFill)
     {
         if (rect.Width < LabelMinWidth || rect.Height < LabelMinHeight)
             return;
+
+        // White text washes out on bright (high-value yellow/cyan/green) cells; flip to the
+        // inverse (black) label when the fill's relative luminance is high.
+        double luminance = (0.2126 * cellFill.R + 0.7152 * cellFill.G + 0.0722 * cellFill.B) / 255.0;
+        var brush = luminance > 0.55 ? _labelInverseBrush : _labelBrush;
 
         var text = new FormattedText(
             node.Name,
@@ -149,7 +168,7 @@ public sealed class TreemapControl : Control
             FlowDirection.LeftToRight,
             _labelTypeface,
             11,
-            _labelBrush)
+            brush)
         {
             MaxTextWidth = Math.Max(0, rect.Width - 6),
             MaxTextHeight = rect.Height,
@@ -214,7 +233,10 @@ public sealed class TreemapControl : Control
     {
         base.OnPropertyChanged(change);
         if (change.Property == RootProperty)
+        {
             _keyboardIndex = -1; // the cells this indexed no longer exist
+            _lastTipNode = null;
+        }
         if (change.Property == IsFocusedProperty)
             InvalidateVisual(); // show/hide the focus indicators
     }
@@ -223,6 +245,9 @@ public sealed class TreemapControl : Control
     {
         base.OnPointerMoved(e);
         var node = HitTest(e.GetPosition(this));
+        if (ReferenceEquals(node, _lastTipNode))
+            return;
+        _lastTipNode = node;
         ToolTip.SetTip(this, node is null ? null : $"{node.FullPath}\n{SizeFormatter.Format(node.SizeBytes)}");
     }
 

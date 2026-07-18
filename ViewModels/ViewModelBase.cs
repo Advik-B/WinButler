@@ -8,8 +8,10 @@ using WinButler.Services;
 namespace WinButler.ViewModels;
 
 /// <summary>A pending destructive-action confirmation: what's about to happen, how much,
-/// and a one-line breakdown (e.g. permanent-vs-Recycle-Bin split).</summary>
-public sealed record ConfirmRequest(string Title, int Count, long Bytes, string? Detail)
+/// and a one-line breakdown (e.g. permanent-vs-Recycle-Bin split). <paramref name="IsDestructive"/>
+/// drives the modal's severity styling — false for recoverable moves (redirect/undo), true
+/// (the default, so a missed call site fails toward the scarier look) for deletions.</summary>
+public sealed record ConfirmRequest(string Title, int Count, long Bytes, string? Detail, bool IsDestructive = true)
 {
     /// <summary>Builds a confirm from a set of delete targets, summing size and spelling out
     /// the hybrid-delete routing (permanent vs Recycle Bin) so the user sees what's recoverable.</summary>

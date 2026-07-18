@@ -43,7 +43,7 @@
 
             <Grid ColumnDefinitions="*,Auto">
                 <StackPanel Grid.Column="0">
-                    <TextBlock Text="SYSTEM OVERVIEW" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
+                    <TextBlock Text="SYSTEM · OVERVIEW" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
                                FontSize="{StaticResource WbText2xs}" LetterSpacing="2"
                                Foreground="{DynamicResource WbAccentBrush}" Margin="0,0,0,7"/>
                     <TextBlock Text="Dashboard" FontFamily="{DynamicResource WbFontDot}" FontWeight="Bold"
@@ -133,7 +133,7 @@
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="vm:CategoryCardInfo">
-                        <shared:CategoryCardView Margin="0,0,12,0" IconGlyph="{Binding IconGlyph}"
+                        <shared:CategoryCardView Margin="0,0,12,12" IconGlyph="{Binding IconGlyph}"
                                                   Title="{Binding Title}" SizeText="{Binding SizeText}"
                                                   CountText="{Binding CountText}" BarPercent="{Binding BarPercent}"
                                                   ClickCommand="{Binding ClickCommand}"/>

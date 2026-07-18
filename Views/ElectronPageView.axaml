@@ -80,13 +80,19 @@
             </StackPanel>
         </StackPanel>
 
-        <ScrollViewer IsVisible="{Binding Clean.ElectronCategory.HasItems}">
+        <!-- Right padding keeps the group cards' size column clear of the overlay scrollbar. -->
+        <ScrollViewer IsVisible="{Binding Clean.ElectronCategory.HasItems}" Padding="0,0,10,0">
             <ItemsControl ItemsSource="{Binding Groups}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="vm:ElectronGroupViewModel">
-                        <Border BorderBrush="{DynamicResource WbBorderBrush}" BorderThickness="1"
+                        <Border Classes="group" BorderBrush="{DynamicResource WbBorderBrush}" BorderThickness="1"
                                 CornerRadius="{StaticResource WbRadiusMd}" Background="{DynamicResource WbSurfaceBrush}"
                                 Margin="0,0,0,11" ClipToBounds="True">
+                            <Border.Styles>
+                                <Style Selector="Border.group:pointerover">
+                                    <Setter Property="BorderBrush" Value="{DynamicResource WbBorderStrongBrush}"/>
+                                </Style>
+                            </Border.Styles>
                             <StackPanel>
                                 <Grid ColumnDefinitions="Auto,*,Auto,Auto" Margin="16,13" ColumnSpacing="13">
                                     <Border Grid.Column="0" Width="34" Height="34" CornerRadius="{StaticResource WbRadiusSm}"
@@ -98,7 +104,8 @@
                                     </Border>
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                         <TextBlock Text="{Binding Name}" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
-                                                   FontSize="{StaticResource WbTextSm}" Foreground="{DynamicResource WbTextBrush}"/>
+                                                   FontSize="{StaticResource WbTextSm}" Foreground="{DynamicResource WbTextBrush}"
+                                                   TextTrimming="CharacterEllipsis"/>
                                         <TextBlock Text="{Binding Path}" FontFamily="{DynamicResource WbFontReadout}"
                                                    FontSize="{StaticResource WbText2xs}" Foreground="{DynamicResource WbTextMutedBrush}"
                                                    TextTrimming="CharacterEllipsis"/>
@@ -138,7 +145,7 @@
                                                                    FontSize="{StaticResource WbText2xs}" Foreground="{DynamicResource WbTextMutedBrush}"/>
                                                     </Border>
                                                     <TextBlock Grid.Column="3" Text="{Binding SizeText}" FontFamily="{DynamicResource WbFontReadout}"
-                                                               VerticalAlignment="Center" Width="66" TextAlignment="Right"
+                                                               VerticalAlignment="Center" MinWidth="66" TextAlignment="Right"
                                                                Foreground="{DynamicResource WbTextBrush}"/>
                                                 </Grid>
                                             </Border>

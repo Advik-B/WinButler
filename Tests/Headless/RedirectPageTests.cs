@@ -42,6 +42,17 @@ public sealed class RedirectPageTests : MessengerIsolatedTest
     }
 
     [AvaloniaFact]
+    public void First_visit_scan_button_is_enabled()
+    {
+        // The first-visit empty state shows a SCAN button bound to ScanCommand — it must be
+        // invokable before any scan has run.
+        var vm = new RedirectPageViewModel(new AppSettings(), new FakeRedirectionService(), FakeIndex());
+
+        Assert.False(vm.HasScanned);
+        Assert.True(vm.ScanCommand.CanExecute(null));
+    }
+
+    [AvaloniaFact]
     public void UndoCandidate_is_a_no_op_for_a_folder_that_is_not_redirected()
     {
         var vm = new RedirectPageViewModel(new AppSettings(), new FakeRedirectionService(), FakeIndex());

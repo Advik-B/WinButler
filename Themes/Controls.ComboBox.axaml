@@ -33,6 +33,12 @@
     <Style Selector="^:selected /template/ Border#PART_Border">
       <Setter Property="Background" Value="{DynamicResource WbAccentTintBrush}"/>
     </Style>
+    <Style Selector="^:pressed /template/ Border#PART_Border">
+      <Setter Property="Background" Value="{DynamicResource WbAccentTintBrush}"/>
+    </Style>
+    <Style Selector="^:disabled">
+      <Setter Property="Opacity" Value="0.4"/>
+    </Style>
   </ControlTheme>
 
   <ControlTheme x:Key="{x:Type ComboBox}" TargetType="ComboBox">
@@ -45,6 +51,7 @@
     <Setter Property="FontWeight" Value="Bold"/>
     <Setter Property="FontSize" Value="{StaticResource WbTextXs}"/>
     <Setter Property="Padding" Value="14,8"/>
+    <Setter Property="PlaceholderForeground" Value="{DynamicResource WbTextMutedBrush}"/>
     <Setter Property="HorizontalContentAlignment" Value="Left"/>
     <Setter Property="VerticalContentAlignment" Value="Center"/>
     <Setter Property="ItemsPanel">
@@ -66,6 +73,11 @@
               </Transitions>
             </Border.Transitions>
             <Grid ColumnDefinitions="*,Auto" Margin="{TemplateBinding Padding}">
+              <TextBlock Grid.Column="0" Text="{TemplateBinding PlaceholderText}"
+                         Foreground="{TemplateBinding PlaceholderForeground}"
+                         VerticalAlignment="Center"
+                         IsVisible="{TemplateBinding SelectionBoxItem,
+                                     Converter={x:Static ObjectConverters.IsNull}}"/>
               <ContentControl Grid.Column="0"
                                Content="{TemplateBinding SelectionBoxItem}"
                                ContentTemplate="{TemplateBinding ItemTemplate}"
@@ -106,6 +118,11 @@
     </Style>
     <Style Selector="^:focus-within /template/ Border#PART_Border">
       <Setter Property="BorderBrush" Value="{DynamicResource WbAccentBrush}"/>
+    </Style>
+    <!-- Keyboard focus ring: match the Button treatment (bright border + glow). -->
+    <Style Selector="^:focus-visible /template/ Border#PART_Border">
+      <Setter Property="BorderBrush" Value="{DynamicResource WbAccentBrightBrush}"/>
+      <Setter Property="BoxShadow" Value="{DynamicResource WbGlowAccentSmBrush}"/>
     </Style>
     <Style Selector="^:disabled">
       <Setter Property="Opacity" Value="0.4"/>

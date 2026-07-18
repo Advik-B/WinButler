@@ -45,7 +45,8 @@
                     BorderBrush="{DynamicResource WbBorderFaintBrush}" BorderThickness="0,1,0,0">
                 <Grid ColumnDefinitions="Auto,*,Auto" Margin="14,0">
                     <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
-                        <Button Classes="secondary" Command="{Binding RescanAllCommand}">
+                        <Button Classes="secondary" Command="{Binding RescanAllCommand}"
+                                ToolTip.Tip="Re-run every page's scan">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                                 <i:Icon Value="mdi-refresh" FontSize="15" VerticalAlignment="Center"/>
                                 <TextBlock Text="RE-SCAN" VerticalAlignment="Center"/>
@@ -64,7 +65,8 @@
                                      IsIndeterminate="{Binding IsProgressIndeterminate}"/>
                     </StackPanel>
 
-                    <TextBlock Grid.Column="2" Text="WINBUTLER v0.9" VerticalAlignment="Center"
+                    <!-- Version lives in the sidebar wordmark; the status bar keeps just the name. -->
+                    <TextBlock Grid.Column="2" Text="WINBUTLER" VerticalAlignment="Center"
                                FontSize="{StaticResource WbText2xs}" Foreground="{DynamicResource WbTextMutedBrush}"/>
                 </Grid>
             </Border>

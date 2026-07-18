@@ -25,7 +25,8 @@
             <!-- Action bar — WrapPanel so the controls wrap to a second line instead of clipping when
                  narrow (Avalonia WrapPanel has no Spacing, so gaps come from per-child margins). -->
             <WrapPanel>
-                <ComboBox ItemsSource="{Binding Drives}" SelectedItem="{Binding SelectedDrive}" MinWidth="220" Margin="0,0,10,10">
+                <ComboBox ItemsSource="{Binding Drives}" SelectedItem="{Binding SelectedDrive}"
+                          PlaceholderText="SELECT DRIVE" MinWidth="220" Margin="0,0,10,10">
                     <ComboBox.ItemTemplate>
                         <DataTemplate x:DataType="mft:ScanDrive">
                             <TextBlock Text="{Binding DisplayName}"/>
@@ -33,7 +34,8 @@
                     </ComboBox.ItemTemplate>
                 </ComboBox>
                 <Button Content="SCAN" Command="{Binding ScanCommand}" Classes="primary" Margin="0,0,10,10"/>
-                <Button Content="CHOOSE FOLDER…" Click="OnChooseFolder" Classes="secondary" Margin="0,0,10,10"/>
+                <Button Content="CHOOSE FOLDER…" Click="OnChooseFolder" Classes="secondary" Margin="0,0,10,10"
+                        ToolTip.Tip="Scan a single folder instead of a whole drive"/>
                 <TextBlock Text="Sort:" VerticalAlignment="Center" Margin="0,0,10,10" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
                            FontSize="{StaticResource WbTextXs}" Foreground="{DynamicResource WbTextTertiaryBrush}"/>
                 <ComboBox ItemsSource="{Binding SortModes}" SelectedItem="{Binding SelectedSort}" MinWidth="100" Margin="0,0,10,10"/>
@@ -51,10 +53,13 @@
                    FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold" FontSize="{StaticResource WbTextXs}"
                    Foreground="{DynamicResource WbTextTertiaryBrush}"/>
 
-        <Border DockPanel.Dock="Top" Padding="12,0"
+        <!-- Padding: 8 left matches the row ListBoxItem padding; the extra 10 on the right
+             compensates for the list's always-reserved vertical scrollbar gutter. -->
+        <Border DockPanel.Dock="Top" Padding="8,0,18,0"
                 Background="{DynamicResource WbSurface2Brush}"
                 BorderBrush="{DynamicResource WbBorderFaintBrush}" BorderThickness="1,1,1,0"
-                CornerRadius="8,8,0,0">
+                CornerRadius="8,8,0,0"
+                IsVisible="{Binding !!Rows.Count}">
             <!-- Cols 3-5 (ALLOCATED/FILES/FOLDERS) are Auto and collapse when narrow: the cells set a
                  fixed Width (so header + rows stay aligned) and hide together via Responsive.IsNarrow. -->
             <Grid ColumnDefinitions="*,110,150,Auto,Auto,Auto,150" Height="34">
@@ -78,7 +83,8 @@
                     BorderBrush="{DynamicResource WbBorderFaintBrush}" BorderThickness="1,0,1,1">
                 <ListBox ItemsSource="{Binding Rows}" SelectedItem="{Binding SelectedRow}"
                          Background="Transparent"
-                         ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                         ScrollViewer.VerticalScrollBarVisibility="Visible">
                     <ListBox.Styles>
                         <Style Selector="ListBoxItem">
                             <Setter Property="Padding" Value="8,0"/>
@@ -93,7 +99,9 @@
                                 <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="{Binding Indent}" VerticalAlignment="Center">
                                     <Button Content="{Binding ExpanderGlyph}" Command="{Binding ToggleCommand}"
                                             IsVisible="{Binding HasChildren}" Classes="ghost"
-                                            Width="20" Height="20" Padding="0" FontSize="11"/>
+                                            Width="20" Height="20" Padding="0" FontSize="11"
+                                            AutomationProperties.Name="Toggle folder"
+                                            ToolTip.Tip="Expand / collapse"/>
                                     <TextBlock Text="{Binding Name}" VerticalAlignment="Center"
                                                FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold" FontSize="{StaticResource WbTextXs}"
                                                Foreground="{DynamicResource WbTextBrush}" TextTrimming="CharacterEllipsis"/>
@@ -103,12 +111,12 @@
                                            VerticalAlignment="Center" Margin="0,0,8,0" FontFamily="{DynamicResource WbFontReadout}"
                                            FontSize="{StaticResource WbTextXs}" Foreground="{DynamicResource WbTextSecondaryBrush}"/>
 
-                                <Grid Grid.Column="2" VerticalAlignment="Center" Margin="6,0">
-                                    <ProgressBar Minimum="0" Maximum="100" Value="{Binding PercentValue}" Height="6"/>
+                                <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="6,0" Spacing="2">
                                     <TextBlock Text="{Binding PercentText}" FontFamily="{DynamicResource WbFontReadout}"
                                                FontSize="{StaticResource WbText2xs}" HorizontalAlignment="Center"
-                                               Foreground="{DynamicResource WbTextMutedBrush}" Margin="0,-14,0,0"/>
-                                </Grid>
+                                               Foreground="{DynamicResource WbTextMutedBrush}"/>
+                                    <ProgressBar Minimum="0" Maximum="100" Value="{Binding PercentValue}" Height="6"/>
+                                </StackPanel>
 
                                 <TextBlock Grid.Column="3" Text="{Binding AllocText}" Width="102" TextAlignment="Right"
                                            VerticalAlignment="Center" Margin="0,0,8,0" FontFamily="{DynamicResource WbFontReadout}"
@@ -139,6 +147,21 @@
                     CornerRadius="{StaticResource WbRadiusSm}" ClipToBounds="True">
                 <controls:TreemapControl x:Name="Treemap" Root="{Binding SelectedNode}"/>
             </Border>
+
+            <!-- Empty states over the whole tree+treemap area: scanning spinner or first-visit prompt. -->
+            <StackPanel Grid.Row="0" Grid.RowSpan="3" VerticalAlignment="Center" HorizontalAlignment="Center"
+                        Spacing="14" IsVisible="{Binding !Rows.Count}">
+                <StackPanel Spacing="14" IsVisible="{Binding IsBusy}">
+                    <ProgressBar IsIndeterminate="True" Width="180" HorizontalAlignment="Center"/>
+                    <TextBlock Text="SCANNING…" HorizontalAlignment="Center" LetterSpacing="2"
+                               FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
+                               FontSize="{StaticResource WbTextXs}" Foreground="{DynamicResource WbTextTertiaryBrush}"/>
+                </StackPanel>
+                <TextBlock Text="NO DATA — PICK A DRIVE AND SCAN" HorizontalAlignment="Center" LetterSpacing="2"
+                           IsVisible="{Binding !IsBusy}"
+                           FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
+                           FontSize="{StaticResource WbTextXs}" Foreground="{DynamicResource WbTextMutedBrush}"/>
+            </StackPanel>
         </Grid>
 
     </DockPanel>

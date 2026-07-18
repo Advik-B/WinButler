@@ -25,14 +25,19 @@ public sealed partial class ConfirmDialogViewModel : ViewModelBase
     public string? Detail { get; }
     public bool HasDetail => !string.IsNullOrEmpty(Detail);
 
+    /// <summary>False for recoverable moves (redirect/undo) — the modal drops the red danger
+    /// styling for the accent "safe" variant. Defaults true so a missed call site stays scary.</summary>
+    public bool IsDestructive { get; }
+
     public ConfirmDialogViewModel(string title, int count, long bytes, Action onConfirmed, Action onCancelled,
-        string? detail = null)
+        string? detail = null, bool isDestructive = true)
     {
         Title = title;
         Count = count;
         BytesText = SizeFormatter.Format(bytes);
         ShowCounts = count > 0 || bytes > 0;
         Detail = detail;
+        IsDestructive = isDestructive;
         _onConfirmed = onConfirmed;
         _onCancelled = onCancelled;
     }

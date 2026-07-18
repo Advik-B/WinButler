@@ -7,23 +7,47 @@
              x:Class="WinButler.Views.Shared.ConfirmDialogView"
              x:DataType="vm:ConfirmDialogViewModel">
 
+    <UserControl.Styles>
+        <!-- Severity styling lives in styles (not inline attributes, which would outrank the
+             .safe overrides). Red is the base — a broken binding fails toward the scarier look;
+             the "safe" class (recoverable moves: redirect/undo) switches to the accent. -->
+        <Style Selector="Border.dialog">
+            <Setter Property="BorderBrush" Value="{DynamicResource WbSignalLiveBrush}"/>
+        </Style>
+        <Style Selector="Border.dialog Ellipse.severity">
+            <Setter Property="Fill" Value="{DynamicResource WbSignalLiveBrush}"/>
+        </Style>
+        <Style Selector="Border.dialog TextBlock.severity">
+            <Setter Property="Foreground" Value="{DynamicResource WbSignalLiveBrush}"/>
+        </Style>
+        <Style Selector="Border.dialog.safe">
+            <Setter Property="BorderBrush" Value="{DynamicResource WbAccentBrush}"/>
+        </Style>
+        <Style Selector="Border.dialog.safe Ellipse.severity">
+            <Setter Property="Fill" Value="{DynamicResource WbAccentBrush}"/>
+        </Style>
+        <Style Selector="Border.dialog.safe TextBlock.severity">
+            <Setter Property="Foreground" Value="{DynamicResource WbAccentBrush}"/>
+        </Style>
+    </UserControl.Styles>
+
     <Border Background="{DynamicResource WbScrimBrush}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-        <Border MaxWidth="430" Margin="24" HorizontalAlignment="Center" VerticalAlignment="Center"
+        <Border Classes="dialog" Classes.safe="{Binding !IsDestructive}"
+                MaxWidth="430" Margin="24" HorizontalAlignment="Center" VerticalAlignment="Center"
                 Background="{DynamicResource WbSurfaceBrush}"
-                BorderBrush="{DynamicResource WbSignalLiveBrush}"
                 BorderThickness="1" CornerRadius="{StaticResource WbRadiusLg}">
             <StackPanel>
                 <Border Padding="18,14" BorderBrush="{DynamicResource WbBorderFaintBrush}" BorderThickness="0,0,0,1">
                     <StackPanel Orientation="Horizontal" Spacing="10">
-                        <Ellipse Width="9" Height="9" Fill="{DynamicResource WbSignalLiveBrush}"/>
-                        <TextBlock Text="CONFIRM ACTION" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
-                                   FontSize="{StaticResource WbText2xs}" LetterSpacing="1.5"
-                                   Foreground="{DynamicResource WbSignalLiveBrush}"/>
+                        <Ellipse Classes="severity" Width="9" Height="9"/>
+                        <TextBlock Classes="severity" Text="CONFIRM ACTION" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
+                                   FontSize="{StaticResource WbText2xs}" LetterSpacing="1.5"/>
                     </StackPanel>
                 </Border>
 
                 <StackPanel Margin="22" Spacing="10">
                     <TextBlock Text="{Binding Title}" FontFamily="{DynamicResource WbFontDot}" FontWeight="Bold"
+                               TextWrapping="Wrap"
                                FontSize="{StaticResource WbTextMd}" Foreground="{DynamicResource WbTextBrush}"/>
                     <TextBlock TextWrapping="Wrap" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold"
                                IsVisible="{Binding ShowCounts}"

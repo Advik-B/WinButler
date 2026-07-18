@@ -57,7 +57,32 @@ public sealed class ConfirmFlowTests : MessengerIsolatedTest
         Assert.Equal(2, seen!.Count);
         Assert.Contains("permanently", seen.Detail);
         Assert.Contains("Recycle Bin", seen.Detail);
+        Assert.True(seen.IsDestructive); // deletions get the red modal
         Assert.Equal(2, cleaner.Calls.Count);
+    }
+
+    [AvaloniaFact]
+    public async Task Redirect_undo_confirm_is_marked_non_destructive()
+    {
+        // A real (dry-run-off) undo is a recoverable move — the modal should show the
+        // accent "safe" variant, not the red danger styling.
+        var vm = new RedirectPageViewModel(
+            new AppSettings { IsDryRun = false }, new FakeRedirectionService(),
+            new DiskIndexService(new FakeDiskScanService()));
+
+        ConfirmRequest? seen = null;
+        vm.ConfirmInteraction = req => { seen = req; return Task.FromResult(false); }; // decline: no undo runs
+
+        await vm.UndoCommand.ExecuteAsync(new RedirectRecord
+        {
+            SourcePath = @"C:\Users\me\.gradle",
+            TargetPath = @"D:\_redirected\.gradle",
+            TimestampUtc = "2026-01-01T00:00:00Z",
+            SizeBytes = 42,
+        });
+
+        Assert.NotNull(seen);
+        Assert.False(seen!.IsDestructive);
     }
 
     [AvaloniaFact]

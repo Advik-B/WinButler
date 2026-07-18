@@ -112,6 +112,14 @@
       <Setter Property="Foreground" Value="{DynamicResource WbSignalLiveBrush}"/>
       <Setter Property="BorderBrush" Value="{DynamicResource WbSignalLiveBrush}"/>
     </Style>
+    <!-- Base :pointerover flips text white + border strong-gray; a destructive button
+         must keep its red signal while hovered. -->
+    <Style Selector="^.danger:pointerover">
+      <Setter Property="Foreground" Value="{DynamicResource WbSignalLiveBrush}"/>
+    </Style>
+    <Style Selector="^.danger:pointerover /template/ Border#PART_Border">
+      <Setter Property="BorderBrush" Value="{DynamicResource WbSignalLiveBrush}"/>
+    </Style>
   </ControlTheme>
 
 </ResourceDictionary>
