@@ -2,6 +2,18 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
+  <!-- Invisible page up/down buttons that fill the track around the thumb (assigned via
+       Theme=, mirroring Fluent — an inline RepeatButton.Template nested in the ScrollBar's
+       ControlTemplate silently produces a zero-size button). -->
+  <ControlTheme x:Key="WbScrollBarPageButton" TargetType="RepeatButton">
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Background="{TemplateBinding Background}"/>
+      </ControlTemplate>
+    </Setter>
+  </ControlTheme>
+
   <ControlTheme x:Key="{x:Type ScrollBar}" TargetType="ScrollBar">
     <Setter Property="Background" Value="Transparent"/>
     <Setter Property="MinWidth" Value="10"/>
@@ -9,18 +21,32 @@
     <Setter Property="Template">
       <ControlTemplate>
         <Grid Name="PART_Root" Background="{TemplateBinding Background}">
+          <!-- IsDirectionReversed is set per-orientation below: Track uses the slider
+               convention (vertical value grows upward), so a vertical scrollbar must
+               reverse it or the thumb moves opposite to the content. -->
           <Track Name="PART_Track"
                  Minimum="{TemplateBinding Minimum}"
                  Maximum="{TemplateBinding Maximum}"
                  Value="{TemplateBinding Value, Mode=TwoWay}"
                  ViewportSize="{TemplateBinding ViewportSize}"
-                 Orientation="{TemplateBinding Orientation}"
-                 IsDirectionReversed="False">
+                 Orientation="{TemplateBinding Orientation}">
+            <!-- Invisible page-up/down buttons filling the track on either side of the thumb:
+                 ScrollBar wires these names to LargeDecrement/LargeIncrement, so clicking
+                 (or holding) the empty track pages the view like a native scrollbar. Without
+                 them the track is a dead zone and only the small thumb responds. -->
+            <Track.DecreaseButton>
+              <RepeatButton Name="PART_PageUpButton" Focusable="False"
+                            Theme="{StaticResource WbScrollBarPageButton}"/>
+            </Track.DecreaseButton>
+            <Track.IncreaseButton>
+              <RepeatButton Name="PART_PageDownButton" Focusable="False"
+                            Theme="{StaticResource WbScrollBarPageButton}"/>
+            </Track.IncreaseButton>
             <Track.Thumb>
               <Thumb Name="PART_Thumb" Background="{DynamicResource WbBorderStrongBrush}" Margin="2">
                 <Thumb.Template>
                   <ControlTemplate>
-                    <Border Background="{TemplateBinding Background}" CornerRadius="999">
+                    <Border Background="{TemplateBinding Background}" CornerRadius="{StaticResource WbRadiusPill}">
                       <Border.Transitions>
                         <Transitions>
                           <BrushTransition Property="Background" Duration="0:0:0.12"/>
@@ -39,11 +65,28 @@
     <Style Selector="^:vertical">
       <Setter Property="Width" Value="10"/>
     </Style>
+    <Style Selector="^:vertical /template/ Track#PART_Track">
+      <Setter Property="IsDirectionReversed" Value="True"/>
+    </Style>
+    <!-- Track treats the thumb's along-axis Min* as the minimum thumb length, so huge
+         lists (Disk Explorer) can't shrink the thumb into an ungrabbable sliver. -->
+    <Style Selector="^:vertical /template/ Thumb#PART_Thumb">
+      <Setter Property="MinHeight" Value="24"/>
+    </Style>
     <Style Selector="^:horizontal">
       <Setter Property="Height" Value="10"/>
     </Style>
+    <Style Selector="^:horizontal /template/ Track#PART_Track">
+      <Setter Property="IsDirectionReversed" Value="False"/>
+    </Style>
+    <Style Selector="^:horizontal /template/ Thumb#PART_Thumb">
+      <Setter Property="MinWidth" Value="24"/>
+    </Style>
     <Style Selector="^ /template/ Thumb#PART_Thumb:pointerover">
       <Setter Property="Background" Value="{DynamicResource WbAccentBrush}"/>
+    </Style>
+    <Style Selector="^ /template/ Thumb#PART_Thumb:pressed">
+      <Setter Property="Background" Value="{DynamicResource WbAccentBrightBrush}"/>
     </Style>
   </ControlTheme>
 

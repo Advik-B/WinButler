@@ -1,6 +1,7 @@
 # Drive WinButler's controls via UI Automation.
 #   uia.ps1 dump                 - list every Button/RadioButton/CheckBox (AutomationId + Name)
 #   uia.ps1 invoke "Clean All"   - invoke the first Button/RadioButton whose Name contains the text
+#   uia.ps1 invokeid "PART_Foo"  - invoke the first Button whose AutomationId contains the text
 #   uia.ps1 invoketext "Redirect"- invoke the first Button with a descendant Text element matching
 #   uia.ps1 checkall             - toggle every CheckBox to checked
 param([string]$Action = "dump", [string]$Match = "")
@@ -49,6 +50,18 @@ elseif ($Action -eq "invoke") {
     try { $sip = $hit.GetCurrentPattern([System.Windows.Automation.SelectionItemPattern]::Pattern); $sip.Select(); Write-Output "selected '$($hit.Current.Name)'" }
     catch { Write-Output "could not invoke '$($hit.Current.Name)': $($_.Exception.Message)" }
   }
+}
+elseif ($Action -eq "invokeid") {
+  # Invoke the first Button whose AutomationId contains $Match (for unnamed template parts).
+  $hit = $null
+  foreach ($e in All([System.Windows.Automation.ControlType]::Button)) {
+    if ($e.Current.AutomationId -and $e.Current.AutomationId.ToLower().Contains($Match.ToLower())) { $hit = $e; break }
+  }
+  if (-not $hit) { Write-Output "NO MATCH for id '$Match'"; exit 2 }
+  try {
+    $ip = $hit.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern)
+    $ip.Invoke(); Write-Output "invoked id '$($hit.Current.AutomationId)'"
+  } catch { Write-Output "could not invoke id '$($hit.Current.AutomationId)': $($_.Exception.Message)" }
 }
 elseif ($Action -eq "invoketext") {
   # Invoke the first Button that has a descendant Text element containing $Match.
