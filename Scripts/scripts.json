@@ -1,0 +1,23 @@
+{
+  "_comment": "Script-backed System Tools actions. 'script' MUST name a .ps1 embedded from Scripts/; never put a command line, an executable name, or raw PowerShell in this file. See Scripts/README.md.",
+
+  "actions": [
+    {
+      "id": "ghost-devices-list",
+      "name": "List ghost devices",
+      "description": "Preview non-present (phantom) devices, marking exactly which ones \"Remove ghost devices\" would remove vs. leave alone (e.g. disks and GPU components are always kept). Changes nothing.",
+      "script": "RemoveGhostDevices.ps1",
+      "mode": "List",
+      "isReadOnly": true
+    },
+    {
+      "id": "ghost-devices-remove",
+      "name": "Remove ghost devices",
+      "description": "Permanently remove non-present (phantom) USB/HID/Bluetooth/audio devices. Destructive — cannot be undone.",
+      "warning": "This permanently deletes device entries from Windows; there is no undo. Only USB, HID, Bluetooth and audio-endpoint devices are ever removed — disks, GPU components, and other onboard hardware are never touched, even if they show as \"disconnected\" (real hardware can show that way for unrelated reasons). If a removed device is actually hardware that's just temporarily unplugged (a USB dock, a headset, a keyboard dongle), it may need a driver reinstall or reboot before it works again once reconnected.",
+      "script": "RemoveGhostDevices.ps1",
+      "mode": "Remove",
+      "isAdvanced": true
+    }
+  ]
+}

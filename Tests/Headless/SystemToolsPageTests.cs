@@ -172,6 +172,56 @@ public sealed class SystemToolsPageTests : MessengerIsolatedTest
         Assert.DoesNotContain(vm.Actions, a => a.IsAdvanced);
     }
 
+    [AvaloniaFact]
+    public void A_failed_script_manifest_still_leaves_the_built_in_actions_usable()
+    {
+        // scripts.json is unusable → zero script actions, but the code-defined Windows-tool actions
+        // are unaffected, so the page still works rather than going blank.
+        var vm = new SystemToolsPageViewModel(new AppSettings { IsDryRun = true }, new FakeRunner(),
+            new PrivacyCleaner(new EmptyRegistry()), ScriptCatalog.Empty);
+
+        Assert.Contains(vm.Actions, a => a.Id == "analyze-store");
+        Assert.Contains(vm.AdvancedActions, a => a.Id == "wmi-reset");
+        Assert.DoesNotContain(vm.Actions.Concat(vm.AdvancedActions), a => a.Id.StartsWith("ghost-devices"));
+        Assert.True(vm.HasAdvancedActions); // the built-ins keep the ADVANCED divider meaningful
+    }
+
+    [AvaloniaFact]
+    public void Ghost_device_actions_are_catalogued_with_the_right_flags()
+    {
+        var vm = NewVm(true, new FakeRunner());
+
+        var list = vm.Actions.Single(a => a.Id == "ghost-devices-list");
+        Assert.True(list.IsReadOnly);
+        Assert.False(list.IsAdvanced);
+        // List must run the SAME script as Remove (just in preview mode) so it can't drift into
+        // showing a different device set than what Remove would actually touch.
+        Assert.Contains("RemoveGhostDevices.ps1", list.Steps.Single().Display);
+
+        var remove = vm.AdvancedActions.Single(a => a.Id == "ghost-devices-remove");
+        Assert.True(remove.IsAdvanced);
+        Assert.False(remove.IsReadOnly);
+        // The confirm modal shows Warning (falling back to Description) — both must make the
+        // "permanent, no undo" nature of this action unmistakable, not just hint at it.
+        Assert.Contains("no undo", remove.Warning, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("permanent", remove.Description, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [AvaloniaFact]
+    public async Task Ghost_device_removal_dry_run_preview_is_readable_not_a_base64_blob()
+    {
+        var runner = new FakeRunner();
+        var vm = NewVm(true, runner);
+        var remove = vm.AdvancedActions.Single(a => a.Id == "ghost-devices-remove");
+
+        await vm.RunActionCommand.ExecuteAsync(remove);
+        Dispatcher.UIThread.RunJobs();
+
+        Assert.Empty(runner.Ran); // dry-run — nothing executed
+        Assert.Contains(vm.Output, l => l.Contains("RemoveGhostDevices.ps1"));
+        Assert.DoesNotContain(vm.Output, l => l.Contains("EncodedCommand"));
+    }
+
     /// <summary>
     /// Renders the actual view (not just the VM) to prove the per-item RUN button's
     /// <c>$parent[ItemsControl]…RunActionCommand</c> binding resolves — a wiring shape no other page
@@ -200,5 +250,28 @@ public sealed class SystemToolsPageTests : MessengerIsolatedTest
         Dispatcher.UIThread.RunJobs();
 
         Assert.Contains(vm.Output, l => l.Contains("DRY RUN"));
+    }
+
+    /// <summary>
+    /// The ADVANCED divider's <c>IsVisible="{Binding HasAdvancedActions}"</c> is the one binding
+    /// whose failure mode is silent *hiding* — a compiled binding that didn't resolve would leave
+    /// the "CAN BREAK THINGS" warning off the page while the advanced actions below it still render.
+    /// The VM-level assertions elsewhere can't see that, so prove it against the real view.
+    /// </summary>
+    [AvaloniaFact]
+    public void Advanced_divider_renders_when_advanced_actions_exist()
+    {
+        var vm = NewVm(true, new FakeRunner());
+        var window = new Window { Content = new SystemToolsPageView { DataContext = vm }, Width = 900, Height = 640 };
+        window.Show();
+        Dispatcher.UIThread.RunJobs();
+
+        var banner = window.GetVisualDescendants().OfType<TextBlock>()
+            .FirstOrDefault(t => t.Text is not null && t.Text.StartsWith("ADVANCED"));
+
+        Assert.NotNull(banner);
+        Assert.True(vm.HasAdvancedActions);
+        Assert.True(banner!.IsVisible);                       // the binding resolved, not silently false
+        Assert.True(((Control)banner.Parent!).IsVisible);     // ...on the Border that actually carries it
     }
 }

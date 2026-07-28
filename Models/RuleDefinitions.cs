@@ -142,6 +142,11 @@ public sealed class KnownLocationEntry
     /// <summary><c>files</c> mode only: recurse into subdirectories (junctions are not followed).</summary>
     public bool Recursive { get; set; }
 
+    /// <summary><c>children</c> mode only: child names (case-insensitive, not full paths) to skip
+    /// even though they'd otherwise match — an additional per-rule carve-out alongside the
+    /// deny-list, for a folder that mixes junk with data that must never be offered.</summary>
+    public List<string>? Exclude { get; set; }
+
     /// <summary>When true, <see cref="Path"/> is resolved against every fixed drive root.</summary>
     public bool AllDrives { get; set; }
 

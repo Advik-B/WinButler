@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -43,13 +44,25 @@ public partial class SystemToolsPageViewModel : ViewModelBase
 
     public bool IsDryRun => _settings.IsDryRun;
 
-    public SystemToolsPageViewModel(AppSettings settings, SystemActionRunner runner, PrivacyCleaner privacy)
+    /// <summary>Whether any Advanced action registered — the view's "ADVANCED" divider hides when
+    /// none did (the script-backed ones come from a manifest that can legitimately be empty).
+    /// Intentionally has no change notification: the catalog is built once in the constructor and
+    /// never mutates, so the binding's single read at attach time is always correct.</summary>
+    public bool HasAdvancedActions => AdvancedActions.Count > 0;
+
+    /// <param name="scripts">Script-backed actions from <c>Scripts/scripts.json</c>; defaults to the
+    /// bundled manifest (tests inject their own). Mirrors <see cref="KnownLocationsScanner"/>'s
+    /// bundled-by-default convenience.</param>
+    public SystemToolsPageViewModel(AppSettings settings, SystemActionRunner runner, PrivacyCleaner privacy,
+        ScriptCatalog? scripts = null)
     {
         _settings = settings;
         _runner = runner;
         _privacy = privacy;
 
-        var catalog = BuildCatalog();
+        // Built-in Windows-tool actions are defined in code (executable commands must never be
+        // data-driven — see SystemCommand); script-backed ones are appended from the manifest.
+        var catalog = BuildCatalog().Concat((scripts ?? ScriptCatalog.LoadBundled()).Actions);
         Actions = new ObservableCollection<SystemAction>();
         AdvancedActions = new ObservableCollection<SystemAction>();
         foreach (var a in catalog)
@@ -236,6 +249,9 @@ public partial class SystemToolsPageViewModel : ViewModelBase
         }
     }
 
+    /// <summary>The built-in Windows-tool actions. These stay in code on purpose: they are literal
+    /// executable + argument pairs, and <see cref="SystemCommand"/> must never be data-driven.
+    /// Script-backed actions come from <c>Scripts/scripts.json</c> via <see cref="ScriptCatalog"/>.</summary>
     private static IReadOnlyList<SystemAction> BuildCatalog() => new[]
     {
         new SystemAction

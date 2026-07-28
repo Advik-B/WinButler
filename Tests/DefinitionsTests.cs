@@ -165,6 +165,26 @@ public class DefinitionsTests
     }
 
     [Fact]
+    public void Known_location_exclude_field_binds_from_json()
+    {
+        var json = """
+        {
+          "knownLocations": {
+            "entries": [
+              { "id": "t", "path": "%LocalAppData%\\Foo", "mode": "children", "exclude": ["players", "Keep"], "risk": "safe", "displayName": "Foo" }
+            ]
+          }
+        }
+        """;
+
+        var parsed = BundledDefinitionSource.Parse(json);
+        var entry = Assert.Single(parsed.KnownLocations.Entries);
+
+        Assert.NotNull(entry.Exclude);
+        Assert.Equal(new[] { "players", "Keep" }, entry.Exclude);
+    }
+
+    [Fact]
     public void Merge_takes_highest_version()
     {
         var baseDefs = new WinButlerDefinitions { Version = 1 };

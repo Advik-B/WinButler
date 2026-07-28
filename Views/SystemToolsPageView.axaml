@@ -67,7 +67,7 @@
                        Foreground="{DynamicResource WbAccentBrush}" Margin="0,0,0,6"/>
             <TextBlock Text="System Tools" FontFamily="{DynamicResource WbFontDot}" FontWeight="Bold"
                        FontSize="{StaticResource WbTextXl}" Foreground="{DynamicResource WbTextBrush}" Margin="0,0,0,6"/>
-            <TextBlock Text="One-click Windows maintenance. These run Windows' own tools (DISM, SFC, wevtutil) — with Dry run on, they print what they would do without running it."
+            <TextBlock Text="One-click Windows maintenance. These run Windows' own tools (DISM, SFC, wevtutil, pnputil) — with Dry run on, they print what they would do without running it."
                        TextWrapping="Wrap" FontFamily="{DynamicResource WbFontUi}" FontWeight="Bold" FontSize="{StaticResource WbTextXs}"
                        Foreground="{DynamicResource WbTextTertiaryBrush}"/>
         </StackPanel>
@@ -84,6 +84,7 @@
                     <ItemsControl ItemsSource="{Binding Actions}" ItemTemplate="{StaticResource WbSystemActionTemplate}"/>
 
                     <Border Margin="0,10,0,10" Padding="11,9" CornerRadius="{StaticResource WbRadiusSm}"
+                            IsVisible="{Binding HasAdvancedActions}"
                             Background="{DynamicResource WbSurfaceInsetBrush}"
                             BorderBrush="{DynamicResource WbSignalLiveBrush}" BorderThickness="1">
                         <TextBlock Text="ADVANCED — CAN BREAK THINGS. USE ONLY IF YOU KNOW YOU NEED IT."

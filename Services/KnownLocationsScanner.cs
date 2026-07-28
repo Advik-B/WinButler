@@ -117,6 +117,9 @@ public sealed class KnownLocationsScanner : IScanner
             ct.ThrowIfCancellationRequested();
             if (_safeCaches.IsDenied(child))
                 continue;
+            if (entry.Exclude is { Count: > 0 } exclude &&
+                exclude.Contains(Path.GetFileName(child), StringComparer.OrdinalIgnoreCase))
+                continue;
 
             var isDir = Directory.Exists(child);
             long size = SizeOf(child, isDir, ct);

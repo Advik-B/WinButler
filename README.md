@@ -127,6 +127,16 @@ began life as a study of [FocusedWolf](https://www.reddit.com/user/FocusedWolf/)
 comprehensive Windows cleanup batch script, which WinButler absorbed into its native,
 rule-driven (and dry-run-guarded) form. Thank you!
 
+The System Tools page's ghost-device removal is credited to the "remove ghost devices
+natively with PowerShell" concept originally published at
+[theorypc.ca](https://web.archive.org/web/2020/https://theorypc.ca/2017/06/28/remove-ghost-devices-natively-with-powershell/)
+(2017) by TrententTye / Alexander Boersch — the live page now returns a 403, hence the
+Wayback Machine link. An unofficial third-party fork with additional flags exists at
+[github.com/istvans/scripts](https://github.com/istvans/scripts) (not the source of
+WinButler's implementation). WinButler's version is a from-scratch reimplementation built
+on `pnputil.exe`'s native device-management flags rather than the original's SetupAPI/CfgMgr32
+P/Invoke approach, which predates those flags.
+
 ## License
 
 MIT — see [LICENSE](LICENSE).
