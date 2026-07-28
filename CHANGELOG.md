@@ -2,6 +2,32 @@
 
 Notable changes to WinButler, by internal milestone. The current shipping version is **1.0.1**.
 
+## v1.0.2 — 2026-07-29 · Ghost-device cleanup + Activision/CoD fix
+
+- **Ghost-device removal on the System Tools page**: "List ghost devices" (read-only) surfaces
+  non-present PnP device nodes via `pnputil.exe`. "Remove ghost devices" (Advanced) is
+  **permanent and cannot be undone** — to avoid touching live hardware that can also show as
+  "disconnected" (disks, GPU-integrated controllers, VSS snapshots, virtual/software device
+  stubs — all observed on real hardware during development), it only ever removes an
+  allow-listed shape of device (USB/HID devices by vendor+product ID, Bluetooth, audio
+  endpoints), explicitly excluding USB root hubs. The removal action runs an embedded PowerShell
+  script entirely in memory (`-EncodedCommand`, never written to disk) — see
+  `Services/EmbeddedScript.cs`. Credit to the original "remove ghost devices natively with
+  PowerShell" concept from theorypc.ca (2017) — see README Acknowledgements.
+- **Script-backed System Tools actions are now data-driven**: they're declared in
+  `Scripts/scripts.json` and auto-register, so adding one is a drop-in — write a `.ps1`, add an
+  entry, no code change (see `Scripts/README.md`). The manifest only ever *names* a script embedded
+  in the binary plus a bare-identifier mode; it can't carry a command line, and it's loaded outside
+  the definitions merge path so a future remote-definitions rollout could never reach it. Built-in
+  Windows-tool actions (DISM, SFC, WMI reset, …) stay defined in code for the same reason.
+- **Fixed a data-loss bug in the Activision/Call of Duty cleanup rule**: the old
+  `activision-crashes` entry treated every immediate child of `%LocalAppData%\Activision` —
+  including all of `Call of Duty`, which can hold `Call of Duty\players` (real user settings) —
+  as permanently-deletable junk. Replaced with two narrower entries: one scoped to
+  `Call of Duty` itself (now Recycle-Bin risk, not permanent, and excludes `players` via a new
+  `exclude` field on known-location rules), and one scoped to the bootstrapper's crash-reports
+  folder specifically.
+
 ## v1.0.1 — 2026-07-18 · Program Files installer
 
 - **The installer is now a per-machine MSI** (`WinButler-win.msi`) that installs to

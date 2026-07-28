@@ -41,6 +41,7 @@ deletion. Partial loads are never accepted — validate your JSON before committ
   "mode": "children",                 // children | files | self
   "pattern": "*.dmp",                 // files mode only: wildcard filter
   "recursive": true,                  // files mode only: recurse subdirs
+  "exclude": ["players"],             // children mode only: child names to always skip
   "allDrives": false,                 // path is relative to every fixed drive root
   "risk": "safe",                     // safe | caution | risky
   "displayName": "Discord cache",
@@ -50,6 +51,10 @@ deletion. Partial loads are never accepted — validate your JSON before committ
 ```
 
 - **`mode: children`** — every immediate child of `path` is a delete target; the directory itself survives.
+  Optionally set `exclude` (child *names*, case-insensitive, not full paths) to skip specific children
+  even though they'd otherwise match — use this when a folder mixes junk with data that must never be
+  offered (e.g. a game's crash-report folder that also holds a `players` settings subfolder). Ignored
+  outside `children` mode.
 - **`mode: files`** — files under `path` matching `pattern` (optionally `recursive`) are targets.
 - **`mode: self`** — `path` itself is the target (a specific junk folder or file).
 - **`risk`** drives deletion policy: `safe` → deleted permanently; `caution`/`risky` → sent to the Recycle Bin and never auto-selected. Use `risky` for anything a user might miss (local edit history, package stores that are slow to rebuild).

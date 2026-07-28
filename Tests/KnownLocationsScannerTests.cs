@@ -124,6 +124,56 @@ public sealed class KnownLocationsScannerTests : IDisposable
     }
 
     [Fact]
+    public void Excluded_children_are_never_offered_but_siblings_still_are()
+    {
+        var dir = Path.Combine(_root, "cod");
+        WriteFile(Path.Combine(dir, "players", "settings.cfg"));
+        WriteFile(Path.Combine(dir, "junk", "crash.dmp"));
+
+        var results = Scan(new KnownLocationEntry
+        {
+            Id = "t", Path = dir, Mode = "children", Risk = "safe", DisplayName = "CoD",
+            Exclude = new List<string> { "players" },
+        });
+
+        var target = Assert.Single(results);
+        Assert.EndsWith("junk", target.FullPath);
+        Assert.DoesNotContain(results, t => t.FullPath.Contains("players", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public void Exclude_match_is_case_insensitive()
+    {
+        var dir = Path.Combine(_root, "cod-case");
+        WriteFile(Path.Combine(dir, "Players", "settings.cfg"));
+        WriteFile(Path.Combine(dir, "junk", "crash.dmp"));
+
+        var results = Scan(new KnownLocationEntry
+        {
+            Id = "t", Path = dir, Mode = "children", Risk = "safe", DisplayName = "CoD",
+            Exclude = new List<string> { "players" },
+        });
+
+        var target = Assert.Single(results);
+        Assert.EndsWith("junk", target.FullPath);
+    }
+
+    [Fact]
+    public void Absent_exclude_keeps_every_child_as_before()
+    {
+        var dir = Path.Combine(_root, "no-exclude");
+        WriteFile(Path.Combine(dir, "a", "dump1.bin"));
+        WriteFile(Path.Combine(dir, "b", "dump2.bin"));
+
+        var results = Scan(new KnownLocationEntry
+        {
+            Id = "t", Path = dir, Mode = "children", Risk = "safe", DisplayName = "No exclude",
+        });
+
+        Assert.Equal(2, results.Count); // Exclude is null — no regression vs. pre-existing behavior
+    }
+
+    [Fact]
     public void Risky_entries_map_to_the_risky_level_and_the_recycle_bin()
     {
         var dir = Path.Combine(_root, "history");

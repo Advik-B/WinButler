@@ -5,9 +5,12 @@ namespace WinButler.Models;
 /// <summary>One external command to run (file + arguments), the unit a <see cref="SystemAction"/>
 /// executes. These are defined in code, never in the editable definitions JSON — executable
 /// commands must not be data-driven.</summary>
-public sealed record SystemCommand(string FileName, string Arguments)
+public sealed record SystemCommand(string FileName, string Arguments, string? DisplayOverride = null)
 {
-    public string Display => string.IsNullOrEmpty(Arguments) ? FileName : $"{FileName} {Arguments}";
+    /// <summary>What the dry-run preview and the runner's "> ..." line show. Defaults to
+    /// "FileName Arguments"; set <see cref="DisplayOverride"/> when Arguments isn't human-readable
+    /// (e.g. a base64 -EncodedCommand payload — see <see cref="Services.EmbeddedScript"/>).</summary>
+    public string Display => DisplayOverride ?? (string.IsNullOrEmpty(Arguments) ? FileName : $"{FileName} {Arguments}");
 }
 
 /// <summary>
